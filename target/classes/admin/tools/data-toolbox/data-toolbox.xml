@@ -1,7 +1,0 @@
-<tool>
-  <display-name>Data toolbox</display-name>
-  <description>Visualize and manage your data</description>
-  <allow>
-    <principal>role:system.admin</principal>
-  </allow>
-</tool>
