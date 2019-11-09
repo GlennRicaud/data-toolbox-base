@@ -1,9 +1,9 @@
-var repoLib = require('/lib/xp/repo');
+const repoLib = require('/lib/xp/repo');
 
 exports.post = function (req) {
-    var repositoryNames = JSON.parse(req.body).repositoryNames;
+    const repositoryNames = JSON.parse(req.body).repositoryNames;
 
-    var result;
+    let result;
     if (repositoryNames.some(isProtectedAgainstDeletion)) {
         result = {
             error: 'The repositories [com.enonic.cms.default] and [system-repo] cannot be deleted.'

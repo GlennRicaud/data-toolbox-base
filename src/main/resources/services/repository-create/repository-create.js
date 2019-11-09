@@ -1,9 +1,9 @@
-var repoLib = require('/lib/xp/repo');
+const repoLib = require('/lib/xp/repo');
 
 exports.post = function (req) {
-    var repositoryName = JSON.parse(req.body).repositoryName;
+    const repositoryName = JSON.parse(req.body).repositoryName;
 
-    var result = runSafely(createRepository, repositoryName);
+    const result = runSafely(createRepository, repositoryName);
     return {
         contentType: 'application/json',
         body: result

@@ -1,12 +1,12 @@
-var nodeLib = require('/lib/xp/node');
+const nodeLib = require('/lib/xp/node');
 
-exports.post = function (req) {
-    var repositoryName = req.params.repositoryName;
-    var branchName = req.params.branchName;
-    var key = req.params.key;
-    var binaryReference = req.params.binaryReference;
+exports.post = (req) => {
+    const repositoryName = req.params.repositoryName;
+    const branchName = req.params.branchName;
+    const key = req.params.key;
+    const binaryReference = req.params.binaryReference;
 
-    var binary = nodeLib.connect({
+    const binary = nodeLib.connect({
         repoId: repositoryName,
         branch: branchName
     }).getBinary({

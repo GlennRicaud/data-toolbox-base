@@ -1,11 +1,11 @@
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var path = body.path;
-    var parentPath = body.parentPath;
-    var properties = body.properties;
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdPropertyScriptBean');
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const path = body.path;
+    const parentPath = body.parentPath;
+    const properties = body.properties;
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdPropertyScriptBean');
 
     return {
         contentType: 'application/json',

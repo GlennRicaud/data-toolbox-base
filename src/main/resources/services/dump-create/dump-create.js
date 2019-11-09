@@ -1,14 +1,14 @@
-var taskLib = require('/lib/xp/task');
+const taskLib = require('/lib/xp/task');
 
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdDumpScriptBean');
-    var body = JSON.parse(req.body);
-    var dumpName = body.dumpName;
-    var includeVersions = body.includeVersions;
-    var maxVersions = body.maxVersions;
-    var maxVersionsAge = body.maxVersionsAge;
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdDumpScriptBean');
+    const body = JSON.parse(req.body);
+    const dumpName = body.dumpName;
+    const includeVersions = body.includeVersions;
+    const maxVersions = body.maxVersions;
+    const maxVersionsAge = body.maxVersionsAge;
 
-    var taskId = taskLib.submit({
+    const taskId = taskLib.submit({
         description: 'Dump creation',
         task: function () {
             taskLib.progress({info: 'Creating dump...'});

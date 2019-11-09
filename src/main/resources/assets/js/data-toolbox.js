@@ -148,5 +148,5 @@ function getPropertyParameter() {
     return RcdHistoryRouter.getParameters().property;
 }
 
-var app = createApp();
+const app = createApp();
 app.start(document.body);

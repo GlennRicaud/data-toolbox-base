@@ -1,10 +1,10 @@
-var taskLib = require('/lib/xp/task');
+const taskLib = require('/lib/xp/task');
 
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdDumpScriptBean');
-    var dumpNames = JSON.parse(req.body).dumpNames;
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdDumpScriptBean');
+    const dumpNames = JSON.parse(req.body).dumpNames;
 
-    var taskId = taskLib.submit({
+    const taskId = taskLib.submit({
         description: 'Dump deletion',
         task: function () {
             taskLib.progress({info: 'Deleting dumps (0/' + dumpNames.length + ')...'});

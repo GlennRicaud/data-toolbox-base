@@ -1,11 +1,11 @@
-var repoLib = require('/lib/xp/repo');
+const repoLib = require('/lib/xp/repo');
 
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
 
-    var result = runSafely(createRepository, [repositoryName, branchName]);
+    const result = runSafely(createRepository, [repositoryName, branchName]);
     return {
         contentType: 'application/json',
         body: result

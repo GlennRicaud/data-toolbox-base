@@ -1,11 +1,11 @@
-var repoLib = require('/lib/xp/repo');
+const repoLib = require('/lib/xp/repo');
 
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchNames = body.branchNames;
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchNames = body.branchNames;
 
-    var result = runSafely(deleteRepositories, [repositoryName, branchNames]);
+    const result = runSafely(deleteRepositories, [repositoryName, branchNames]);
     return {
         contentType: 'application/json',
         body: result

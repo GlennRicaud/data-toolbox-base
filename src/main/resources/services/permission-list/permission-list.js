@@ -1,13 +1,13 @@
-var nodeLib = require('/lib/xp/node');
-var exceptionLib = require('/lib/exception');
+const nodeLib = require('/lib/xp/node');
+const exceptionLib = require('/lib/exception');
 
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var key = body.key;
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const key = body.key;
 
-    var result = exceptionLib.runSafely(getPermissions, [repositoryName, branchName, key], 'Error while retrieving permissions');
+    const result = exceptionLib.runSafely(getPermissions, [repositoryName, branchName, key], 'Error while retrieving permissions');
     return {
         contentType: 'application/json',
         body: result
@@ -15,12 +15,12 @@ exports.post = function (req) {
 };
 
 function getPermissions(repositoryName, branchName, key) {
-    var repoConnection = nodeLib.connect({
+    const repoConnection = nodeLib.connect({
         repoId: repositoryName,
         branch: branchName
     });
 
-    var result = repoConnection.get(key);
+    const result = repoConnection.get(key);
 
     return {
         success: {

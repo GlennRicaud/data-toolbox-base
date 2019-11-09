@@ -1,7 +1,7 @@
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdSnapshotScriptBean');
-    var body = JSON.parse(req.body);
-    var snapshotName = body.snapshotName;
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdSnapshotScriptBean');
+    const body = JSON.parse(req.body);
+    const snapshotName = body.snapshotName;
 
     return {
         contentType: 'application/json',

@@ -1,16 +1,16 @@
-var nodeLib = require('/lib/xp/node');
+const nodeLib = require('/lib/xp/node');
 
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var parentPath = body.parentPath;
-    var start = body.start || 0;
-    var count = body.count || 50;
-    var filter = body.filter ? decodeURIComponent(body.filter) : undefined;
-    var sort = body.sort ? decodeURIComponent(body.sort) : undefined;
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const parentPath = body.parentPath;
+    const start = body.start || 0;
+    const count = body.count || 50;
+    const filter = body.filter ? decodeURIComponent(body.filter) : undefined;
+    const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
-    var result = runSafely(getChildren, [repositoryName, branchName, parentPath, start, count, filter, sort]);
+    const result = runSafely(getChildren, [repositoryName, branchName, parentPath, start, count, filter, sort]);
     return {
         contentType: 'application/json',
         body: result
@@ -18,13 +18,13 @@ exports.post = function (req) {
 };
 
 function getChildren(repositoryName, branchName, parentPath, start, count, filter, sort) {
-    var repoConnection = nodeLib.connect({
+    const repoConnection = nodeLib.connect({
         repoId: repositoryName,
         branch: branchName
     });
 
     if (parentPath) {
-        var result;
+        let result;
         if (filter) {
             result = repoConnection.query({
                 query: '_parentPath = \'' + parentPath + '\' AND ' + filter,
@@ -51,7 +51,7 @@ function getChildren(repositoryName, branchName, parentPath, start, count, filte
             }
         };
     } else {
-        var rootNode = repoConnection.get('/');
+        const rootNode = repoConnection.get('/');
         if (rootNode) {
             rootNode._name = "[root]"
         }

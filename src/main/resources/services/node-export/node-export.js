@@ -1,14 +1,14 @@
-var taskLib = require('/lib/xp/task');
+const taskLib = require('/lib/xp/task');
 
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdExportScriptBean');
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var nodePath = body.nodePath;
-    var exportName = body.exportName;
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdExportScriptBean');
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const nodePath = body.nodePath;
+    const exportName = body.exportName;
 
-    var taskId = taskLib.submit({
+    const taskId = taskLib.submit({
         description: 'Node export',
         task: function () {
             taskLib.progress({info: 'Exporting nodes...'});

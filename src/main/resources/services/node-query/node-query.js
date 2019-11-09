@@ -1,17 +1,17 @@
-var nodeLib = require('/lib/xp/node');
-var repoLib = require('/lib/xp/repo');
-var utilLib = require('/lib/util');
+const nodeLib = require('/lib/xp/node');
+const repoLib = require('/lib/xp/repo');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var query = body.query;
-    var start = body.start || 0;
-    var count = body.count || 10;
-    var sort = body.sort ? decodeURIComponent(body.sort) : undefined;
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const query = body.query;
+    const start = body.start || 0;
+    const count = body.count || 10;
+    const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
-    var result = runSafely(doQuery, [repositoryName, branchName, query, start, count, sort]);
+    const result = runSafely(doQuery, [repositoryName, branchName, query, start, count, sort]);
     return {
         contentType: 'application/json',
         body: result
@@ -19,14 +19,14 @@ exports.post = function (req) {
 };
 
 function doQuery(repositoryName, branchName, query, start, count, sort) {
-    var repoConnection;
+    const repoConnection;
     if (repositoryName && branchName) {
         repoConnection = nodeLib.connect({
             repoId: repositoryName,
             branch: branchName
         });
     } else if (repositoryName) {
-        var sources = [];
+        const sources = [];
         repoLib.get(repositoryName).branches.forEach(function (branch) {
             sources.push({
                 repoId: repositoryName,
@@ -38,7 +38,7 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
             sources: sources
         });
     } else {
-        var sources = [];
+        const sources = [];
         repoLib.list().forEach(function (repository) {
             repository.branches.forEach(function (branch) {
                 sources.push({
@@ -53,7 +53,7 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
         });
     }
 
-    var result = repoConnection.query({
+    const result = repoConnection.query({
         query: query,
         start: start,
         count: count,
@@ -61,9 +61,9 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
     });
 
 
-    var hits;
+    let hits;
     if (repositoryName && branchName) {
-        var ids = result.hits.map(function (hit) {
+        const ids = result.hits.map(function (hit) {
             return hit.id;
         });
         hits = utilLib.forceArray(repoConnection.get(ids)).map(function (node) {
@@ -77,7 +77,7 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
         })
     } else {
         hits = result.hits.map(function (hit) {
-            var node = nodeLib.connect({
+            const node = nodeLib.connect({
                 repoId: hit.repoId,
                 branch: hit.branch
             }).get(hit.id);

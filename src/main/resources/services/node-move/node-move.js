@@ -1,18 +1,18 @@
-var nodeLib = require('/lib/xp/node');
-var taskLib = require('/lib/xp/task');
+const nodeLib = require('/lib/xp/node');
+const taskLib = require('/lib/xp/task');
 
 exports.post = function (req) {
-    var body = JSON.parse(req.body);
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var sources = body.sources;
-    var target = body.target;
+    const body = JSON.parse(req.body);
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const sources = body.sources;
+    const target = body.target;
 
-    var taskId = taskLib.submit({
+    const taskId = taskLib.submit({
         description: 'Node move',
         task: function () {
             taskLib.progress({info: 'Moving nodes...'});
-            var result = runSafely(moveNodes, [repositoryName, branchName, sources, target])
+            const result = runSafely(moveNodes, [repositoryName, branchName, sources, target])
             taskLib.progress({info: JSON.stringify(result)});
         }
     });
@@ -24,12 +24,12 @@ exports.post = function (req) {
 };
 
 function moveNodes(repositoryName, branchName, sources, target) {
-    var repoConnection = nodeLib.connect({
+    const repoConnection = nodeLib.connect({
         repoId: repositoryName,
         branch: branchName
     });
     
-    var success = sources.map(function(source) {
+    const success = sources.map(function(source) {
         return repoConnection.move({
             source: source,
             target: target

@@ -1,7 +1,7 @@
-var repoLib = require('/lib/xp/repo');
+const repoLib = require('/lib/xp/repo');
 
 exports.get = function () {
-    var result = runSafely(listRepositories);
+    const result = runSafely(listRepositories);
     return {
         contentType: 'application/json',
         body: result

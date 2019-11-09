@@ -1,14 +1,14 @@
-var taskLib = require('/lib/xp/task');
-var portalLib = require('/lib/xp/portal');
+const taskLib = require('/lib/xp/task');
+const portalLib = require('/lib/xp/portal');
 
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdExportScriptBean');
-    var fileName = portalLib.getMultipartItem("uploadFile", 0).fileName;
-    var uploadFileStream = portalLib.getMultipartStream("uploadFile", 0);
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdExportScriptBean');
+    const fileName = portalLib.getMultipartItem("uploadFile", 0).fileName;
+    const uploadFileStream = portalLib.getMultipartStream("uploadFile", 0);
 
-    var archivePath = bean.upload(fileName, uploadFileStream);
+    const archivePath = bean.upload(fileName, uploadFileStream);
 
-    var taskId = taskLib.submit({
+    const taskId = taskLib.submit({
         description: 'Exports unarchiving',
         task: function () {
             taskLib.progress({info: 'Unarchiving exports...'});

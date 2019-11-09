@@ -1,10 +1,10 @@
-var taskLib = require('/lib/xp/task');
+const taskLib = require('/lib/xp/task');
 
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdSnapshotScriptBean');
-    var snapshotNames = JSON.parse(req.body).snapshotNames;
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdSnapshotScriptBean');
+    const snapshotNames = JSON.parse(req.body).snapshotNames;
 
-    var taskId = taskLib.submit({
+    const taskId = taskLib.submit({
         description: 'Snapshot deletion',
         task: function () {
             taskLib.progress({info: 'Deleting snapshots...'});

@@ -1,14 +1,14 @@
 exports.post = function (req) {
-    var bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdIndexDocumentScriptBean');
-    var body = JSON.parse(req.body);
+    const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdIndexDocumentScriptBean');
+    const body = JSON.parse(req.body);
 
-    var repositoryName = body.repositoryName;
-    var branchName = body.branchName;
-    var type = body.type;
-    var id = body.id;
-    var versionKey = body.versionKey;
+    const repositoryName = body.repositoryName;
+    const branchName = body.branchName;
+    const type = body.type;
+    const id = body.id;
+    const versionKey = body.versionKey;
 
-    var result = bean.get(repositoryName, branchName, type, id, versionKey);
+    const result = bean.get(repositoryName, branchName, type, id, versionKey);
 
     return {
         contentType: 'application/json',

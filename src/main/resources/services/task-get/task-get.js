@@ -1,8 +1,8 @@
-var taskLib = require('/lib/xp/task');
+const taskLib = require('/lib/xp/task');
 
 exports.post = function (req) {
-    var taskId = JSON.parse(req.body).taskId;
-    var task = taskLib.get(taskId);
+    const taskId = JSON.parse(req.body).taskId;
+    const task = taskLib.get(taskId);
     return {
         contentType: 'application/json',
         body: {
