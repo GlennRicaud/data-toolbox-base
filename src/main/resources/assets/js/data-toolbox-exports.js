@@ -10,45 +10,38 @@ class ExportsRoute extends DtbRoute {
     onDisplay() {
         this.retrieveExports();
     }
-    
+
     createBreadcrumbsLayout() {
-        return new RcdMaterialBreadcrumbsLayout().init().
-            addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).
-            addBreadcrumb(new RcdMaterialBreadcrumb('Node exports').init()).
-            addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+        return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
+            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
+            new RcdMaterialBreadcrumb('Node exports').init()).addChild(
+            new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
-    
+
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Node exports').init().
-            addColumn('Export name').
-            addColumn('Timestamp', {classes: ['non-mobile-cell']}).
-            addIconArea(new RcdGoogleMaterialIconArea('file_download',
-                () => this.dowloadExports()).init().setTooltip('Archive and download selected node exports'),
-                {min: 1}).
-            addIconArea(new RcdGoogleMaterialIconArea('file_upload', () => this.uploadExports()).init().setTooltip('Upload and unarchive node exports', RcdMaterialTooltipAlignment.RIGHT), {max: 0}).
-            addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteExports()).init().setTooltip('Delete selected node exports', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
-        return new RcdMaterialLayout().init().
-            addChild(this.tableCard);
+        this.tableCard = new RcdMaterialTableCard('Node exports').init().addColumn('Export name').addColumn('Timestamp',
+            {classes: ['non-mobile-cell']}).addIconArea(new RcdGoogleMaterialIconArea('file_download',
+            () => this.dowloadExports()).init().setTooltip('Archive and download selected node exports'),
+            {min: 1}).addIconArea(
+            new RcdGoogleMaterialIconArea('file_upload', () => this.uploadExports()).init().setTooltip('Upload and unarchive node exports',
+                RcdMaterialTooltipAlignment.RIGHT), {max: 0}).addIconArea(
+            new RcdGoogleMaterialIconArea('delete', () => this.deleteExports()).init().setTooltip('Delete selected node exports',
+                RcdMaterialTooltipAlignment.RIGHT), {min: 1});
+        return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
 
     retrieveExports() {
         const infoDialog = showShortInfoDialog('Retrieving export list...');
-        return $.ajax({
-            url: config.servicesUrl + '/export-list'
-        }).done((result) => {
-            this.tableCard.deleteRows();
-            if (handleResultError(result)) {
-                result.success.sort((export1, export2) => export2.timestamp - export1.timestamp).
-                forEach((anExport) => {
-                    this.tableCard.createRow().
-                        addCell(anExport.name).
-                        addCell(toLocalDateTimeFormat(new Date(anExport.timestamp)), {classes: ['non-mobile-cell']}).
-                        setAttribute('export', anExport.name);
+        this.tableCard.deleteRows();
+        return requestJson(config.servicesUrl + '/export-list')
+            .then((result) => {
+                result.success.sort((export1, export2) => export2.timestamp - export1.timestamp).forEach((anExport) => {
+                    this.tableCard.createRow().addCell(anExport.name).addCell(toLocalDateTimeFormat(new Date(anExport.timestamp)),
+                        {classes: ['non-mobile-cell']}).setAttribute('export', anExport.name);
                 });
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     deleteExports() {
@@ -58,82 +51,69 @@ class ExportsRoute extends DtbRoute {
     doDeleteExports() {
         const infoDialog = showLongInfoDialog("Deleting exports...");
         const exportNames = this.tableCard.getSelectedRows().map((row) => row.attributes['export']);
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/export-delete',
-            data: JSON.stringify({exportNames: exportNames}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Deleting exports...',
-            doneCallback: () => displaySnackbar('Export' + (exportNames.length > 1 ? 's' : '') + ' deleted'),
-            alwaysCallback: () => this.retrieveExports()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/export-delete', {
+            data: {exportNames: exportNames}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Deleting exports...',
+                doneCallback: () => displaySnackbar('Export' + (exportNames.length > 1 ? 's' : '') + ' deleted'),
+                alwaysCallback: () => this.retrieveExports()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     dowloadExports() {
         const exportNames = this.tableCard.getSelectedRows().map((row) => row.attributes['export']);
         const infoDialog = showLongInfoDialog("Archiving exports...");
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/export-archive',
-            data: JSON.stringify({exportNames: exportNames}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Archiving exports...',
-            doneCallback: (success) => {
-                const archiveNameInput = new RcdInputElement().init().
-                setAttribute('type', 'hidden').
-                setAttribute('name', 'archiveName').
-                setAttribute('value', success);
-                const fileNameInput = new RcdInputElement().init().
-                setAttribute('type', 'hidden').
-                setAttribute('name', 'fileName').
-                setAttribute('value', (exportNames.length == 1 ? exportNames[0] : "export-download") + '.zip');
-                const downloadForm = new RcdFormElement().init().
-                setAttribute('action', config.servicesUrl + '/export-download').
-                setAttribute('method', 'post').
-                addChild(archiveNameInput).
-                addChild(fileNameInput);
-                document.body.appendChild(downloadForm.domElement);
-                downloadForm.submit();
-                document.body.removeChild(downloadForm.domElement);
-            }
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/export-archive', {
+            data: {exportNames: exportNames}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Archiving exports...',
+                doneCallback: (success) => {
+                    const archiveNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
+                        'archiveName').setAttribute('value', success);
+                    const fileNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
+                        'fileName').setAttribute('value', (exportNames.length == 1 ? exportNames[0] : "export-download") + '.zip');
+                    const downloadForm = new RcdFormElement().init().setAttribute('action', config.servicesUrl +
+                                                                                            '/export-download').setAttribute('method',
+                        'post').addChild(archiveNameInput).addChild(fileNameInput);
+                    document.body.appendChild(downloadForm.domElement);
+                    downloadForm.submit();
+                    document.body.removeChild(downloadForm.domElement);
+                }
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     uploadExports() {
-        const uploadFileInput = new RcdInputElement().init().
-            setAttribute('type', 'file').
-            setAttribute('name', 'uploadFile').
-            addChangeListener(() => this.doUploadExports());
-        this.uploadForm = new RcdFormElement().init().
-            addChild(uploadFileInput);
+        const uploadFileInput = new RcdInputElement().init().setAttribute('type', 'file').setAttribute('name',
+            'uploadFile').addChangeListener(() => this.doUploadExports());
+        this.uploadForm = new RcdFormElement().init().addChild(uploadFileInput);
         uploadFileInput.click();
     }
 
     doUploadExports() {
         const infoDialog = showLongInfoDialog("Uploading exports...");
         const formData = new FormData(this.uploadForm.domElement);
-        $.ajax({
+        requestPostJson(config.servicesUrl + '/export-upload', {
             method: 'POST',
-            url: config.servicesUrl + '/export-upload',
-            data: formData,
-            contentType: false,
-            processData: false
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Uploading exports...',
-            doneCallback: () => displaySnackbar('Export(s) uploaded'),
-            alwaysCallback: () => this.retrieveExports()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            body: formData
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Uploading exports...',
+                doneCallback: () => displaySnackbar('Export(s) uploaded'),
+                alwaysCallback: () => this.retrieveExports()
+            }))
+            .catch(handleRequestError)
+            .finally(() => {
+                infoDialog.close();
+            });
     }
 
     displayHelp() {
@@ -147,11 +127,9 @@ class ExportsRoute extends DtbRoute {
                                'You can also upload previously archived exports.<br/>' +
                                'Node exports can be generated and imported from the nodes view (Under "Repositories").';
 
-        new HelpDialog('Node Exports', [definition, viewDefinition]).
-            init().
-            addActionDefinition({iconName: 'file_download', definition: 'Zip the selected exports and download the archive'}).
-            addActionDefinition({iconName: 'file_upload', definition: 'Upload archived exports and unzip them into $XP_HOME/data/export'}).
-            addActionDefinition({iconName: 'delete', definition: 'Delete the selected node exports.'}).
-            open();
+        new HelpDialog('Node Exports', [definition, viewDefinition]).init().addActionDefinition(
+            {iconName: 'file_download', definition: 'Zip the selected exports and download the archive'}).addActionDefinition(
+            {iconName: 'file_upload', definition: 'Upload archived exports and unzip them into $XP_HOME/data/export'}).addActionDefinition(
+            {iconName: 'delete', definition: 'Delete the selected node exports.'}).open();
     }
 }

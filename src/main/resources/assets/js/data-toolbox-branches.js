@@ -10,45 +10,35 @@ class BranchesRoute extends DtbRoute {
         this.refreshBreadcrumbs();
         this.retrieveBranches();
     }
-    
+
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Branches').init().
-            addColumn('Branch name').
-            addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createBranch()).init().setTooltip('Create a branch'), {max: 0}).
-            addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteBranches()).init().setTooltip('Delete selected branches', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
-        return new RcdMaterialLayout().init().
-            addChild(this.tableCard);
+        this.tableCard = new RcdMaterialTableCard('Branches').init().addColumn('Branch name').addIconArea(
+            new RcdGoogleMaterialIconArea('add_circle', () => this.createBranch()).init().setTooltip('Create a branch'),
+            {max: 0}).addIconArea(
+            new RcdGoogleMaterialIconArea('delete', () => this.deleteBranches()).init().setTooltip('Delete selected branches',
+                RcdMaterialTooltipAlignment.RIGHT), {min: 1});
+        return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
-    
+
     retrieveBranches() {
         const infoDialog = showShortInfoDialog('Retrieving branch list...');
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/repository-get',
-            data: JSON.stringify({repositoryName: getRepoParameter()}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => {
-            this.tableCard.deleteRows();
-
-            const parentRow = this.tableCard.createRow({selectable:false}).
-                addCell('..').
-                addClass('rcd-clickable').
-                addClickListener(() => setState('repositories'));
-
-            if (handleResultError(result)) {
-                result.success.branches.sort((branch1, branch2) => branch1 - branch2).
-                forEach((branch) => {
-                    const row = this.tableCard.createRow().
-                        addCell(branch).
-                        setAttribute('branch', branch).
-                        addClass('rcd-clickable').
-                        addClickListener(() => setState('nodes',{repo: getRepoParameter() , branch: branch}));
+        this.tableCard.deleteRows();
+        this.tableCard.createRow({selectable: false})
+            .addCell('..')
+            .addClass('rcd-clickable')
+            .addClickListener(() => setState('repositories'));
+        return requestPostJson(config.servicesUrl + '/repository-get', {
+            data: {repositoryName: getRepoParameter()}
+        })
+            .then((result) => {
+                result.success.branches.sort((branch1, branch2) => branch1 - branch2).forEach((branch) => {
+                    const row = this.tableCard.createRow().addCell(branch).setAttribute('branch', branch).addClass(
+                        'rcd-clickable').addClickListener(() => setState('nodes', {repo: getRepoParameter(), branch: branch}));
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     createBranch() {
@@ -65,22 +55,20 @@ class BranchesRoute extends DtbRoute {
 
     doCreateBranch(branchName) {
         const infoDialog = showLongInfoDialog('Creating branch...');
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/branch-create',
-            data: JSON.stringify({
+        requestPostJson(config.servicesUrl + '/branch-create', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchName: branchName || ('branch-' + toLocalDateTimeFormat(new Date(), '-', '-')).toLowerCase()
-            }),
-            contentType: 'application/json; charset=utf-8'
+            }
         })
-            .done((result) => handleResultError(result) &&  displaySnackbar('Branch created'))
-            .fail(handleAjaxError).always(() => {
-            infoDialog.close();
-            this.retrieveBranches();
-        });
+            .then((result) => displaySnackbar('Branch created'))
+            .catch(handleRequestError)
+            .finally(() => {
+                infoDialog.close();
+                this.retrieveBranches();
+            });
     }
-    
+
     deleteBranches() {
         showConfirmationDialog('Delete selected branches?', 'DELETE', () => this.doDeleteBranches());
     }
@@ -88,27 +76,24 @@ class BranchesRoute extends DtbRoute {
     doDeleteBranches() {
         const infoDialog = showLongInfoDialog('Deleting branches...');
         const branchNames = this.tableCard.getSelectedRows().map((row) => row.attributes['branch']);
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/branch-delete',
-            data: JSON.stringify({
+        requestPostJson(config.servicesUrl + '/branch-delete', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchNames: branchNames
-            }),
-            contentType: 'application/json; charset=utf-8'
+            }
         })
-            .done((result) => handleResultError(result) &&  displaySnackbar('Branch' + (branchNames.length > 1 ?'es' : '') + ' deleted'))
-            .fail(handleAjaxError).always(() => {
-            infoDialog.close();
-            this.retrieveBranches();
-        });
+            .then(displaySnackbar('Branch' + (branchNames.length > 1 ? 'es' : '') + ' deleted'))
+            .catch(handleRequestError)
+            .finally(() => {
+                infoDialog.close();
+                this.retrieveBranches();
+            });
     }
 
     refreshBreadcrumbs() {
-        this.breadcrumbsLayout.
-            setBreadcrumbs([new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''),
-                new RcdMaterialBreadcrumb('Data Tree').init().setStateRef('repositories'),
-                new RcdMaterialBreadcrumb(getRepoParameter()).init()]);
+        this.breadcrumbsLayout.setBreadcrumbs([new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''),
+            new RcdMaterialBreadcrumb('Data Tree').init().setStateRef('repositories'),
+            new RcdMaterialBreadcrumb(getRepoParameter()).init()]);
     }
 
     displayHelp() {
@@ -121,10 +106,8 @@ class BranchesRoute extends DtbRoute {
 
         const viewDefinition = 'The view lists in a table all the branches of the current repository. Click on a row to display its root node.';
 
-        new HelpDialog('Branches', [definition, viewDefinition]).
-            init().
-            addActionDefinition({iconName: 'add_circle', definition: 'Create a branch with default settings'}).
-            addActionDefinition({iconName: 'delete', definition: 'Delete the selected branches.'}).
-            open();
+        new HelpDialog('Branches', [definition, viewDefinition]).init().addActionDefinition(
+            {iconName: 'add_circle', definition: 'Create a branch with default settings'}).addActionDefinition(
+            {iconName: 'delete', definition: 'Delete the selected branches.'}).open();
     }
 }

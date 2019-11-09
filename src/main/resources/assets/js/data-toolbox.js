@@ -26,37 +26,60 @@ function createApp() {
         .addRoute(new AboutRoute().init());
 }
 
-function handleResultError(result) {
-    if (result.error) {
-        console.log(result.error);
-        displaySnackbar(result.error);
-        return false;
-    }
-    return true;
-}
-
 function displaySnackbar(text) {
     new RcdMaterialSnackbar(text)
         .init()
         .open();
 }
 
-function handleAjaxError(jqXHR, textStatus, errorThrown) {
-    let errorMessage;
-    if (jqXHR.status) {
-        if (jqXHR.status === 200) {
-            errorMessage = 'Error: ' + textStatus;
-        } else {
-            errorMessage = 'Error ' + jqXHR.status + ': ' + jqXHR.statusText;
-        }
-    } else {
-        errorMessage = 'Connection refused';
+function requestPostJson(url, params) {
+    if (!params) {
+        params = {};
     }
-    console.log(errorMessage);
-    if (errorThrown) {
-        console.log(errorThrown);
+    params.method = 'POST';
+    if (!params.headers) {
+        params.headers = {};
     }
-    new RcdMaterialSnackbar(errorMessage).init().open();
+    params.headers['Content-Type'] = 'application/json';
+    if (params.data) {
+        params.body = JSON.stringify(params.data);
+    }
+    return requestJson(url, params);
+}
+
+function requestJson(url, params) {
+    return request(url, params)
+        .then(response => response.json())
+        .then(handleJsonResponse);
+}
+
+function request(url, params) {
+    if (!params) {
+        params = {};
+    }
+    params.credentials = 'same-origin';
+    return fetch(url, params)
+        .then(handleFetchResponse);
+}
+
+function handleFetchResponse(response) {
+    if (!response.ok) {
+        const errorMessage = 'Error ' + response.status + ': ' + response.statusText;
+        throw errorMessage;
+    }
+    return response;
+}
+
+function handleJsonResponse(result) {
+    if (result.error) {
+        throw result.error;
+    }
+    return result;
+}
+
+function handleRequestError(error) {
+    console.log(error);
+    displaySnackbar(error);
 }
 
 function showLongInfoDialog(text) {

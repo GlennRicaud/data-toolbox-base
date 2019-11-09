@@ -25,28 +25,7 @@ class VersionsRoute extends DtbRoute {
 
     retrieveVersions() {
         const infoDialog = showShortInfoDialog('Retrieving versions...');
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/version-list',
-            data: JSON.stringify({
-                repositoryName: getRepoParameter(),
-                branchName: getBranchParameter(),
-                id: getIdParameter(),
-                start: getStartParameter(),
-                count: getCountParameter()
-            }),
-            contentType: 'application/json; charset=utf-8'
-        })
-            .done((result) => this.onVersionsRetrieval(result))
-            .fail(handleAjaxError)
-            .always(() => {
-                infoDialog.close();
-            });
-    }
-
-    onVersionsRetrieval(result) {
         this.tableCard.deleteRows();
-
         this.tableCard.createRow({selectable: false})
             .addCell('..')
             .addCell('', {classes: ['non-mobile-cell']})
@@ -59,62 +38,73 @@ class VersionsRoute extends DtbRoute {
                 branch: getBranchParameter(),
                 path: getIdParameter()
             }));
-
-
-        if (handleResultError(result)) {
-            const versions = result.success.hits;
-
-            versions.forEach(version => {
-
-                const displayNodeBlobCallback = () => this.displayBlobAsJson('Node', version.nodeBlobKey);
-                const displayIndexBlobCallback = () => this.displayBlobAsJson('Index', version.indexConfigBlobKey);
-                const displayAccessBlobCallback = () => this.displayBlobAsJson('Access', version.accessControlBlobKey);
-                const moreIconAreaItems = [
-                    {text: 'Display node blob', callback: displayNodeBlobCallback},
-                    {text: 'Display index blob', callback: displayIndexBlobCallback},
-                    {text: 'Display access blob', callback: displayAccessBlobCallback},
-                ];
-                const moreIconArea = new RcdGoogleMaterialIconArea('more_vert', (source, event) => {
-                    RcdMaterialMenuHelper.displayMenu(source, moreIconAreaItems, 200)
-                    event.stopPropagation();
-                }).init()
-                    .setTooltip('Display...');
-
-                this.tableCard.createRow()
-                    .addCell(version.versionId)
-                    .addCell(version.nodePath, {classes: ['non-mobile-cell']})
-                    .addCell(version.nodeCommitId, {classes: ['non-mobile-cell']})
-                    .addCell(version.timestamp)
-                    .addCell(moreIconArea, {icon: true});
-
-            });
-
-            const startInt = parseInt(getStartParameter());
-            const countInt = parseInt(getCountParameter());
-            const previousCallback = () => setState('versions', {
-                repo: getRepoParameter(),
-                branch: getBranchParameter(),
-                path: getPathParameter(),
+        return requestPostJson(config.servicesUrl + '/version-list', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: getBranchParameter(),
                 id: getIdParameter(),
-                start: Math.max(0, startInt - countInt),
+                start: getStartParameter(),
                 count: getCountParameter()
-            });
-            const nextCallback = () => setState('versions', {
-                repo: getRepoParameter(),
-                branch: getBranchParameter(),
-                path: getPathParameter(),
-                id: getIdParameter(),
-                start: startInt + countInt,
-                count: getCountParameter()
-            });
-            this.tableCard.setFooter({
-                start: parseInt(getStartParameter()),
-                count: versions.length,
-                total: result.success.total,
-                previousCallback: previousCallback,
-                nextCallback: nextCallback
-            });
-        }
+            }
+        })
+            .then((result) => this.onVersionsRetrieval(result))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+
+    onVersionsRetrieval(result) {
+        const versions = result.success.hits;
+
+        versions.forEach(version => {
+
+            const displayNodeBlobCallback = () => this.displayBlobAsJson('Node', version.nodeBlobKey);
+            const displayIndexBlobCallback = () => this.displayBlobAsJson('Index', version.indexConfigBlobKey);
+            const displayAccessBlobCallback = () => this.displayBlobAsJson('Access', version.accessControlBlobKey);
+            const moreIconAreaItems = [
+                {text: 'Display node blob', callback: displayNodeBlobCallback},
+                {text: 'Display index blob', callback: displayIndexBlobCallback},
+                {text: 'Display access blob', callback: displayAccessBlobCallback},
+            ];
+            const moreIconArea = new RcdGoogleMaterialIconArea('more_vert', (source, event) => {
+                RcdMaterialMenuHelper.displayMenu(source, moreIconAreaItems, 200)
+                event.stopPropagation();
+            }).init()
+                .setTooltip('Display...');
+
+            this.tableCard.createRow()
+                .addCell(version.versionId)
+                .addCell(version.nodePath, {classes: ['non-mobile-cell']})
+                .addCell(version.nodeCommitId, {classes: ['non-mobile-cell']})
+                .addCell(version.timestamp)
+                .addCell(moreIconArea, {icon: true});
+
+        });
+
+        const startInt = parseInt(getStartParameter());
+        const countInt = parseInt(getCountParameter());
+        const previousCallback = () => setState('versions', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getPathParameter(),
+            id: getIdParameter(),
+            start: Math.max(0, startInt - countInt),
+            count: getCountParameter()
+        });
+        const nextCallback = () => setState('versions', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getPathParameter(),
+            id: getIdParameter(),
+            start: startInt + countInt,
+            count: getCountParameter()
+        });
+        this.tableCard.setFooter({
+            start: parseInt(getStartParameter()),
+            count: versions.length,
+            total: result.success.total,
+            previousCallback: previousCallback,
+            nextCallback: nextCallback
+        });
     }
 
     refreshBreadcrumbs() {
@@ -126,13 +116,13 @@ class VersionsRoute extends DtbRoute {
             new RcdMaterialBreadcrumb('Data Tree').init().setStateRef('repositories'),
             new RcdMaterialBreadcrumb(repositoryName).init().setStateRef('branches', {repo: repositoryName}),
             new RcdMaterialBreadcrumb(branchName).init().setStateRef('nodes', {repo: repositoryName, branch: branchName})]);
-        
+
         const rootBreadcrumb = new RcdMaterialBreadcrumb(path === '/' ? 'root!versions' : 'root').init();
         if (path !== '/') {
             rootBreadcrumb.setStateRef('nodes', {repo: repositoryName, branch: branchName, path: '/'});
         }
         this.breadcrumbsLayout.addBreadcrumb(rootBreadcrumb);
-        
+
         if (path === '/') {
             app.setTitle('Root node versions');
         } else {
@@ -143,7 +133,8 @@ class VersionsRoute extends DtbRoute {
             pathElements.forEach((subPathElement, index, array) => {
                 currentPath += '/' + subPathElement;
                 const constCurrentPath = currentPath;
-                const currentPathBreadcrumb = new RcdMaterialBreadcrumb(index < array.length - 1 ? subPathElement : subPathElement + '!versions').init();
+                const currentPathBreadcrumb = new RcdMaterialBreadcrumb(
+                    index < array.length - 1 ? subPathElement : subPathElement + '!versions').init();
                 if (index < array.length - 1) {
                     currentPathBreadcrumb.setStateRef('nodes', {repo: repositoryName, branch: branchName, path: constCurrentPath});
                 }

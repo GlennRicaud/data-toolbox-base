@@ -6,18 +6,18 @@ class RepositoriesRoute extends DtbRoute {
             iconArea: new RcdImageIconArea(config.assetsUrl + '/icons/datatree.svg').init()
         });
     }
-    
+
     onDisplay() {
         this.retrieveRepositories();
     }
-    
+
     createBreadcrumbsLayout() {
-        return new RcdMaterialBreadcrumbsLayout().init().
-            addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).
-            addBreadcrumb(new RcdMaterialBreadcrumb('Data Tree').init()).
-            addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+        return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
+            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
+            new RcdMaterialBreadcrumb('Data Tree').init()).addChild(
+            new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
-    
+
     createLayout() {
         this.tableCard = new RcdMaterialTableCard('Repositories').init().addColumn('Repository name').addIconArea(
             new RcdGoogleMaterialIconArea('add_circle', () => this.createRepository()).setTooltip('Create a repository',
@@ -25,29 +25,23 @@ class RepositoriesRoute extends DtbRoute {
             new RcdGoogleMaterialIconArea('delete', () => this.deleteRepositories()).init().setTooltip('Delete selected repositories',
                 RcdMaterialTooltipAlignment.RIGHT),
             {min: 1});
-        return new RcdMaterialLayout().init().
-            addChild(this.tableCard);
+        return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
 
     retrieveRepositories() {
         const infoDialog = showShortInfoDialog('Retrieving repository list...');
-        return $.ajax({
-            url: config.servicesUrl + '/repository-list'
-        }).done((result) => {
-            this.tableCard.deleteRows();
-            if (handleResultError(result)) {
+        this.tableCard.deleteRows();
+        return requestJson(config.servicesUrl + '/repository-list')
+            .then((result) => {
                 result.success.sort((repository1, repository2) => repository1.name - repository2.name).forEach((repository) => {
-                    const row = this.tableCard.createRow().
-                        addCell(repository.name).
-                        setAttribute('repository', repository.name).
-                        addClass('rcd-clickable').
-                        addClickListener(() => setState('branches', {repo: repository.name}));
+                    const row = this.tableCard.createRow().addCell(repository.name).setAttribute('repository',
+                        repository.name).addClass('rcd-clickable').addClickListener(
+                        () => setState('branches', {repo: repository.name}));
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     createRepository() {
@@ -64,19 +58,17 @@ class RepositoriesRoute extends DtbRoute {
 
     doCreateRepository(repositoryName) {
         const infoDialog = showLongInfoDialog('Creating repository...');
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/repository-create',
-            data: JSON.stringify({
+        requestPostJson(config.servicesUrl + '/repository-create', {
+            data: {
                 repositoryName: repositoryName || ('repository-' + toLocalDateTimeFormat(new Date(), '-', '-')).toLowerCase()
-            }),
-            contentType: 'application/json; charset=utf-8'
+            }
         })
-            .done((result) => handleResultError(result) &&  displaySnackbar('Repository created'))
-            .fail(handleAjaxError).always(() => {
-            infoDialog.close();
-            this.retrieveRepositories();
-        });
+            .done((result) => displaySnackbar('Repository created'))
+            .catch(handleRequestError)
+            .finally(() => {
+                infoDialog.close();
+                this.retrieveRepositories();
+            });
     }
 
     deleteRepositories() {
@@ -86,17 +78,15 @@ class RepositoriesRoute extends DtbRoute {
     doDeleteRepositories() {
         const infoDialog = showLongInfoDialog("Deleting repositories...");
         const repositoryNames = this.tableCard.getSelectedRows().map((row) => row.attributes['repository']);
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/repository-delete',
-            data: JSON.stringify({repositoryNames: repositoryNames}),
-            contentType: 'application/json; charset=utf-8'
+        requestPostJson(config.servicesUrl + '/repository-delete', {
+            data: {repositoryNames: repositoryNames}
         })
-            .done((result) => handleResultError(result) &&  displaySnackbar('Repositor' + (repositoryNames.length > 1 ?'ies' : 'y') + ' deleted'))
-            .fail(handleAjaxError).always(() => {
-            infoDialog.close();
-            this.retrieveRepositories();
-        });
+            .done((result) => displaySnackbar('Repositor' + (repositoryNames.length > 1 ? 'ies' : 'y') + ' deleted'))
+            .catch(handleRequestError)
+            .finally(() => {
+                infoDialog.close();
+                this.retrieveRepositories();
+            });
     }
 
     displayHelp() {

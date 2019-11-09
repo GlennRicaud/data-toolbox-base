@@ -65,122 +65,112 @@ class NodeRoute extends DtbRoute {
 
     retrieveMeta() {
         const infoDialog = showShortInfoDialog('Retrieving system properties...');
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/meta-get',
-            data: JSON.stringify({
-                repositoryName: getRepoParameter(),
-                branchName: getBranchParameter(),
-                key: getKeyParameter()
-            }),
-            contentType: 'application/json; charset=utf-8'
-        })
-            .done((result) => this.onMetaRetrieval(result))
-            .fail(handleAjaxError)
-            .always(() => {
-                infoDialog.close();
-            });
-    }
-
-    onMetaRetrieval(result) {
         this.nodeDetails.clear();
         this.mainDisplayCard.deleteRows();
         this.actionsCard.deleteRows();
         this.displayIndexDocumentCard.deleteRows();
-        if (handleResultError(result)) {
-            const meta = result.success;
-
-            if (getIdParameter()) {
-                this.refreshBreadcrumbsFromPath(meta._path);
+        return requestPostJson(config.servicesUrl + '/meta-get', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: getBranchParameter(),
+                key: getKeyParameter()
             }
+        })
+            .then((result) => this.onMetaRetrieval(result))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
 
-            this.nodeDetails.setMeta(meta);
+    onMetaRetrieval(result) {
+        const meta = result.success;
 
-            const displaySiblingsCallback = () => setState('nodes',
-                {repo: getRepoParameter(), branch: getBranchParameter(), path: this.getParentPath(meta._path)});
-            const displayChildrenCallback = () => setState('nodes',
-                {repo: getRepoParameter(), branch: getBranchParameter(), path: meta._path});
-            const displayPropertiesCallback = () => setState('properties',
-                {repo: getRepoParameter(), branch: getBranchParameter(), path: meta._path});
-            const displayPermissionsCallback = () => setState('permissions',
-                {repo: getRepoParameter(), branch: getBranchParameter(), path: meta._path});
-            const displayJsonCallback = () => this.displayNodeAsJson(meta._id);
-            const displayVersionsCallback = () => setState('versions',
-                {repo: getRepoParameter(), branch: getBranchParameter(), id: meta._id, path: meta._path});
-
-            this.mainDisplayCard
-                .addRow('Display siblings', null,
-                    {callback: displaySiblingsCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/datatree.svg').init()})
-                .addRow('Display children', null,
-                    {callback: displayChildrenCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/datatree.svg').init()})
-                .addRow('Display properties', null,
-                    {callback: displayPropertiesCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/properties.svg').init()})
-                .addRow('Display permissions', null,
-                    {callback: displayPermissionsCallback, icon: new RcdGoogleMaterialIcon('lock').init()})
-                .addRow('Display as JSON', null,
-                    {callback: displayJsonCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/json.svg').init()})
-                .addRow('Display versions', null,
-                    {callback: displayVersionsCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/properties.svg').init()});
-
-            this.actionsCard
-                .addRow('Export node', null,
-                    {callback: () => this.exportNode(meta), icon: new RcdImageIcon(config.assetsUrl + '/icons/export-icon.svg').init()})
-                .addRow('Move/rename node', null, {
-                    callback: () => this.moveNode([{
-                        id: meta._id,
-                        path: meta._path,
-                        callback: () => setState('node', {repo: getRepoParameter(), branch: getBranchParameter(), id: meta._id})
-                    }]),
-                    icon: new RcdImageIcon(config.assetsUrl + '/icons/rename.svg').init()
-                })
-                .addRow('Delete node', null,
-                    {
-                        callback: () => this.deleteNodes({
-                            nodeKeys: [meta._id],
-                            callback: () => setState('nodes',
-                                {repo: getRepoParameter(), branch: getBranchParameter(), path: this.getParentPath(meta._path)})
-                        }),
-                        icon: new RcdGoogleMaterialIcon('delete').init()
-                    });
-
-
-            this.displayIndexDocumentCard
-                .addRow('Display Search Index Document', null, {
-                    callback: () => this.displayIndexDocument('Search', meta._id),
-                    icon: new RcdImageIcon(config.assetsUrl + '/icons/es.svg').init()
-                })
-                .addRow('Display Branch Index Document', null, {
-                    callback: () => this.displayIndexDocument('Branch', meta._id, meta._versionKey),
-                    icon: new RcdImageIcon(config.assetsUrl + '/icons/es.svg').init()
-                })
-                .addRow('Display Version Index Document', null, {
-                    callback: () => this.displayIndexDocument('Version', meta._id, meta._versionKey),
-                    icon: new RcdImageIcon(config.assetsUrl + '/icons/es.svg').init()
-                });
+        if (getIdParameter()) {
+            this.refreshBreadcrumbsFromPath(meta._path);
         }
+
+        this.nodeDetails.setMeta(meta);
+
+        const displaySiblingsCallback = () => setState('nodes',
+            {repo: getRepoParameter(), branch: getBranchParameter(), path: this.getParentPath(meta._path)});
+        const displayChildrenCallback = () => setState('nodes',
+            {repo: getRepoParameter(), branch: getBranchParameter(), path: meta._path});
+        const displayPropertiesCallback = () => setState('properties',
+            {repo: getRepoParameter(), branch: getBranchParameter(), path: meta._path});
+        const displayPermissionsCallback = () => setState('permissions',
+            {repo: getRepoParameter(), branch: getBranchParameter(), path: meta._path});
+        const displayJsonCallback = () => this.displayNodeAsJson(meta._id);
+        const displayVersionsCallback = () => setState('versions',
+            {repo: getRepoParameter(), branch: getBranchParameter(), id: meta._id, path: meta._path});
+
+        this.mainDisplayCard
+            .addRow('Display siblings', null,
+                {callback: displaySiblingsCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/datatree.svg').init()})
+            .addRow('Display children', null,
+                {callback: displayChildrenCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/datatree.svg').init()})
+            .addRow('Display properties', null,
+                {callback: displayPropertiesCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/properties.svg').init()})
+            .addRow('Display permissions', null,
+                {callback: displayPermissionsCallback, icon: new RcdGoogleMaterialIcon('lock').init()})
+            .addRow('Display as JSON', null,
+                {callback: displayJsonCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/json.svg').init()})
+            .addRow('Display versions', null,
+                {callback: displayVersionsCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/properties.svg').init()});
+
+        this.actionsCard
+            .addRow('Export node', null,
+                {callback: () => this.exportNode(meta), icon: new RcdImageIcon(config.assetsUrl + '/icons/export-icon.svg').init()})
+            .addRow('Move/rename node', null, {
+                callback: () => this.moveNode([{
+                    id: meta._id,
+                    path: meta._path,
+                    callback: () => setState('node', {repo: getRepoParameter(), branch: getBranchParameter(), id: meta._id})
+                }]),
+                icon: new RcdImageIcon(config.assetsUrl + '/icons/rename.svg').init()
+            })
+            .addRow('Delete node', null,
+                {
+                    callback: () => this.deleteNodes({
+                        nodeKeys: [meta._id],
+                        callback: () => setState('nodes',
+                            {repo: getRepoParameter(), branch: getBranchParameter(), path: this.getParentPath(meta._path)})
+                    }),
+                    icon: new RcdGoogleMaterialIcon('delete').init()
+                });
+
+
+        this.displayIndexDocumentCard
+            .addRow('Display Search Index Document', null, {
+                callback: () => this.displayIndexDocument('Search', meta._id),
+                icon: new RcdImageIcon(config.assetsUrl + '/icons/es.svg').init()
+            })
+            .addRow('Display Branch Index Document', null, {
+                callback: () => this.displayIndexDocument('Branch', meta._id, meta._versionKey),
+                icon: new RcdImageIcon(config.assetsUrl + '/icons/es.svg').init()
+            })
+            .addRow('Display Version Index Document', null, {
+                callback: () => this.displayIndexDocument('Version', meta._id, meta._versionKey),
+                icon: new RcdImageIcon(config.assetsUrl + '/icons/es.svg').init()
+            });
+
     }
 
     displayIndexDocument(type, id, versionKey) {
         const infoDialog = showShortInfoDialog("Retrieving index document...");
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/document-get',
-            data: JSON.stringify({
+        return requestPostJson(config.servicesUrl + '/document-get', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 type: type.toLowerCase(),
                 id: id,
                 versionKey: versionKey
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => {
-            if (handleResultError(result)) {
+            }
+        })
+            .then((result) => {
                 const formattedJson = this.formatJson(result.success, '');
                 showDetailsDialog(type + ' Index Document [' + id + ']', formattedJson).addClass('node-details-dialog');
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     exportNode(meta) {
@@ -220,7 +210,7 @@ class NodeRoute extends DtbRoute {
         const repositoryName = getRepoParameter();
         const branchName = getBranchParameter();
         const fullId = repositoryName + ':' + branchName + ':' + path;
-        
+
         this.breadcrumbsLayout.setBreadcrumbs([new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''),
             new RcdMaterialBreadcrumb('Data Tree').init().setStateRef('repositories'),
             new RcdMaterialBreadcrumb(repositoryName).init().setStateRef('branches', {repo: repositoryName}),
@@ -238,7 +228,8 @@ class NodeRoute extends DtbRoute {
             pathElements.forEach((subPathElement, index, array) => {
                 currentPath += '/' + subPathElement;
                 const constCurrentPath = currentPath;
-                const currentPathBreadcrumb = new RcdMaterialBreadcrumb(index < array.length - 1 ? subPathElement : subPathElement + '!info').init();
+                const currentPathBreadcrumb = new RcdMaterialBreadcrumb(
+                    index < array.length - 1 ? subPathElement : subPathElement + '!info').init();
                 if (index < array.length - 1) {
                     currentPathBreadcrumb.setStateRef('nodes', {repo: repositoryName, branch: branchName, path: constCurrentPath});
                 }

@@ -10,44 +10,38 @@ class SnapshotsRoute extends DtbRoute {
     onDisplay() {
         this.retrieveSnapshots();
     }
-    
+
     createBreadcrumbsLayout() {
-        return new RcdMaterialBreadcrumbsLayout().init().
-            addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).
-            addBreadcrumb(new RcdMaterialBreadcrumb('Snapshots').init()).
-            addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+        return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
+            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
+            new RcdMaterialBreadcrumb('Snapshots').init()).addChild(
+            new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
-    
+
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Snapshots').init().
-            addColumn('Snapshot name').
-            addColumn('Timestamp', {classes: ['non-mobile-cell']}).
-            addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createSnapshot()).init().setTooltip('Create a snapshot'), {max: 0}).
-            addIconArea(new RcdGoogleMaterialIconArea('restore', () => this.restoreSnapshot()).init().setTooltip('Restore selected snapshot'),
-                {min: 1, max: 1}).
-            addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteSnapshots()).init().setTooltip('Delete selected snapshots', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
-        return new RcdMaterialLayout().init().
-            addChild(this.tableCard);
+        this.tableCard = new RcdMaterialTableCard('Snapshots').init().addColumn('Snapshot name').addColumn('Timestamp',
+            {classes: ['non-mobile-cell']}).addIconArea(
+            new RcdGoogleMaterialIconArea('add_circle', () => this.createSnapshot()).init().setTooltip('Create a snapshot'),
+            {max: 0}).addIconArea(
+            new RcdGoogleMaterialIconArea('restore', () => this.restoreSnapshot()).init().setTooltip('Restore selected snapshot'),
+            {min: 1, max: 1}).addIconArea(
+            new RcdGoogleMaterialIconArea('delete', () => this.deleteSnapshots()).init().setTooltip('Delete selected snapshots',
+                RcdMaterialTooltipAlignment.RIGHT), {min: 1});
+        return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
 
     retrieveSnapshots() {
         const infoDialog = showShortInfoDialog('Retrieving snapshot list...');
-        return $.ajax({
-            url: config.servicesUrl + '/snapshot-list'
-        }).done((result) => {
-            this.tableCard.deleteRows();
-            if (handleResultError(result)) {
-                result.success.sort((snapshot1, snapshot2) => snapshot2.timestamp - snapshot1.timestamp).
-                forEach((snapshot) => {
-                    this.tableCard.createRow().
-                        addCell(snapshot.name).
-                        addCell(toLocalDateTimeFormat(new Date(snapshot.timestamp)), {classes: ['non-mobile-cell']}).
-                        setAttribute('snapshot', snapshot.name);
+        this.tableCard.deleteRows();
+        return requestJson(config.servicesUrl + '/snapshot-list')
+            .then((result) => {
+                result.success.sort((snapshot1, snapshot2) => snapshot2.timestamp - snapshot1.timestamp).forEach((snapshot) => {
+                    this.tableCard.createRow().addCell(snapshot.name).addCell(toLocalDateTimeFormat(new Date(snapshot.timestamp)),
+                        {classes: ['non-mobile-cell']}).setAttribute('snapshot', snapshot.name);
                 });
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     createSnapshot() {
@@ -64,21 +58,19 @@ class SnapshotsRoute extends DtbRoute {
 
     doCreateSnapshot(snapshotName) {
         const infoDialog = showLongInfoDialog('Creating snapshot...');
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/snapshot-create',
-            data: JSON.stringify({
+        requestPostJson(config.servicesUrl + '/snapshot-create', {
+            data: {
                 snapshotName: snapshotName || ('snapshot-' + toLocalDateTimeFormat(new Date(), '-', '-'))
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Creating snapshot...',
-            doneCallback: () => displaySnackbar('Snapshot created'),
-            alwaysCallback: () => this.retrieveSnapshots()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Creating snapshot...',
+                doneCallback: () => displaySnackbar('Snapshot created'),
+                alwaysCallback: () => this.retrieveSnapshots()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     deleteSnapshots() {
@@ -88,32 +80,29 @@ class SnapshotsRoute extends DtbRoute {
     doDeleteSnapshots() {
         const infoDialog = showLongInfoDialog("Deleting snapshots...");
         const snapshotNames = this.tableCard.getSelectedRows().map((row) => row.attributes['snapshot']);
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/snapshot-delete',
-            data: JSON.stringify({snapshotNames: snapshotNames}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Deleting snapshots...',
-            doneCallback: () => displaySnackbar('Snapshot' + (snapshotNames.length > 1 ? 's' : '') + ' deleted'),
-            alwaysCallback: () => this.retrieveSnapshots()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/snapshot-delete', {
+            data: {snapshotNames: snapshotNames}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Deleting snapshots...',
+                doneCallback: () => displaySnackbar('Snapshot' + (snapshotNames.length > 1 ? 's' : '') + ' deleted'),
+                alwaysCallback: () => this.retrieveSnapshots()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     restoreSnapshot() {
         const infoDialog = showLongInfoDialog("Restoring snapshot...");
         const snapshotName = this.tableCard.getSelectedRows().map((row) => row.attributes['snapshot'])[0];
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/snapshot-restore',
-            data: JSON.stringify({snapshotName: snapshotName}),
-            contentType: 'application/json; charset=utf-8'
-        }).done(handleResultError).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/snapshot-restore', {
+            data: {snapshotName: snapshotName}
+        })
+            .then(() => {
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     displayHelp() {
@@ -125,12 +114,10 @@ class SnapshotsRoute extends DtbRoute {
         const viewDefinition = 'The view lists in a table all the snapshots. ' +
                                'You can generate a new snapshot, restore the indexes to a previous state or delete existing snapshots.';
 
-        new HelpDialog('Snaphots', [definition, viewDefinition]).
-            init().
-            addActionDefinition({iconName: 'add_circle', definition: 'Generate a snapshot of the indexes'}).
-            addActionDefinition({iconName: 'restore', definition: 'Restore the indexes to the selected snapshot'}).
-            addActionDefinition({iconName: 'delete', definition: 'Delete the selected snapshots.'}).
-            open();
+        new HelpDialog('Snaphots', [definition, viewDefinition]).init().addActionDefinition(
+            {iconName: 'add_circle', definition: 'Generate a snapshot of the indexes'}).addActionDefinition(
+            {iconName: 'restore', definition: 'Restore the indexes to the selected snapshot'}).addActionDefinition(
+            {iconName: 'delete', definition: 'Delete the selected snapshots.'}).open();
     }
 
 }

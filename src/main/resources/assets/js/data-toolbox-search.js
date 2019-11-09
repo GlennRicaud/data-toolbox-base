@@ -145,56 +145,40 @@ class SearchRoute extends DtbRoute {
 
     retrieveRepositories() {
         const infoDialog = showShortInfoDialog('Retrieving repositories...');
-        return $.ajax({
-            method: 'GET',
-            url: config.servicesUrl + '/repository-list',
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => this.onRepositoriesRetrieval(result)).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
-    }
-
-    onRepositoriesRetrieval(result) {
         this.resultCard.clear();
-        if (handleResultError(result)) {
-            this.paramsCard.onDisplay(result.success);
-        } else {
-            this.paramsCard.onDisplay([]);
-        }
+        return requestJson(config.servicesUrl + '/repository-list')
+            .then((result) => this.paramsCard.onDisplay(result.success))
+            .catch((error) => handleRequestError(error) && this.paramsCard.onDisplay([]))
+            .finally(() => infoDialog.close());
     }
 
     onSearchAction(params) {
         const infoDialog = showShortInfoDialog('Querying nodes...');
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/node-query',
-            data: JSON.stringify(params),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => this.onNodesRetrieval(result)).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        this.resultCard.clear();
+        return requestPostJson(config.servicesUrl + '/node-query', {
+            data: params
+        })
+            .then((result) => this.onNodesRetrieval(result))
+            .catch((error) => handleRequestError(error) && this.resultCard.addRow('Search failure'))
+            .finally(() => {
+                this.layout.addChild(this.resultCard);
+                infoDialog.close();
+            });
     }
 
     onNodesRetrieval(result) {
-        this.resultCard.clear();
-        if (handleResultError(result)) {
-            if (result.success.count === 0) {
-                this.resultCard.addRow('No node found');
-            } else {
-                result.success.hits.forEach(node => {
-                    const primary = node._name;
-                    const secondary = node.repositoryName + ':' + node.branchName + ':' + node._path;
-                    this.resultCard.addRow(primary, secondary, {
-                        callback: () => setState('node', {repo: node.repositoryName, branch: node.branchName, id: node._id})
-                    });
-                });
-            }
-            this.resultCard.addChild(this.createResultCardFooter(result));
-
+        if (result.success.count === 0) {
+            this.resultCard.addRow('No node found');
         } else {
-            this.resultCard.addRow('Search failure');
+            result.success.hits.forEach(node => {
+                const primary = node._name;
+                const secondary = node.repositoryName + ':' + node.branchName + ':' + node._path;
+                this.resultCard.addRow(primary, secondary, {
+                    callback: () => setState('node', {repo: node.repositoryName, branch: node.branchName, id: node._id})
+                });
+            });
         }
-        this.layout.addChild(this.resultCard);
+        this.resultCard.addChild(this.createResultCardFooter(result));
     }
 
     createResultCardFooter(result) {

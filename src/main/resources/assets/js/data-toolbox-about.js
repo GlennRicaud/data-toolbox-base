@@ -25,11 +25,9 @@ class AboutRoute extends DtbRoute {
 
     retrieveAboutInformation() {
         const infoDialog = showShortInfoDialog('Retrieving information...');
-        return $.ajax({
-            url: config.servicesUrl + '/about'
-        }).done((result) => {
-            this.listCard.deleteRows();
-            if (handleResultError(result)) {
+        this.listCard.deleteRows();
+        return requestJson(config.servicesUrl + '/about')
+            .then((result) => {
                 const displayMarketCallback = () =>
                     window.open('https://market.enonic.com/vendors/glenn-ricaud/systems.rcd.enonic.datatoolbox', '_blank');
                 const githubRepoCallback = () => window.open('https://github.com/GlennRicaud/data-toolbox-app')
@@ -45,10 +43,10 @@ class AboutRoute extends DtbRoute {
                         {callback: githubRepoCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/github.svg').init()})
                     .addRow('Report an issue ', null,
                         {callback: reportIssueCallback, icon: new RcdImageIcon(config.assetsUrl + '/icons/github.svg').init()});
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     displayHelp() {

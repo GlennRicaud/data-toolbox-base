@@ -19,7 +19,7 @@ exports.post = function (req) {
 };
 
 function doQuery(repositoryName, branchName, query, start, count, sort) {
-    const repoConnection;
+    let repoConnection;
     if (repositoryName && branchName) {
         repoConnection = nodeLib.connect({
             repoId: repositoryName,

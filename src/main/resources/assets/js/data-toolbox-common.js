@@ -333,45 +333,37 @@ class DtbRoute extends RcdMaterialRoute {
 
     displayNodeAsJson(nodeKey) {
         const infoDialog = showShortInfoDialog("Retrieving node info...");
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/node-get',
-            data: JSON.stringify({
+        return requestPostJson(config.servicesUrl + '/node-get', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 key: nodeKey
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => {
-            if (handleResultError(result)) {
+            }
+        })
+            .then((result) => {
                 const formattedJson = this.formatJson(result.success, '');
                 showDetailsDialog('Node [' + nodeKey + ']', formattedJson).addClass('node-details-dialog');
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     displayBlobAsJson(type, blobKey) {
         const infoDialog = showShortInfoDialog("Retrieving blob...");
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/blob-get',
-            data: JSON.stringify({
+        return requestPostJson(config.servicesUrl + '/blob-get', {
+            data: {
                 repositoryName: getRepoParameter(),
                 type: type.toLowerCase(),
                 blobKey: blobKey
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => {
-            if (handleResultError(result)) {
+            }
+        })
+            .then((result) => {
                 const formattedJson = this.formatJson(result.success, '');
                 showDetailsDialog(blobKey ? 'Blob [' + blobKey + ']' : type + ' Blob [' + versionKey + ']', formattedJson)
                     .addClass('node-details-dialog');
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     formatJson(value, tab) {
@@ -410,24 +402,22 @@ class DtbRoute extends RcdMaterialRoute {
 
     doExportNode(nodePath, exportName) {
         const infoDialog = showLongInfoDialog("Exporting nodes...");
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/node-export',
-            data: JSON.stringify({
+        return requestPostJson(config.servicesUrl + '/node-export', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 nodePath: nodePath,
                 exportName: exportName
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Exporting nodes...',
-            doneCallback: (success) => new ExportResultDialog(success).init().open(),
-            alwaysCallback: () => setState('exports')
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Exporting nodes...',
+                doneCallback: (success) => new ExportResultDialog(success).init().open(),
+                alwaysCallback: () => setState('exports')
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     deleteNodes(params) {
@@ -437,23 +427,21 @@ class DtbRoute extends RcdMaterialRoute {
 
     doDeleteNodes(params) {
         const infoDialog = showLongInfoDialog("Deleting nodes...");
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/node-delete',
-            data: JSON.stringify({
+        requestPostJson(config.servicesUrl + '/node-delete', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 keys: params.nodeKeys
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Deleting nodes...',
-            doneCallback: (success) => displaySnackbar(success + ' node' + (success > 1 ? 's' : '') + ' deleted'),
-            alwaysCallback: params.callback ? params.callback : () => RcdHistoryRouter.refresh()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            },
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Deleting nodes...',
+                doneCallback: (success) => displaySnackbar(success + ' node' + (success > 1 ? 's' : '') + ' deleted'),
+                alwaysCallback: params.callback ? params.callback : () => RcdHistoryRouter.refresh()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     moveNode(sources) {
@@ -508,94 +496,86 @@ class DtbRoute extends RcdMaterialRoute {
 
     doMoveNode(sources, newNodePath) {
         const infoDialog = showLongInfoDialog("Moving nodes...");
-        return $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/node-move',
-            data: JSON.stringify({
+        return requestPostJson(config.servicesUrl + '/node-move', {
+            data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 sources: sources.map((source) => source.id),
                 target: newNodePath
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Moving nodes...',
-            doneCallback: (success) => displaySnackbar('Node(s) moved'),
-            alwaysCallback: sources[0].callback ? sources[0].callback() : () => RcdHistoryRouter.refresh()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Moving nodes...',
+                doneCallback: (success) => displaySnackbar('Node(s) moved'),
+                alwaysCallback: sources[0].callback ? sources[0].callback() : () => RcdHistoryRouter.refresh()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 }
 
 function handleTaskCreation(result, params) {
-    if (handleResultError(result)) {
-        const infoDialog = showLongInfoDialog(params.message).addClass('dt-progress-info-dialog');
-        let progressIndicator;
-        retrieveTask({
-            taskId: params.taskId,
-            doneCallback: (task) => {
-                if (task) {
-                    let result;
-                    try {
-                        result = JSON.parse(task.progress.info);
-                    } catch (e) {
-                        result = {error: "Error while parsing task result: " + e.message};
-                    }
-                    if (handleResultError(result)) {
-                        if (params.doneCallback) {
-                            params.doneCallback(result.success);
-                        }
-                    }
+    const infoDialog = showLongInfoDialog(params.message).addClass('dt-progress-info-dialog');
+    let progressIndicator;
+    retrieveTask({
+        taskId: params.taskId,
+        doneCallback: (task) => {
+            if (task) {
+                let result;
+                try {
+                    result = JSON.parse(task.progress.info);
+                } catch (e) {
+                    result = {error: "Error while parsing task result: " + e.message};
                 }
-            },
-            progressCallback: (task) => {
-                infoDialog.setInfoText(task.progress.info);
-                if (!progressIndicator && task.progress.total > 0) {
-                    progressIndicator = new RcdLinearProgressIndicator({width: 240, height: 8}).init();
-                    infoDialog.addItem(progressIndicator);
-                }
-                if (progressIndicator) {
-                    progressIndicator.show(task.progress.total !== 0);
-                    progressIndicator.setProgress(task.progress.current / task.progress.total);
-                }
-            },
-            alwaysCallback: () => {
-                infoDialog.close();
-                if (params.alwaysCallback) {
-                    params.alwaysCallback();
+                if (params.doneCallback) {
+                    params.doneCallback(result.success);
                 }
             }
-        });
-    }
+        },
+        progressCallback: (task) => {
+            infoDialog.setInfoText(task.progress.info);
+            if (!progressIndicator && task.progress.total > 0) {
+                progressIndicator = new RcdLinearProgressIndicator({width: 240, height: 8}).init();
+                infoDialog.addItem(progressIndicator);
+            }
+            if (progressIndicator) {
+                progressIndicator.show(task.progress.total !== 0);
+                progressIndicator.setProgress(task.progress.current / task.progress.total);
+            }
+        },
+        alwaysCallback: () => {
+            infoDialog.close();
+            if (params.alwaysCallback) {
+                params.alwaysCallback();
+            }
+        }
+    });
 }
 
 function retrieveTask(params) {
     const intervalId = setInterval(() => {
-        $.ajax({
-            method: 'GET',
-            url: config.adminRestUrl + '/tasks/' + params.taskId,
-            contentType: 'application/json; charset=utf-8'
-        }).done((task) => {
-            if (!task || task.state === 'FINISHED') {
-                clearInterval(intervalId);
-                params.doneCallback(task);
-                params.alwaysCallback();
-            } else if (!task || task.state === 'RUNNING') {
+        requestJson(config.adminRestUrl + '/tasks/' + params.taskId)
+            .then((task) => {
+                if (!task || task.state === 'FINISHED') {
+                    clearInterval(intervalId);
+                    params.doneCallback(task);
+                    params.alwaysCallback();
+                } else if (!task || task.state === 'RUNNING') {
 
-                if (params.progressCallback) {
-                    params.progressCallback(task);
+                    if (params.progressCallback) {
+                        params.progressCallback(task);
+                    }
+                } else {
+                    clearInterval(intervalId);
+                    params.alwaysCallback();
                 }
-            } else {
+            })
+            .catch((error) => {
                 clearInterval(intervalId);
+                handleRequestError(error);
                 params.alwaysCallback();
-            }
-        }).fail((jqXHR, textStatus, errorThrown) => {
-            clearInterval(intervalId);
-            handleAjaxError(jqXHR, textStatus, errorThrown);
-            params.alwaysCallback();
-        });
+            });
     }, 1000);
 }
 

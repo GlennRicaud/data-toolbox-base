@@ -103,18 +103,22 @@ class DumpsRoute extends DtbRoute {
             .addIconArea(new RcdGoogleMaterialIconArea('update', () => this.upgradeDump())
                     .init()
                     .setTooltip('Upgrade selected system dump'),
-                {min: 1, max: 1, predicate: () => {
+                {
+                    min: 1, max: 1, predicate: () => {
                     const dumpType = this.tableCard.getSelectedRows().map((row) => row.attributes['type'])[0];
                     const canLoad = this.tableCard.getSelectedRows().map((row) => row.attributes['canLoad'])[0];
                     return 'versioned' === dumpType && !canLoad;
-                }})
+                }
+                })
             .addIconArea(new RcdImageIconArea(config.assetsUrl + '/icons/load.svg', () => this.loadDump())
                     .init()
                     .setTooltip('Load selected system dump'),
-                {min: 1, max: 1, predicate: () => {
+                {
+                    min: 1, max: 1, predicate: () => {
                     const canLoad = this.tableCard.getSelectedRows().map((row) => row.attributes['canLoad'])[0];
                     return canLoad;
-                }})
+                }
+                })
             .addIconArea(new RcdGoogleMaterialIconArea('file_download', () => this.downloadDumps())
                 .init()
                 .setTooltip('Archive and download selected system dumps'), {min: 1})
@@ -130,25 +134,22 @@ class DumpsRoute extends DtbRoute {
 
     retrieveDumps() {
         const infoDialog = showShortInfoDialog('Retrieving dump list...');
-        return $.ajax({
-            url: config.servicesUrl + '/dump-list'
-        }).done((result) => {
-            this.tableCard.deleteRows();
-            if (handleResultError(result)) {
+        this.tableCard.deleteRows();
+        return requestJson(config.servicesUrl + '/dump-list')
+            .then((result) => {
                 result.success.sort((dump1, dump2) => dump2.timestamp - dump1.timestamp)
                     .forEach((dump) => {
                         this.tableCard.createRow()
                             .addCell(dump.name)
                             .addCell(toLocalDateTimeFormat(new Date(dump.timestamp)), {classes: ['non-mobile-cell']})
-                            .addCell(dump.modelVersion+ '<br/>' + dump.xpVersion, {classes: ['non-mobile-cell', 'version-cell']})
+                            .addCell(dump.modelVersion + '<br/>' + dump.xpVersion, {classes: ['non-mobile-cell', 'version-cell']})
                             .setAttribute('dump', dump.name)
                             .setAttribute('type', dump.type)
                             .setAttribute('canLoad', dump.canLoad);
                     });
-            }
-        }).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     createDump() {
@@ -161,24 +162,22 @@ class DumpsRoute extends DtbRoute {
 
     doCreateDump(params) {
         const infoDialog = showLongInfoDialog('Creating dump...');
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/dump-create',
-            data: JSON.stringify({
+        requestPostJson(config.servicesUrl + '/dump-create', {
+            data: {
                 dumpName: params.name || ('dump-' + toLocalDateTimeFormat(new Date(), '-', '-')),
                 includeVersions: params.includeVersions,
                 maxVersions: params.maxVersions,
                 maxVersionsAge: params.maxVersionsAge,
-            }),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Creating dump...',
-            doneCallback: (success) => new DumpResultDialog(success).init().open(),
-            alwaysCallback: () => this.retrieveDumps()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Creating dump...',
+                doneCallback: (success) => new DumpResultDialog(success).init().open(),
+                alwaysCallback: () => this.retrieveDumps()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     deleteDumps() {
@@ -188,19 +187,17 @@ class DumpsRoute extends DtbRoute {
     doDeleteDumps() {
         const infoDialog = showLongInfoDialog("Deleting dumps...");
         const dumpNames = this.tableCard.getSelectedRows().map((row) => row.attributes['dump']);
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/dump-delete',
-            data: JSON.stringify({dumpNames: dumpNames}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Deleting dumps...',
-            doneCallback: () => displaySnackbar('Dump' + (dumpNames.length > 1 ? 's' : '') + ' deleted'),
-            alwaysCallback: () => this.retrieveDumps()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/dump-delete', {
+            data: {dumpNames: dumpNames}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Deleting dumps...',
+                doneCallback: () => displaySnackbar('Dump' + (dumpNames.length > 1 ? 's' : '') + ' deleted'),
+                alwaysCallback: () => this.retrieveDumps()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     upgradeDump() {
@@ -214,19 +211,17 @@ class DumpsRoute extends DtbRoute {
 
     doUpgradeDump(dumpName) {
         const infoDialog = showLongInfoDialog("Upgrading dump...");
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/dump-upgrade',
-            data: JSON.stringify({dumpName: dumpName}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Upgrading dump...',
-            doneCallback: () => displaySnackbar('Dump upgraded'),
-            alwaysCallback: () => this.retrieveDumps()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/dump-upgrade', {
+            data: {dumpName: dumpName}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Upgrading dump...',
+                doneCallback: () => displaySnackbar('Dump upgraded'),
+                alwaysCallback: () => this.retrieveDumps()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     loadDump() {
@@ -242,51 +237,48 @@ class DumpsRoute extends DtbRoute {
 
     doLoadDump(dumpName, dumpType) {
         const infoDialog = showLongInfoDialog("Loading dump...");
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/dump-load',
-            data: JSON.stringify({dumpName: dumpName}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Loading dump...',
-            doneCallback: (success) => {
-                if (dumpType === 'export') {
-                    new LoadExportDumpDialog(success).init().open();
-                } else {
-                    new DumpResultDialog(success, true).init().open();
+        requestPostJson(config.servicesUrl + '/dump-load', {
+            data: {dumpName: dumpName}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Loading dump...',
+                doneCallback: (success) => {
+                    if (dumpType === 'export') {
+                        new LoadExportDumpDialog(success).init().open();
+                    } else {
+                        new DumpResultDialog(success, true).init().open();
+                    }
                 }
-            }
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     downloadDumps() {
         const dumpNames = this.tableCard.getSelectedRows().map((row) => row.attributes['dump']);
         const infoDialog = showLongInfoDialog("Archiving dumps...");
-        $.ajax({
-            method: 'POST',
-            url: config.servicesUrl + '/dump-archive',
-            data: JSON.stringify({dumpNames: dumpNames}),
-            contentType: 'application/json; charset=utf-8'
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Archiving dumps...',
-            doneCallback: (success) => {
-                const archiveNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
-                    'archiveName').setAttribute('value', success);
-                const fileNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
-                    'fileName').setAttribute('value', (dumpNames.length == 1 ? dumpNames[0] : "dump-download") + '.zip');
-                const downloadForm = new RcdFormElement().init().setAttribute('action', config.servicesUrl + '/dump-download').setAttribute(
-                    'method', 'post').addChild(archiveNameInput).addChild(fileNameInput);
-                document.body.appendChild(downloadForm.domElement);
-                downloadForm.submit();
-                document.body.removeChild(downloadForm.domElement);
-            }
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+        requestPostJson(config.servicesUrl + '/dump-archive', {
+            data: {dumpNames: dumpNames}
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Archiving dumps...',
+                doneCallback: (success) => {
+                    const archiveNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
+                        'archiveName').setAttribute('value', success);
+                    const fileNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
+                        'fileName').setAttribute('value', (dumpNames.length == 1 ? dumpNames[0] : "dump-download") + '.zip');
+                    const downloadForm = new RcdFormElement().init().setAttribute('action', config.servicesUrl +
+                                                                                            '/dump-download').setAttribute(
+                        'method', 'post').addChild(archiveNameInput).addChild(fileNameInput);
+                    document.body.appendChild(downloadForm.domElement);
+                    downloadForm.submit();
+                    document.body.removeChild(downloadForm.domElement);
+                }
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     uploadDumps() {
@@ -299,20 +291,18 @@ class DumpsRoute extends DtbRoute {
     doUploadDumps() {
         const infoDialog = showLongInfoDialog("Uploading dumps...");
         const formData = new FormData(this.uploadForm.domElement);
-        $.ajax({
+        requestJson(config.servicesUrl + '/dump-upload', {
             method: 'POST',
-            url: config.servicesUrl + '/dump-upload',
-            data: formData,
-            contentType: false,
-            processData: false
-        }).done((result) => handleTaskCreation(result, {
-            taskId: result.taskId,
-            message: 'Uploading dumps...',
-            doneCallback: () => displaySnackbar('Dump(s) uploaded'),
-            alwaysCallback: () => this.retrieveDumps()
-        })).fail(handleAjaxError).always(() => {
-            infoDialog.close();
-        });
+            body: formData
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Uploading dumps...',
+                doneCallback: () => displaySnackbar('Dump(s) uploaded'),
+                alwaysCallback: () => this.retrieveDumps()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     displayHelp() {
