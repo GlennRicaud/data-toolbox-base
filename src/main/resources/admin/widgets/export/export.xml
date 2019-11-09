@@ -1,0 +1,9 @@
+<widget>
+  <display-name>Data Toolbox - Exports</display-name>
+  <interfaces>
+    <interface>contentstudio.contextpanel</interface>
+  </interfaces>
+  <allow>
+    <principal>role:system.admin</principal>
+  </allow>
+</widget>
