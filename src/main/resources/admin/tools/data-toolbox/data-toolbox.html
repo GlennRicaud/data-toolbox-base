@@ -6,7 +6,9 @@
     <title>Data Toolbox</title>
     <link rel="shortcut icon" href="{{assetsUrl}}/icons/favicon.png">
     <link rel="stylesheet" type="text/css" href="{{assetsUrl}}/style/main.css"/>
-    <script src="{{assetsUrl}}/js/rcd-jsfwk.js" type="text/javascript"></script>
+    <script src="{{assetsUrl}}/js/rcd-jsfwk-core.js" type="text/javascript"></script>
+    <script src="{{assetsUrl}}/js/rcd-jsfwk-material.js" type="text/javascript"></script>
+    <script src="{{assetsUrl}}/js/data-toolbox.js" type="text/javascript"></script>
 
     <script>
         const config = {
@@ -19,22 +21,10 @@
 </head>
 
 <body class="rcd-body">
-<script src="{{assetsUrl}}/js/data-toolbox-common.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-presentation.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-dumps.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-exports.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-snapshots.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-repositories.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-branches.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-nodes.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-node.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-meta.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-properties.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-permissions.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-versions.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-search.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox-about.js" type="text/javascript"></script>
-<script src="{{assetsUrl}}/js/data-toolbox.js" type="text/javascript"></script>
+<script>
+    const app = createApp();
+    app.start(document.body);
+</script>
 </body>
 
 </html>

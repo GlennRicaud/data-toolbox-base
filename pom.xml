@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0-A2</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
@@ -14,6 +14,16 @@
       <groupId>systems.rcd.fwk.core</groupId>
       <artifactId>rcd-fwk-core</artifactId>
       <version>7.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>systems.rcd.js.fwk.core</groupId>
+      <artifactId>rcd-jsfwk-core</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>systems.rcd.js.fwk.material</groupId>
+      <artifactId>rcd-jsfwk-material</artifactId>
+      <version>4.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.enonic.xp</groupId>
@@ -57,7 +67,120 @@
     </repository>
   </repositories>
   <build>
+    <resources>
+      <!-- Do not JS files. See JS Merge below -->
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <excludes>
+          <exclude>assets/js/**</exclude>
+          <exclude>**/*.less</exclude>
+        </excludes>
+      </resource>
+    </resources>
     <plugins>
+      
+      <!-- Unpack JS and LESS files from dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>unpack-dependencies</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>systems.rcd.js.fwk.core,systems.rcd.js.fwk.material</includeGroupIds>
+              <outputDirectory>${project.basedir}/target/buffer</outputDirectory>
+              <includes>**/*.less,**/*.js</includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Copy local JS and LESS files -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>copy-local-less-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/target/buffer</outputDirectory>
+              <resources>
+                <resource>
+                  <includes>
+                    <include>**/*.less</include>
+                    <include>**/*.js</include>
+                  </includes>
+                  <directory>${project.basedir}/src/main/resources</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- JS Merge -->
+      <plugin>
+        <groupId>systems.rcd.maven</groupId>
+        <artifactId>include-maven-plugin</artifactId>
+        <version>0.1.0</version>
+        <executions>
+          <execution>
+            <id>Processing Data Toolbox JS</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>include</goal>
+            </goals>
+            <configuration>
+              <source>${project.basedir}/src/main/resources/assets/js/data-toolbox.js</source>
+              <target>${project.basedir}/target/classes/assets/js/data-toolbox.js</target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>Processing Export Widget JS</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>include</goal>
+            </goals>
+            <configuration>
+              <source>${project.basedir}/target/buffer/assets/js/export-template.js</source>
+              <target>${project.basedir}/target/classes/assets/js/export-template.js</target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- LESS compilation -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <id>lessc</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>lessc</executable>
+              <arguments>
+                <argument>${project.basedir}/target/buffer/assets/style/main.less</argument>
+                <argument>${project.basedir}/target/classes/assets/style/main.css</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

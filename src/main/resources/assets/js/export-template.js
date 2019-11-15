@@ -1,6 +1,7 @@
 (function () {
-    //@widgetWorkAround@
-    //@widgetWorkAround2@
+    include('rcd-jsfwk-core.js');
+    include('rcd-jsfwk-material.js');
+    include('data-toolbox-common.js');
     let tableCard;
     let exportWidgetContainer;
     const interval = setInterval(() => {
