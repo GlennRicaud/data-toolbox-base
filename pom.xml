@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>1.0.0-A2</version>
+  <version>1.0.0-alpha-2</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
