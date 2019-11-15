@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>1.0.0-alpha-2</version>
+  <version>1.0.0-alpha-3</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
@@ -152,7 +152,7 @@
             </goals>
             <configuration>
               <source>${project.basedir}/target/buffer/assets/js/export-template.js</source>
-              <target>${project.basedir}/target/classes/assets/js/export-template.js</target>
+              <target>${project.basedir}/target/classes/assets/js/export.js</target>
             </configuration>
           </execution>
         </executions>
