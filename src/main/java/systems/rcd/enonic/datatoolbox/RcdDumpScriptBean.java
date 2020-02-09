@@ -16,6 +16,7 @@ import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
 import systems.rcd.fwk.core.format.properties.RcdPropertiesService;
 import systems.rcd.fwk.core.io.file.RcdFileService;
 import systems.rcd.fwk.core.io.file.RcdTextFileService;
+import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
 import systems.rcd.fwk.core.script.js.RcdJavascriptService;
 
 import com.enonic.xp.branch.Branch;
@@ -145,8 +146,12 @@ public class RcdDumpScriptBean
             }
             else if ( isVersionedDump( dumpPath ) )
             {
-                final String dumpJsonContent = RcdTextFileService.readAsString( dumpPath.resolve( "dump.json" ) );
-                final JSObject dumpJson = (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent + "')" );
+                final StringBuilder dumpJsonContent = new StringBuilder();
+                RcdTextFileService.read( RcdReadTextFileParams.newBuilder().
+                    path( dumpPath.resolve( "dump.json" ) ).
+                    contentConsumer( dumpJsonContent::append ).
+                    build() );
+                final JSObject dumpJson = (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
                 xpVersion = (String) dumpJson.getMember( "xpVersion" );
                 if ( dumpJson.hasMember( "modelVersion" ) )
                 {
