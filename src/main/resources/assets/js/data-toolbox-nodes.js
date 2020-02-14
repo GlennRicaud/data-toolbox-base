@@ -82,10 +82,16 @@ class NodesRoute extends DtbRoute {
                 event.stopPropagation();
             }).init().setTooltip('Display as JSON');
 
-            const row = this.tableCard.createRow().addCell(node._name).addCell(node._id, {classes: ['non-mobile-cell']}).addCell(
-                displayNodeIconArea, {icon: true}).addCell(displayJsonIconArea, {icon: true}).setAttribute('id', node._id).setAttribute(
-                'path', node._path).setAttribute('name', node._name).addClass('rcd-clickable').addClickListener(
-                () => setState('nodes', {repo: getRepoParameter(), branch: getBranchParameter(), path: node._path}));
+            const row = this.tableCard.createRow()
+                .addCell(node._name)
+                .addCell(node._id, {classes: ['non-mobile-cell']})
+                .addCell(displayNodeIconArea, {icon: true})
+                .addCell(displayJsonIconArea, {icon: true})
+                .setAttribute('id', node._id)
+                .setAttribute('path', node._path)
+                .setAttribute('name', node._name)
+                .addClass('rcd-clickable')
+                .addClickListener(() => setState('nodes', {repo: getRepoParameter(), branch: getBranchParameter(), path: node._path}));
             row.checkbox.addClickListener((event) => event.stopPropagation());
         });
 

@@ -23,6 +23,8 @@ function createApp() {
         .addRoute(new ExportsRoute().init())
         .addRoute(new DumpsRoute().init())
         .addRoute(new SearchRoute().init())
+        .addRoute(new IamRoute().init())
+        .addRoute(new UsersRoute().init())
         .addRoute(new AboutRoute().init());
 }
 
@@ -145,6 +147,10 @@ function getIdParameter() {
 
 function getPathParameter() {
     return RcdHistoryRouter.getParameters().path;
+}
+
+function getIdProviderParameter() {
+    return RcdHistoryRouter.getParameters().idprovider;
 }
 
 function getStartParameter() {
