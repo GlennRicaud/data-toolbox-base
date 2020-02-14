@@ -21,11 +21,17 @@ class NodesRoute extends DtbRoute {
         const sortIconArea = new RcdGoogleMaterialIconArea('sort', () => this.sortNodes()).init().setTooltip('Sort nodes');
         const deleteIconArea = new RcdGoogleMaterialIconArea('delete', () => this.deleteNodes()).init().setTooltip('Delete selected nodes',
             RcdMaterialTooltipAlignment.RIGHT);
-        this.tableCard =
-            new RcdMaterialTableCard('Nodes').init().addColumn('Node name').addColumn('Node ID', {classes: ['non-mobile-cell']}).addColumn(
-                '', {icon: true}).addColumn('', {icon: true}).addIconArea(exportIconArea, {min: 1, max: 1}).addIconArea(importIconArea,
-                {max: 0}).addIconArea(moveIconArea, {min: 1}).addIconArea(filterIconArea, {max: 0}).addIconArea(sortIconArea,
-                {max: 0}).addIconArea(deleteIconArea, {min: 1});
+        this.tableCard = new RcdMaterialTableCard('Nodes').init()
+            .addColumn('Node name')
+            .addColumn('Node ID', {classes: ['non-mobile-cell']})
+            .addColumn('', {icon: true})
+            .addColumn('', {icon: true})
+            .addIconArea(exportIconArea, {min: 1, max: 1})
+            .addIconArea(importIconArea, {max: 0})
+            .addIconArea(moveIconArea, {min: 1})
+            .addIconArea(filterIconArea, {max: 0})
+            .addIconArea(sortIconArea, {max: 0})
+            .addIconArea(deleteIconArea, {min: 1});
 
         return new RcdMaterialLayout().init().addChild(this.tableCard);
     }

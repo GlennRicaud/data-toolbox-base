@@ -6,6 +6,6 @@ exports.post = function (req) {
 
     return {
         contentType: 'application/json',
-        body: bean.listUsers(idProviderKey)
+        body: bean.listGroups(idProviderKey, 0, 1024)
     }
 };
