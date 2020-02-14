@@ -25,6 +25,7 @@ function createApp() {
         .addRoute(new SearchRoute().init())
         .addRoute(new IamRoute().init())
         .addRoute(new UsersRoute().init())
+        .addRoute(new GroupsRoute().init())
         .addRoute(new AboutRoute().init());
 }
 

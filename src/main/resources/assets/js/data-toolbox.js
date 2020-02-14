@@ -14,5 +14,6 @@ include('data-toolbox-versions.js');
 include('data-toolbox-search.js');
 include('data-toolbox-iam.js');
 include('data-toolbox-users.js');
+include('data-toolbox-groups.js');
 include('data-toolbox-about.js');
 include('data-toolbox-main.js');

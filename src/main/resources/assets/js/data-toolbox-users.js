@@ -6,14 +6,16 @@ class UsersRoute extends DtbRoute {
     }
 
     onDisplay() {
+        this.leafBreadcrumb.setText(getIdProviderParameter() + ' users');
         this.retrieveUsers();
     }
 
     createBreadcrumbsLayout() {
+        this.leafBreadcrumb = new RcdMaterialBreadcrumb('Users').init();
         return new RcdMaterialBreadcrumbsLayout().init()
             .addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''))
             .addBreadcrumb(new RcdMaterialBreadcrumb('IAM').init().setStateRef('iam'))
-            .addBreadcrumb(new RcdMaterialBreadcrumb(getIdProviderParameter() + ' users').init())
+            .addBreadcrumb(this.leafBreadcrumb)
             .addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
 
@@ -127,7 +129,7 @@ class UsersRoute extends DtbRoute {
     }
 
     displayHelp() {
-        new HelpDialog('IAM', ['Identity and Access Management']).init().open();
+        new HelpDialog('Users', ['']).init().open();
     }
 
 }
