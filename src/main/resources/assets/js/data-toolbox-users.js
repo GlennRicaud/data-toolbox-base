@@ -61,7 +61,7 @@ class UsersRoute extends DtbRoute {
     onUsersRetrieval(result) {
         result.success.hits
             .forEach((user) => {
-                this.tableCard.createRow({selectable: false})
+                this.tableCard.createRow()
                     .addCell(user.name)
                     .addCell(user.displayName)
                     .addCell(user.email)
@@ -92,6 +92,12 @@ class UsersRoute extends DtbRoute {
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });
+    }
+
+    deleteUsers() {
+        const keys = this.tableCard.getSelectedRows()
+            .map((row) => row.attributes['key']);
+        return super.deletePrincipals({keys: keys, type: 'user'});
     }
 
     filterUsers() {

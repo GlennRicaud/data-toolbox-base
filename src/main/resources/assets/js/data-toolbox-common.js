@@ -513,6 +513,30 @@ class DtbRoute extends RcdMaterialRoute {
             .catch(handleRequestError)
             .finally(() => infoDialog.close());
     }
+
+    deletePrincipals(params) {
+        showConfirmationDialog(params.keys.length > 1 ? 'Delete this ' + params.type + '?' : 'Delete selected ' + params.type + 's?',
+            'DELETE',
+            () => this.doDeletePrincipals(params));
+    }
+
+    doDeletePrincipals(params) {
+        const infoDialog = showLongInfoDialog('Deleting ' + params.type + 's...');
+        requestPostJson(config.servicesUrl + '/principal-delete', {
+            data: {
+                keys: params.keys,
+                type: params.type
+            },
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Deleting ' + params.type + '...',
+                doneCallback: (success) => displaySnackbar(success + ' ' + params.type + (success > 1 ? 's' : '') + ' deleted'),
+                alwaysCallback: params.callback ? params.callback : () => RcdHistoryRouter.refresh()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
 }
 
 function handleTaskCreation(result, params) {
@@ -528,8 +552,12 @@ function handleTaskCreation(result, params) {
                 } catch (e) {
                     result = {error: "Error while parsing task result: " + e.message};
                 }
-                if (params.doneCallback) {
-                    params.doneCallback(result.success);
+                if (result.error) {
+                    displaySnackbar(result.error)
+                } else {
+                    if (params.doneCallback) {
+                        params.doneCallback(result.success);
+                    }
                 }
             }
         },
@@ -557,12 +585,11 @@ function retrieveTask(params) {
     const intervalId = setInterval(() => {
         requestJson(config.adminRestUrl + '/tasks/' + params.taskId)
             .then((task) => {
-                if (!task || task.state === 'FINISHED') {
+                if (task && task.state === 'FINISHED') {
                     clearInterval(intervalId);
                     params.doneCallback(task);
                     params.alwaysCallback();
-                } else if (!task || task.state === 'RUNNING') {
-
+                } else if (task && task.state === 'RUNNING') {
                     if (params.progressCallback) {
                         params.progressCallback(task);
                     }
