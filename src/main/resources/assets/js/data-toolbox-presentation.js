@@ -60,6 +60,12 @@ function createPresentationRoute() {
         iconFileName: 'search.svg',
         text:'Query nodes from all your repositories or a specific context.'
     }).init();
+    const iamViewSummary = new ViewSummary({
+        state: 'iam',
+        name: 'IAM',
+        iconFileName: 'group.svg',
+        text:'Identity and Access Management.'
+    }).init();
     const aboutViewSummary = new ViewSummary({
         state: 'about',
         name: 'About',
@@ -73,6 +79,7 @@ function createPresentationRoute() {
         addChild(exportsViewSummary).
         addChild(dumpsViewSummary).
         addChild(searchViewSummary).
+        addChild(iamViewSummary).
         addChild(aboutViewSummary);
 
     const layout = new RcdMaterialLayout().init().
