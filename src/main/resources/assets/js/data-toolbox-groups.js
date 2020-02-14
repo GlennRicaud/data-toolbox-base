@@ -20,10 +20,14 @@ class GroupsRoute extends DtbRoute {
     }
 
     createLayout() {
+        const deleteIconArea = new RcdGoogleMaterialIconArea('delete', () => this.deleteGroups())
+            .init()
+            .setTooltip('Delete selected groups', RcdMaterialTooltipAlignment.RIGHT);
         this.tableCard = new RcdMaterialTableCard('Groups')
             .init()
             .addColumn('Name')
-            .addColumn('Display Name');
+            .addColumn('Display Name')
+            .addIconArea(deleteIconArea, {min: 1});
         return new RcdMaterialLayout().init()
             .addChild(this.tableCard);
     }
@@ -46,7 +50,7 @@ class GroupsRoute extends DtbRoute {
     onGroupsRetrieval(result) {
         result.success.hits
             .forEach((user) => {
-                this.tableCard.createRow({selectable: false})
+                this.tableCard.createRow()
                     .addCell(user.name)
                     .addCell(user.displayName)
                     .setAttribute('key', user.key)
@@ -72,6 +76,12 @@ class GroupsRoute extends DtbRoute {
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });
+    }
+
+    deleteGroups() {
+        const keys = this.tableCard.getSelectedRows()
+            .map((row) => row.attributes['key']);
+        return super.deletePrincipals({keys: keys, type: 'group'});
     }
 
     displayHelp() {
