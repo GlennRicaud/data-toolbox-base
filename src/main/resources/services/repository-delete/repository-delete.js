@@ -1,4 +1,5 @@
 const repoLib = require('/lib/xp/repo');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const repositoryNames = JSON.parse(req.body).repositoryNames;
@@ -9,7 +10,7 @@ exports.post = function (req) {
             error: 'The repositories [com.enonic.cms.default] and [system-repo] cannot be deleted.'
         };
     } else {
-        result = runSafely(deleteRepositories, repositoryNames);
+        result = utilLib.runSafely(deleteRepositories, [repositoryNames], 'Error while deleting repositories');
     }
     return {
         contentType: 'application/json',
@@ -30,14 +31,4 @@ function deleteRepositories(repositoryNames) {
 
 function deleteRepository(repositoryName) {
     repoLib.delete(repositoryName);
-}
-
-function runSafely(runnable, parameter) {
-    try {
-        return runnable(parameter);
-    } catch (e) {
-        return {
-            error: 'Error while deleting repositories: ' + e.message
-        }
-    }
 }

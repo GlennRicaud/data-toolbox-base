@@ -1,5 +1,5 @@
 const nodeLib = require('/lib/xp/node');
-const exceptionLib = require('/lib/exception');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const body = JSON.parse(req.body);
@@ -7,7 +7,7 @@ exports.post = function (req) {
     const branchName = body.branchName;
     const key = body.key;
 
-    const result = exceptionLib.runSafely(getMeta, [repositoryName, branchName, key], 'Error while retrieving metadata');
+    const result = utilLib.runSafely(getMeta, [repositoryName, branchName, key], 'Error while retrieving metadata');
     return {
         contentType: 'application/json',
         body: result

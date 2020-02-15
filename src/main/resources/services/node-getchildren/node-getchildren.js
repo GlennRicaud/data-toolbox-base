@@ -1,4 +1,5 @@
 const nodeLib = require('/lib/xp/node');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const body = JSON.parse(req.body);
@@ -10,7 +11,8 @@ exports.post = function (req) {
     const filter = body.filter ? decodeURIComponent(body.filter) : undefined;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
-    const result = runSafely(getChildren, [repositoryName, branchName, parentPath, start, count, filter, sort]);
+    const result = utilLib.runSafely(getChildren, [repositoryName, branchName, parentPath, start, count, filter, sort],
+        'Error while getting children nodes');
     return {
         contentType: 'application/json',
         body: result
@@ -62,15 +64,5 @@ function getChildren(repositoryName, branchName, parentPath, start, count, filte
                 total: rootNode ? 1 : 0
             }
         };
-    }
-}
-
-function runSafely(runnable, parameters) {
-    try {
-        return runnable.apply(null, parameters);
-    } catch (e) {
-        return {
-            error: 'Error while getting children nodes: ' + e.message
-        }
     }
 }

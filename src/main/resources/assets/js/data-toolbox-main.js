@@ -81,7 +81,7 @@ function handleJsonResponse(result) {
 }
 
 function handleRequestError(error) {
-    console.log(error);
+    console.error(error);
     displaySnackbar(error);
 }
 

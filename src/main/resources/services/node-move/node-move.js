@@ -1,5 +1,6 @@
 const nodeLib = require('/lib/xp/node');
 const taskLib = require('/lib/xp/task');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const body = JSON.parse(req.body);
@@ -12,7 +13,7 @@ exports.post = function (req) {
         description: 'Node move',
         task: function () {
             taskLib.progress({info: 'Moving nodes...'});
-            const result = runSafely(moveNodes, [repositoryName, branchName, sources, target])
+            const result = utilLib.runSafely(moveNodes, [repositoryName, branchName, sources, target], 'Error while moving nodes')
             taskLib.progress({info: JSON.stringify(result)});
         }
     });
@@ -39,14 +40,4 @@ function moveNodes(repositoryName, branchName, sources, target) {
     return {
         success: success
     };
-}
-
-function runSafely(runnable, parameters) {
-    try {
-        return runnable.apply(null, parameters);
-    } catch (e) {
-        return {
-            error: 'Error while moving nodes: ' + e.message
-        }
-    }
 }

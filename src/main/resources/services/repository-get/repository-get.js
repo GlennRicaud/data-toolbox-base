@@ -1,9 +1,10 @@
 const repoLib = require('/lib/xp/repo');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const repositoryName = JSON.parse(req.body).repositoryName;
 
-    const result = runSafely(listRepositories, repositoryName);
+    const result = utilLib.runSafely(listRepositories, [repositoryName], 'Error while retrieving repository');
     return {
         contentType: 'application/json',
         body: result
@@ -19,14 +20,4 @@ function listRepositories(repositoryName) {
             branches: repository.branches
         }
     };
-}
-
-function runSafely(runnable, parameter) {
-    try {
-        return runnable(parameter);
-    } catch (e) {
-        return {
-            error: 'Error while listing repositories: ' + e.message
-        }
-    }
 }

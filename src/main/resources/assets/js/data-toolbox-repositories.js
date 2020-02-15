@@ -63,7 +63,7 @@ class RepositoriesRoute extends DtbRoute {
                 repositoryName: repositoryName || ('repository-' + toLocalDateTimeFormat(new Date(), '-', '-')).toLowerCase()
             }
         })
-            .done((result) => displaySnackbar('Repository created'))
+            .then((result) => displaySnackbar('Repository created'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();
@@ -81,7 +81,7 @@ class RepositoriesRoute extends DtbRoute {
         requestPostJson(config.servicesUrl + '/repository-delete', {
             data: {repositoryNames: repositoryNames}
         })
-            .done((result) => displaySnackbar('Repositor' + (repositoryNames.length > 1 ? 'ies' : 'y') + ' deleted'))
+            .then((result) => displaySnackbar('Repositor' + (repositoryNames.length > 1 ? 'ies' : 'y') + ' deleted'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();

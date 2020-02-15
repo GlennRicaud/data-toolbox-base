@@ -1,5 +1,6 @@
 const authLib = require('/lib/xp/auth');
 const taskLib = require('/lib/xp/task');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const body = JSON.parse(req.body);
@@ -14,7 +15,7 @@ exports.post = function (req) {
                 current: 0,
                 total: keys.length
             });
-            const result = runSafely(deletePrincipals, [keys, type])
+            const result = utilLib.runSafely(deletePrincipals, [keys, type], 'Error while deleting principals')
             taskLib.progress({info: JSON.stringify(result)});
         }
     });
@@ -42,14 +43,4 @@ function deletePrincipals(keys, type) {
     return {
         success: principalDeletedCount
     };
-}
-
-function runSafely(runnable, parameters) {
-    try {
-        return runnable.apply(null, parameters);
-    } catch (e) {
-        return {
-            error: 'Error while deleting principals: ' + e.message
-        }
-    }
 }

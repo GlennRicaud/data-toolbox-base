@@ -1,11 +1,12 @@
 const repoLib = require('/lib/xp/repo');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const body = JSON.parse(req.body);
     const repositoryName = body.repositoryName;
     const branchName = body.branchName;
 
-    const result = runSafely(createRepository, [repositoryName, branchName]);
+    const result = utilLib.runSafely(createRepository, [repositoryName, branchName], 'Error while creating repository');
     return {
         contentType: 'application/json',
         body: result
@@ -20,14 +21,4 @@ function createRepository(repositoryName, branchName) {
     return {
         success: true
     };
-}
-
-function runSafely(runnable, parameters) {
-    try {
-        return runnable.apply(null, parameters);
-    } catch (e) {
-        return {
-            error: 'Error while creating repository: ' + e.message
-        }
-    }
 }

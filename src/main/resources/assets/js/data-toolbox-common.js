@@ -553,7 +553,8 @@ function handleTaskCreation(result, params) {
                     result = {error: "Error while parsing task result: " + e.message};
                 }
                 if (result.error) {
-                    displaySnackbar(result.error)
+                    console.error(result.error);
+                    displaySnackbar(result.error);
                 } else {
                     if (params.doneCallback) {
                         params.doneCallback(result.success);

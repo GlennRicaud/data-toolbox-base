@@ -11,7 +11,7 @@ exports.post = function (req) {
     const count = body.count || 10;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
-    const result = runSafely(doQuery, [repositoryName, branchName, query, start, count, sort]);
+    const result = utilLib.runSafely(doQuery, [repositoryName, branchName, query, start, count, sort], 'Error while querying nodes');
     return {
         contentType: 'application/json',
         body: result
@@ -98,16 +98,4 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
             total: result.total
         }
     };
-}
-
-function runSafely(runnable, parameters) {
-    try {
-        return runnable.apply(null, parameters);
-    } catch (e) {
-        log.error(e);
-        //throw e;
-        return {
-            error: 'Error while querying nodes: ' + (e.message || e)
-        }
-    }
 }

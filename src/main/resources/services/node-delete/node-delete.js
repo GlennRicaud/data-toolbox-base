@@ -1,5 +1,6 @@
 const nodeLib = require('/lib/xp/node');
 const taskLib = require('/lib/xp/task');
+const utilLib = require('/lib/util');
 
 exports.post = function (req) {
     const body = JSON.parse(req.body);
@@ -11,7 +12,7 @@ exports.post = function (req) {
         description: 'Node deletion',
         task: function () {
             taskLib.progress({info: 'Deleting nodes...'});
-            const result = runSafely(deleteNodes, [repositoryName, branchName, keys])
+            const result = utilLib.runSafely(deleteNodes, [repositoryName, branchName, keys], 'Error while deleting nodes')
             taskLib.progress({info: JSON.stringify(result)});
         }
     });
@@ -31,14 +32,4 @@ function deleteNodes(repositoryName, branchName, keys) {
     return {
         success: repoConnection.delete(keys).length
     };
-}
-
-function runSafely(runnable, parameters) {
-    try {
-        return runnable.apply(null, parameters);
-    } catch (e) {
-        return {
-            error: 'Error while deleting nodes: ' + e.message
-        }
-    }
 }
