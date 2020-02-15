@@ -444,6 +444,14 @@ class PropertiesRoute extends DtbRoute {
 
         const startInt = parseInt(getStartParameter());
         const countInt = parseInt(getCountParameter());
+        const rowCountCallback = (rowCount) => setState('properties', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getPathParameter(),
+            property: getPropertyParameter(),
+            start: getStartParameter(),
+            count: rowCount
+        });
         const previousCallback = () => setState('properties', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
@@ -461,9 +469,11 @@ class PropertiesRoute extends DtbRoute {
             count: getCountParameter()
         });
         this.tableCard.setFooter({
+            rowCount: parseInt(getCountParameter()),
             start: parseInt(getStartParameter()),
             count: properties.length,
             total: result.success.total,
+            rowCountCallback: rowCountCallback,
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });

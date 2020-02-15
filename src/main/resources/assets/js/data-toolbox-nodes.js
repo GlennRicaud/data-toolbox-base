@@ -103,6 +103,15 @@ class NodesRoute extends DtbRoute {
 
         const startInt = parseInt(getStartParameter());
         const countInt = parseInt(getCountParameter());
+        const rowCountCallback = (rowCount) => setState('nodes', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getPathParameter(),
+            start: getStartParameter(),
+            count: rowCount,
+            filter: getFilterParameter(),
+            sort: getSortParameter()
+        });
         const previousCallback = () => setState('nodes', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
@@ -122,9 +131,11 @@ class NodesRoute extends DtbRoute {
             sort: getSortParameter()
         });
         this.tableCard.setFooter({
+            rowCount: parseInt(getCountParameter()),
             start: parseInt(getStartParameter()),
             count: result.success.hits.length,
             total: result.success.total,
+            rowCountCallback: rowCountCallback,
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });

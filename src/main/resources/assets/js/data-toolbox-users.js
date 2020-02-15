@@ -72,6 +72,13 @@ class UsersRoute extends DtbRoute {
 
         const startInt = parseInt(getStartParameter());
         const countInt = parseInt(getCountParameter());
+        const rowCountCallback = (rowCount) => setState('users', {
+            idprovider: getIdProviderParameter(),
+            start: getStartParameter(),
+            count: rowCount,
+            filter: getFilterParameter(),
+            sort: getSortParameter()
+        });
         const previousCallback = () => setState('users', {
             idprovider: getIdProviderParameter(),
             start: Math.max(0, startInt - countInt),
@@ -87,9 +94,11 @@ class UsersRoute extends DtbRoute {
             sort: getSortParameter()
         });
         this.tableCard.setFooter({
+            rowCount: parseInt(getCountParameter()),
             start: parseInt(getStartParameter()),
             count: result.success.hits.length,
             total: result.success.total,
+            rowCountCallback: rowCountCallback,
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });

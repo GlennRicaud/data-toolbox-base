@@ -60,6 +60,11 @@ class GroupsRoute extends DtbRoute {
 
         const startInt = parseInt(getStartParameter());
         const countInt = parseInt(getCountParameter());
+        const rowCountCallback = (rowCount) => setState('groups', {
+            idprovider: getIdProviderParameter(),
+            start: getStartParameter(),
+            count: rowCount
+        });
         const previousCallback = () => setState('groups', {
             idprovider: getIdProviderParameter(),
             start: Math.max(0, startInt - countInt),
@@ -71,9 +76,11 @@ class GroupsRoute extends DtbRoute {
             count: getCountParameter()
         });
         this.tableCard.setFooter({
+            rowCount: parseInt(getCountParameter()),
             start: parseInt(getStartParameter()),
             count: result.success.hits.length,
             total: result.success.total,
+            rowCountCallback: rowCountCallback(),
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });

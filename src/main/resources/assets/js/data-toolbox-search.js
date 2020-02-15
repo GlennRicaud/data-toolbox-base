@@ -184,6 +184,14 @@ class SearchRoute extends DtbRoute {
     createResultCardFooter(result) {
         const startInt = parseInt(getStartParameter());
         const countInt = parseInt(getCountParameter(20));
+        const rowCountCallback = (rowCount) => setState('search', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            query: getQueryParameter(),
+            start: getStartParameter(),
+            count: rowCount,
+            sort: getSortParameter('_score DESC')
+        });
         const previousCallback = () => setState('search', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
@@ -201,9 +209,11 @@ class SearchRoute extends DtbRoute {
             sort: getSortParameter('_score DESC')
         });
         return new RcdMaterialTableCardFooter({
+            rowCount: parseInt(getCountParameter(20)),
             start: parseInt(getStartParameter()),
             count: result.success.hits.length,
             total: result.success.total,
+            rowCountCallback: rowCountCallback,
             previousCallback: previousCallback,
             nextCallback: nextCallback
         }).init();

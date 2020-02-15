@@ -82,6 +82,14 @@ class VersionsRoute extends DtbRoute {
 
         const startInt = parseInt(getStartParameter());
         const countInt = parseInt(getCountParameter());
+        const rowCountCallback = (rowCount) => setState('versions', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getPathParameter(),
+            id: getIdParameter(),
+            start: getStartParameter(),
+            count: rowCount
+        });
         const previousCallback = () => setState('versions', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
@@ -99,9 +107,11 @@ class VersionsRoute extends DtbRoute {
             count: getCountParameter()
         });
         this.tableCard.setFooter({
+            rowCount: parseInt(getCountParameter()),
             start: parseInt(getStartParameter()),
             count: versions.length,
             total: result.success.total,
+            rowCountCallback: rowCountCallback,
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });
