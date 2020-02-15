@@ -6,7 +6,8 @@ class UsersRoute extends DtbRoute {
     }
 
     onDisplay() {
-        this.leafBreadcrumb.setText(getIdProviderParameter() + ' users');
+        app.setTitle(getIdProviderParameter() + ' users');
+        this.leafBreadcrumb.setText(getIdProviderParameter() + '!users');
         this.retrieveUsers();
     }
 
@@ -135,7 +136,23 @@ class UsersRoute extends DtbRoute {
     }
 
     displayHelp() {
-        new HelpDialog('Users', ['']).init().open();
+        const definition = 'The System ID provider has two built-in users. ' +
+                           'One is the Super User which has full administrative permissions. ' +
+                           'The other is the Anonymous User which is the principal used by any site visitor that is not logged in.';
+
+        const viewDefinition = 'The view lists in a table all the users for the current ID provider';
+        new HelpDialog('Users', [definition, viewDefinition]).init()
+            .addActionDefinition({
+                iconName: 'filter_list',
+                definition: 'Filter the users based on a query expression. Examples: "login = \'su\'", "email LIKE \'*@enonic.com\'". '
+            })
+            .addActionDefinition({
+                iconName: 'sort', definition: 'Sort the users based on an expression. ' +
+                                              'The sorting expression is composed of a property to sort on and the direction: ascending or descending.' +
+                                              'Examples: "login DESC", "email ASC"'
+            })
+            .addActionDefinition({iconName: 'delete', definition: 'Delete the selected users.'})
+            .open();
     }
 
 }

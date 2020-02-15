@@ -299,29 +299,35 @@ class NodesRoute extends DtbRoute {
                                     '<a class="rcd-material-link" href="https://market.enonic.com/vendors/runar-myklebust/repoxplorer">repoXPlorer</a>.';
 
         const viewDefinition = 'The view lists in a table all the direct children nodes of the current node (or the root node for a branch). Click on a row to display its direct children.';
-        new HelpDialog('Node Tree', [definition, structureDefinition, viewDefinition]).init().addActionDefinition({
-            iconSrc: config.assetsUrl + '/icons/export-icon.svg',
-            definition: 'Export the selected node into $XP_HOME/data/export/[export-name]. The display will switch to the Exports view.'
-        }).addActionDefinition({
-            iconSrc: config.assetsUrl + '/icons/import-icon.svg',
-            definition: 'Import previously exported nodes as children under the current node (or as root node)'
-        }).addActionDefinition({
-            iconSrc: config.assetsUrl + '/icons/rename.svg',
-            definition: 'Move or rename node(s). If the value ends in slash \'/\', it specifies the parent path where to be moved. ' +
-                        'Otherwise, it means the new desired path or name for the node (available only if one node is selected).'
-        }).addActionDefinition({
-            iconName: 'filter_list',
-            definition: 'Filter the nodes based on a query expression. ' +
-                        'Example: "_id = \'role:system.admin"\'. ' +
-                        'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/reference/query-language.html#compareexpr">Query language</a> for more information.'
-        }).addActionDefinition({
-            iconName: 'sort',
-            definition: 'Sort the nodes based on an expression. ' +
-                        'The sorting expression is composed of a node property to sort on and the direction: ascending or descending.' +
-                        'Examples: "_ts DESC", "_name ASC"'
-        }).addActionDefinition({iconName: 'delete', definition: 'Delete the selected nodes.'}).addActionDefinition({
-            iconName: 'info',
-            definition: 'Display the node view containing more details and actions about this node.'
-        }).addActionDefinition({iconSrc: config.assetsUrl + '/icons/json.svg', definition: 'Display the node as JSON.'}).open();
+        new HelpDialog('Node Tree', [definition, structureDefinition, viewDefinition]).init()
+            .addActionDefinition({
+                iconSrc: config.assetsUrl + '/icons/export-icon.svg',
+                definition: 'Export the selected node into $XP_HOME/data/export/[export-name]. The display will switch to the Exports view.'
+            })
+            .addActionDefinition({
+                iconSrc: config.assetsUrl + '/icons/import-icon.svg',
+                definition: 'Import previously exported nodes as children under the current node (or as root node)'
+            })
+            .addActionDefinition({
+                iconSrc: config.assetsUrl + '/icons/rename.svg',
+                definition: 'Move or rename node(s). If the value ends in slash \'/\', it specifies the parent path where to be moved. ' +
+                            'Otherwise, it means the new desired path or name for the node (available only if one node is selected).'
+            })
+            .addActionDefinition({
+                iconName: 'filter_list', definition: 'Filter the nodes based on a query expression. ' +
+                                                     'Example: "_id = \'role:system.admin"\'. ' +
+                                                     'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/reference/query-language.html#compareexpr">Query language</a> for more information.'
+            })
+            .addActionDefinition({
+                iconName: 'sort',
+                definition: 'Sort the nodes based on an expression. ' +
+                            'The sorting expression is composed of a node property to sort on and the direction: ascending or descending.' +
+                            'Examples: "_ts DESC", "_name ASC"'
+            })
+            .addActionDefinition({iconName: 'delete', definition: 'Delete the selected nodes.'})
+            .addActionDefinition({
+                iconName: 'info',
+                definition: 'Display the node view containing more details and actions about this node.'
+            }).addActionDefinition({iconSrc: config.assetsUrl + '/icons/json.svg', definition: 'Display the node as JSON.'}).open();
     }
 }

@@ -317,12 +317,13 @@ class DumpsRoute extends DtbRoute {
                                'You can delete, load or archive (ZIP) and download existing dumps. ' +
                                'You can also generate a new dump of your system or upload previously archived dumps.';
 
-        new HelpDialog('System Dumps', [definition, viewDefinition]).init().addActionDefinition(
-            {iconName: 'add_circle', definition: 'Generate a system dump into $XP_HOME/data/dump/[dump-name]'}).addActionDefinition(
-            {iconName: 'refresh', definition: 'Load the selected system dumps into Enonic XP'}).addActionDefinition(
-            {iconName: 'file_download', definition: 'Zip the selected dumps and download the archive'}).addActionDefinition(
-            {iconName: 'file_upload', definition: 'Upload archived dumps and unzip them into $XP_HOME/data/dump'}).addActionDefinition(
-            {iconName: 'delete', definition: 'Delete the selected system dumps.'}).open();
+        new HelpDialog('System Dumps', [definition, viewDefinition]).init()
+            .addActionDefinition({iconName: 'add_circle', definition: 'Generate a system dump into $XP_HOME/data/dump/[dump-name]'})
+            .addActionDefinition({iconName: 'refresh', definition: 'Load the selected system dumps into Enonic XP'})
+            .addActionDefinition({iconName: 'file_download', definition: 'Zip the selected dumps and download the archive'})
+            .addActionDefinition({iconName: 'file_upload', definition: 'Upload archived dumps and unzip them into $XP_HOME/data/dump'})
+            .addActionDefinition({iconName: 'delete', definition: 'Delete the selected system dumps.'})
+            .open();
     }
 
 }
