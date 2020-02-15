@@ -282,9 +282,12 @@ class DumpsRoute extends DtbRoute {
     }
 
     uploadDumps() {
-        const uploadFileInput = new RcdInputElement().init().setAttribute('type', 'file').setAttribute('name',
-            'uploadFile').addChangeListener(() => this.doUploadDumps());
-        this.uploadForm = new RcdFormElement().init().addChild(uploadFileInput);
+        const uploadFileInput = new RcdInputElement().init()
+            .setAttribute('type', 'file')
+            .setAttribute('name', 'uploadFile')
+            .addChangeListener(() => this.doUploadDumps());
+        this.uploadForm = new RcdFormElement().init()
+            .addChild(uploadFileInput);
         uploadFileInput.click();
     }
 

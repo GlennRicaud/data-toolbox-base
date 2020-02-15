@@ -91,16 +91,19 @@ class ExportsRoute extends DtbRoute {
     }
 
     uploadExports() {
-        const uploadFileInput = new RcdInputElement().init().setAttribute('type', 'file').setAttribute('name',
-            'uploadFile').addChangeListener(() => this.doUploadExports());
-        this.uploadForm = new RcdFormElement().init().addChild(uploadFileInput);
+        const uploadFileInput = new RcdInputElement().init()
+            .setAttribute('type', 'file')
+            .setAttribute('name', 'uploadFile')
+            .addChangeListener(() => this.doUploadExports());
+        this.uploadForm = new RcdFormElement().init()
+            .addChild(uploadFileInput);
         uploadFileInput.click();
     }
 
     doUploadExports() {
         const infoDialog = showLongInfoDialog("Uploading exports...");
         const formData = new FormData(this.uploadForm.domElement);
-        requestPostJson(config.servicesUrl + '/export-upload', {
+        requestJson(config.servicesUrl + '/export-upload', {
             method: 'POST',
             body: formData
         })
