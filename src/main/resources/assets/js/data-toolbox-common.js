@@ -437,7 +437,7 @@ class DtbRoute extends RcdMaterialRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Deleting nodes...',
-                doneCallback: (success) => displaySnackbar(success + ' node' + (success > 1 ? 's' : '') + ' deleted'),
+                doneCallback: (success) => displaySuccess(success + ' node' + (success > 1 ? 's' : '') + ' deleted'),
                 alwaysCallback: params.callback ? params.callback : () => RcdHistoryRouter.refresh()
             }))
             .catch(handleRequestError)
@@ -507,7 +507,7 @@ class DtbRoute extends RcdMaterialRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Moving nodes...',
-                doneCallback: (success) => displaySnackbar('Node(s) moved'),
+                doneCallback: (success) => displaySuccess('Node(s) moved'),
                 alwaysCallback: sources[0].callback ? sources[0].callback() : () => RcdHistoryRouter.refresh()
             }))
             .catch(handleRequestError)
@@ -531,7 +531,7 @@ class DtbRoute extends RcdMaterialRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Deleting ' + params.type + '...',
-                doneCallback: (success) => displaySnackbar(success + ' ' + params.type + (success > 1 ? 's' : '') + ' deleted'),
+                doneCallback: (success) => displaySuccess(success + ' ' + params.type + (success > 1 ? 's' : '') + ' deleted'),
                 alwaysCallback: params.callback ? params.callback : () => RcdHistoryRouter.refresh()
             }))
             .catch(handleRequestError)
@@ -553,8 +553,7 @@ function handleTaskCreation(result, params) {
                     result = {error: "Error while parsing task result: " + e.message};
                 }
                 if (result.error) {
-                    console.error(result.error);
-                    displaySnackbar(result.error);
+                    displayError(result.error);
                 } else {
                     if (params.doneCallback) {
                         params.doneCallback(result.success);
@@ -612,4 +611,20 @@ function encodeReservedCharacters(text) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+}
+
+function displaySuccess(text) {
+    console.info(text);
+    displaySnackbar(text);
+}
+
+function displayError(text) {
+    console.error(text);
+    displaySnackbar(text);
+}
+
+function displaySnackbar(text) {
+    new RcdMaterialSnackbar(text)
+        .init()
+        .open();
 }

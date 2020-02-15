@@ -29,12 +29,6 @@ function createApp() {
         .addRoute(new AboutRoute().init());
 }
 
-function displaySnackbar(text) {
-    new RcdMaterialSnackbar(text)
-        .init()
-        .open();
-}
-
 function requestPostJson(url, params) {
     if (!params) {
         params = {};
@@ -81,8 +75,7 @@ function handleJsonResponse(result) {
 }
 
 function handleRequestError(error) {
-    console.error(error);
-    displaySnackbar(error);
+    displayError(error);
 }
 
 function showLongInfoDialog(text) {

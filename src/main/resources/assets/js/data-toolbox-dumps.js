@@ -193,7 +193,7 @@ class DumpsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Deleting dumps...',
-                doneCallback: () => displaySnackbar('Dump' + (dumpNames.length > 1 ? 's' : '') + ' deleted'),
+                doneCallback: () => displaySuccess('Dump' + (dumpNames.length > 1 ? 's' : '') + ' deleted'),
                 alwaysCallback: () => this.retrieveDumps()
             }))
             .catch(handleRequestError)
@@ -217,7 +217,7 @@ class DumpsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Upgrading dump...',
-                doneCallback: () => displaySnackbar('Dump upgraded'),
+                doneCallback: () => displaySuccess('Dump upgraded'),
                 alwaysCallback: () => this.retrieveDumps()
             }))
             .catch(handleRequestError)
@@ -298,7 +298,7 @@ class DumpsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Uploading dumps...',
-                doneCallback: () => displaySnackbar('Dump(s) uploaded'),
+                doneCallback: () => displaySuccess('Dump(s) uploaded'),
                 alwaysCallback: () => this.retrieveDumps()
             }))
             .catch(handleRequestError)

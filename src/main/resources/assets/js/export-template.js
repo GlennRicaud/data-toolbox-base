@@ -118,7 +118,7 @@
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Deleting exports...',
-                doneCallback: () => displaySnackbar('Export' + (exportNames.length > 1 ? 's' : '') + ' deleted'),
+                doneCallback: () => displaySuccess('Export' + (exportNames.length > 1 ? 's' : '') + ' deleted'),
                 alwaysCallback: () => retrieveExports()
             }))
             .catch(handleRequestError)
@@ -171,7 +171,7 @@
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Uploading exports...',
-                doneCallback: () => displaySnackbar('Export(s) uploaded'),
+                doneCallback: () => displaySuccess('Export(s) uploaded'),
                 alwaysCallback: () => retrieveExports()
             }))
             .catch(handleRequestError)
@@ -248,8 +248,7 @@
     }
 
     function handleRequestError(error) {
-        console.error(error);
-        displaySnackbar(error);
+        displayError(error);
     }
 
     function showLongInfoDialog(text) {
@@ -274,10 +273,6 @@
 
     function showDetailsDialog(title, text, callback) {
         return new RcdMaterialDetailsDialog({title: title, text: text, callback: callback}).init().open();
-    }
-
-    function displaySnackbar(text) {
-        new RcdMaterialSnackbar(text).init().open(exportWidgetContainer);
     }
 }());
 

@@ -501,7 +501,7 @@ class PropertiesRoute extends DtbRoute {
                 type: type
             }
         })
-            .then((result) => displaySnackbar('Property updated'))
+            .then((result) => displaySuccess('Property updated'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();
@@ -529,7 +529,7 @@ class PropertiesRoute extends DtbRoute {
                 value: value
             }
         })
-            .then((result) => displaySnackbar('Property created'))
+            .then((result) => displaySuccess('Property created'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();
@@ -560,7 +560,7 @@ class PropertiesRoute extends DtbRoute {
                 properties: properties
             }
         })
-            .then((result) => displaySnackbar('Property' + (selectedRows.length > 1 ? 's' : '') + ' deleted'))
+            .then((result) => displaySuccess('Property' + (selectedRows.length > 1 ? 's' : '') + ' deleted'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();

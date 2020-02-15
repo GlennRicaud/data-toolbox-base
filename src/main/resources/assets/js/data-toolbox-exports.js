@@ -57,7 +57,7 @@ class ExportsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Deleting exports...',
-                doneCallback: () => displaySnackbar('Export' + (exportNames.length > 1 ? 's' : '') + ' deleted'),
+                doneCallback: () => displaySuccess('Export' + (exportNames.length > 1 ? 's' : '') + ' deleted'),
                 alwaysCallback: () => this.retrieveExports()
             }))
             .catch(handleRequestError)
@@ -107,7 +107,7 @@ class ExportsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Uploading exports...',
-                doneCallback: () => displaySnackbar('Export(s) uploaded'),
+                doneCallback: () => displaySuccess('Export(s) uploaded'),
                 alwaysCallback: () => this.retrieveExports()
             }))
             .catch(handleRequestError)

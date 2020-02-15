@@ -61,7 +61,7 @@ class BranchesRoute extends DtbRoute {
                 branchName: branchName || ('branch-' + toLocalDateTimeFormat(new Date(), '-', '-')).toLowerCase()
             }
         })
-            .then((result) => displaySnackbar('Branch created'))
+            .then((result) => displaySuccess('Branch created'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();
@@ -82,7 +82,7 @@ class BranchesRoute extends DtbRoute {
                 branchNames: branchNames
             }
         })
-            .then(displaySnackbar('Branch' + (branchNames.length > 1 ? 'es' : '') + ' deleted'))
+            .then(displaySuccess('Branch' + (branchNames.length > 1 ? 'es' : '') + ' deleted'))
             .catch(handleRequestError)
             .finally(() => {
                 infoDialog.close();

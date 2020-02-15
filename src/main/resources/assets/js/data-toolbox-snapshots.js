@@ -66,7 +66,7 @@ class SnapshotsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Creating snapshot...',
-                doneCallback: () => displaySnackbar('Snapshot created'),
+                doneCallback: () => displaySuccess('Snapshot created'),
                 alwaysCallback: () => this.retrieveSnapshots()
             }))
             .catch(handleRequestError)
@@ -86,7 +86,7 @@ class SnapshotsRoute extends DtbRoute {
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Deleting snapshots...',
-                doneCallback: () => displaySnackbar('Snapshot' + (snapshotNames.length > 1 ? 's' : '') + ' deleted'),
+                doneCallback: () => displaySuccess('Snapshot' + (snapshotNames.length > 1 ? 's' : '') + ' deleted'),
                 alwaysCallback: () => this.retrieveSnapshots()
             }))
             .catch(handleRequestError)
