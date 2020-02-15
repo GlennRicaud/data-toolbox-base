@@ -80,7 +80,7 @@ class GroupsRoute extends DtbRoute {
             start: parseInt(getStartParameter()),
             count: result.success.hits.length,
             total: result.success.total,
-            rowCountCallback: rowCountCallback(),
+            rowCountCallback: rowCountCallback,
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });
