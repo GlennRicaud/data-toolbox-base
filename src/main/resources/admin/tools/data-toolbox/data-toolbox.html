@@ -12,10 +12,12 @@
 
     <script>
         const config = {
-            adminRestUrl: "{{adminRestUrl}}",
-            servicesUrl: "{{servicesUrl}}",
-            assetsUrl: "{{assetsUrl}}",
-            xpVersion: "{{xpVersion}}"
+            adminRestUrl: '{{adminRestUrl}}',
+            servicesUrl: '{{servicesUrl}}',
+            assetsUrl: '{{assetsUrl}}',
+            wsUrl: '{{wsUrl}}',
+            xpVersion: '{{xpVersion}}',
+            appName: '{{appName}}'
         };
     </script>
 </head>
@@ -24,6 +26,8 @@
 <script>
     const app = createApp();
     app.start(document.body);
+
+    const taskManager = new TaskManager().init();
 </script>
 </body>
 

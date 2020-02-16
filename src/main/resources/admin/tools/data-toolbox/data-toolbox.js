@@ -8,9 +8,11 @@ exports.get = () => {
         .toString();
     const body = mustacheLib.render(view, {
         adminRestUrl: portalLib.url({path: "/admin/rest"}),
-        assetsUrl: portalLib.assetUrl({path: ""}),
         servicesUrl: portalLib.serviceUrl({service: ""}),
-        xpVersion: xpVersion
+        assetsUrl: portalLib.assetUrl({path: ""}),
+        wsUrl: portalLib.url({path: '/admin/event', type: 'absolute'}).replace(/^(http|https)/, 'ws'),
+        xpVersion: xpVersion,
+        appName : app.name
     });
 
     return {

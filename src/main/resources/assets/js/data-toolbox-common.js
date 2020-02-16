@@ -582,21 +582,13 @@ function handleTaskCreation(result, params) {
 }
 
 function retrieveTask(params) {
-    const intervalId = setInterval(() => {
+    const intervalId = (taskManager && taskManager.wsOpened) ? setInterval(() => {
+        const task = taskManager.getDTTask(params.taskId);
+        onTaskRetrieved(task, params, intervalId);
+    }, 100) : setInterval(() => {
         requestJson(config.adminRestUrl + '/tasks/' + params.taskId)
             .then((task) => {
-                if (task && task.state === 'FINISHED') {
-                    clearInterval(intervalId);
-                    params.doneCallback(task);
-                    params.alwaysCallback();
-                } else if (task && task.state === 'RUNNING') {
-                    if (params.progressCallback) {
-                        params.progressCallback(task);
-                    }
-                } else {
-                    clearInterval(intervalId);
-                    params.alwaysCallback();
-                }
+                onTaskRetrieved(task, params, intervalId);
             })
             .catch((error) => {
                 clearInterval(intervalId);
@@ -604,6 +596,21 @@ function retrieveTask(params) {
                 params.alwaysCallback();
             });
     }, 1000);
+}
+
+function onTaskRetrieved(task, params, intervalId) {
+    if (task && task.state === 'FINISHED') {
+        clearInterval(intervalId);
+        params.doneCallback(task);
+        params.alwaysCallback();
+    } else if (task && task.state === 'RUNNING') {
+        if (params.progressCallback) {
+            params.progressCallback(task);
+        }
+    } else {
+        clearInterval(intervalId);
+        params.alwaysCallback();
+    }
 }
 
 function encodeReservedCharacters(text) {
