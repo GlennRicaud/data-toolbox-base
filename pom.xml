@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>1.0.3-beta-3</version>
+  <version>1.0.3</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
@@ -23,7 +23,7 @@
     <dependency>
       <groupId>systems.rcd.js.fwk.material</groupId>
       <artifactId>rcd-jsfwk-material</artifactId>
-      <version>4.1.0-beta-1</version>
+      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.enonic.xp</groupId>
