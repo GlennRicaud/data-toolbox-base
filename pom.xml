@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>1.0.3-B2</version>
+  <version>1.0.3-beta-3</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
@@ -191,11 +191,20 @@
       </plugin>
     </plugins>
   </build>
-  <distributionManagement>
+  <!--distributionManagement>
     <repository>
       <id>bintray-rcd-systems-rcd-repo</id>
       <name>rcd-systems-rcd-repo</name>
       <url>https://api.bintray.com/maven/rcd-systems/rcd-repo/datatoolbox-base/;publish=1</url>
+    </repository>
+  </distributionManagement-->
+
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub GlennRicaud Maven Packages</name>
+      <url>https://maven.pkg.github.com/GlennRicaud/data-toolbox-base</url>
     </repository>
   </distributionManagement>
 </project>
