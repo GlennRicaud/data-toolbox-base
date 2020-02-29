@@ -27,8 +27,8 @@ class TasksRoute extends DtbRoute {
         this.tableCard = new RcdMaterialTableCard('Tasks', {selectable: false})
             .init()
             .addColumn('Name<br/>Description')
-            .addColumn('Application')
-            .addColumn('Progress');
+            .addColumn('Application', {classes: ['non-mobile-cell']})
+            .addColumn('Progress', {classes: ['state-cell']});
         return new RcdMaterialLayout().init()
             .addChild(this.tableCard);
     }
@@ -50,12 +50,13 @@ class TasksRoute extends DtbRoute {
         tasks.forEach(task => {
             const row = this.tableCard.createRow({selectable: false})
                 .addCell(task.name + '<br/>' + task.description)
-                .addCell(task.application)
+                .addCell(task.application, {classes: ['non-mobile-cell']})
                 .addCell(task.state === 'RUNNING'
                          ? task.progress.info
-                         : task.state);
+                         : task.state, {classes: ['state-cell']});
             if (task.state === 'RUNNING' && task.progress.total > 0) {
-                const progressIndicator = new RcdLinearProgressIndicator({width: 240, height: 8})
+                const cellSize = this.tableCard.table.header.row.children[3].domElement.offsetWidth;
+                const progressIndicator = new RcdLinearProgressIndicator({width: cellSize - 24, height: 8})
                     .init()
                     .setProgress(task.progress.current / task.progress.total);
                 row.children[3].addChild(progressIndicator);

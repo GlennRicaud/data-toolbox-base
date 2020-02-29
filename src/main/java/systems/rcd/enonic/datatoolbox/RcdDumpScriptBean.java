@@ -232,8 +232,9 @@ public class RcdDumpScriptBean
                     action = "Repository: " + repository + "<br/>" + "Dumping versions";
                     currentProgress = 0;
                     totalProgress = 0;
+                    reportProgress( action, currentProgress, totalProgress );
                 }
-                else if ( System.currentTimeMillis() - lastProgressReport > 200 )
+                else if ( ( System.currentTimeMillis() - lastProgressReport ) > 200 )
                 {
                     lastProgressReport = System.currentTimeMillis();
                     reportProgress( action, currentProgress, totalProgress );
@@ -294,7 +295,7 @@ public class RcdDumpScriptBean
             public void entryLoaded()
             {
                 currentProgress++;
-                if ( System.currentTimeMillis() - lastProgressReport > 200 )
+                if ( currentProgress == totalProgress || ( System.currentTimeMillis() - lastProgressReport ) > 200 )
                 {
                     lastProgressReport = System.currentTimeMillis();
                     reportProgress( action, currentProgress, totalProgress );
