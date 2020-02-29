@@ -68,15 +68,10 @@ class TasksRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const fullName = 'Tasks';
-        const definition = 'All users and groups are created and managed in ID providers. ' +
-                           'Each Enonic XP installation has a System ID provider that cannot be deleted. ' +
-                           'Additional id providers can be created as needed.';
-
-        const viewDefinition = 'The view lists in a table all the ID providers';
-        new HelpDialog('IAM', [fullName, definition, viewDefinition]).init()
-            .addActionDefinition({iconName: 'person', definition: 'Display the users for this ID provider'})
-            .addActionDefinition({iconName: 'group', definition: 'Display the groups for this ID provider'})
+        const definition = 'Tasks allow the asynchronous execution of jobs.';
+        const viewDefinition = 'The view lists in a table all the tasks and their progress';
+        new HelpDialog('Tasks', [definition, viewDefinition])
+            .init()
             .open();
     }
 
