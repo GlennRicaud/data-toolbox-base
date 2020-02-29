@@ -23,7 +23,7 @@
     <dependency>
       <groupId>systems.rcd.js.fwk.material</groupId>
       <artifactId>rcd-jsfwk-material</artifactId>
-      <version>4.1.0-B1</version>
+      <version>4.1.0-beta-1</version>
     </dependency>
     <dependency>
       <groupId>com.enonic.xp</groupId>
@@ -198,12 +198,10 @@
       <url>https://api.bintray.com/maven/rcd-systems/rcd-repo/datatoolbox-base/;publish=1</url>
     </repository>
   </distributionManagement-->
-
-
+  
   <distributionManagement>
     <repository>
       <id>github</id>
-      <name>GitHub GlennRicaud Maven Packages</name>
       <url>https://maven.pkg.github.com/GlennRicaud/data-toolbox-base</url>
     </repository>
   </distributionManagement>
