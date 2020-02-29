@@ -24,10 +24,19 @@
 
 <body class="rcd-body">
 <script>
-    const app = createApp();
-    app.start(document.body);
-
-    const taskManager = new TaskManager().init();
+    let taskManager;
+    let app;
+    new TaskManager().initPromise()
+        .then((value) => {
+            taskManager = value;
+            app = createApp();
+            app.start(document.body);
+        })
+        .catch(() => {
+            taskManager = null;
+            app = createApp();
+            app.start(document.body);
+        });
 </script>
 </body>
 

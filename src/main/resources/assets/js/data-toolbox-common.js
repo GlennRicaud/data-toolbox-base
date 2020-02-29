@@ -542,7 +542,7 @@ class DtbRoute extends RcdMaterialRoute {
 function handleTaskCreation(result, params) {
     const infoDialog = showLongInfoDialog(params.message).addClass('dt-progress-info-dialog');
     let progressIndicator;
-    retrieveTask({
+    retrieveTaskProgress({
         taskId: params.taskId,
         doneCallback: (task) => {
             if (task) {
@@ -581,14 +581,23 @@ function handleTaskCreation(result, params) {
     });
 }
 
-function retrieveTask(params) {
-    const intervalId = (taskManager && taskManager.wsOpened) ? setInterval(() => {
-        const task = taskManager.getDTTask(params.taskId);
-        onTaskRetrieved(task, params, intervalId);
+function retrieveTaskProgress(params) {
+    let attemptCounter = 0;
+    const intervalId = taskManager ? setInterval(() => {
+        const task = taskManager.getTask(params.taskId);
+        if ((task == null || task.state === 'WAITING') && attemptCounter < 9) {
+            attemptCounter++;
+        } else {
+            onTaskRetrieved(task, params, intervalId);
+        }
     }, 100) : setInterval(() => {
         requestJson(config.adminRestUrl + '/tasks/' + params.taskId)
             .then((task) => {
-                onTaskRetrieved(task, params, intervalId);
+                if ((task == null || task.state === 'WAITING') && attemptCounter < 1) {
+                    attemptCounter++;
+                } else {
+                    onTaskRetrieved(task, params, intervalId);
+                }
             })
             .catch((error) => {
                 clearInterval(intervalId);
@@ -611,6 +620,25 @@ function onTaskRetrieved(task, params, intervalId) {
         clearInterval(intervalId);
         params.alwaysCallback();
     }
+}
+
+function retrieveTasks(params) {
+    return new Promise((resolve, reject) => {
+        if (taskManager) {
+            const tasks = taskManager.getTasks(params.applicationKey);
+            resolve(tasks);
+        } else {
+            requestJson(config.adminRestUrl + '/tasks')
+                .then((result) => {
+                    const filteredTasks = result.tasks.filter(task => !params.applicationKey || params.applicationKey === task.application);
+                    resolve(filteredTasks);
+                })
+                .catch((error) => {
+                    handleRequestError(error);
+                    reject();
+                });
+        }
+    });
 }
 
 function encodeReservedCharacters(text) {

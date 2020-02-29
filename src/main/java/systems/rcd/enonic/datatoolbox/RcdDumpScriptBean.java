@@ -206,6 +206,8 @@ public class RcdDumpScriptBean
 
             private int totalProgress = 0;
 
+            private long lastProgressReport = System.currentTimeMillis();
+
             @Override
             public void totalBranches( final long total )
             {
@@ -231,7 +233,11 @@ public class RcdDumpScriptBean
                     currentProgress = 0;
                     totalProgress = 0;
                 }
-                reportProgress( action, currentProgress, totalProgress );
+                else if ( System.currentTimeMillis() - lastProgressReport > 200 )
+                {
+                    lastProgressReport = System.currentTimeMillis();
+                    reportProgress( action, currentProgress, totalProgress );
+                }
             }
         };
     }
@@ -248,6 +254,8 @@ public class RcdDumpScriptBean
             private int currentProgress = 0;
 
             private int totalProgress = 0;
+
+            private long lastProgressReport = System.currentTimeMillis();
 
             @Override
             public void totalBranches( final long total )
@@ -286,7 +294,11 @@ public class RcdDumpScriptBean
             public void entryLoaded()
             {
                 currentProgress++;
-                reportProgress( action, currentProgress, totalProgress );
+                if ( System.currentTimeMillis() - lastProgressReport > 200 )
+                {
+                    lastProgressReport = System.currentTimeMillis();
+                    reportProgress( action, currentProgress, totalProgress );
+                }
             }
         };
     }
