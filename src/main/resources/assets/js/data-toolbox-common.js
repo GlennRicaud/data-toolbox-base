@@ -293,7 +293,8 @@ class DtbRoute extends RcdMaterialRoute {
         this.callback = (main) => {
             main.addChild(breadcrumbsLayout).addChild(this.layout);
             this.onDisplay();
-        }
+        };
+        this.hideCallback = () => this.onHide();
         return this;
     }
 
@@ -307,6 +308,9 @@ class DtbRoute extends RcdMaterialRoute {
     }
 
     onDisplay() {
+    }
+
+    onHide() {
     }
 
     displayHelp() {

@@ -8,7 +8,12 @@ class TasksRoute extends DtbRoute {
     }
 
     onDisplay() {
+        this.displayed = true;
         this.retrieveTasks();
+    }
+
+    onHide() {
+        this.displayed = false;
     }
 
     createBreadcrumbsLayout() {
@@ -56,7 +61,7 @@ class TasksRoute extends DtbRoute {
                 row.children[3].addChild(progressIndicator);
             }
         });
-        if (taskManager) {
+        if (taskManager && this.displayed) {
             setTimeout(() => this.doRetrieveTasks(), 200);
         }
     }
