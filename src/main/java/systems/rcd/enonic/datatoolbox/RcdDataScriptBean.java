@@ -52,7 +52,7 @@ public abstract class RcdDataScriptBean
         final File archiveFile = new File( getArchiveDirectoryPath().toFile(), archiveName );
         return new TemporaryFileByteSource( archiveFile );
     }
-    
+
     public String upload( String filename, ByteSource archiveByteSource )
         throws IOException
     {
@@ -82,6 +82,24 @@ public abstract class RcdDataScriptBean
                 archiveFile.delete();
             }
         } );
+    }
+
+    public ByteSource directDownload( final String archiveName )
+        throws IOException
+    {
+        final File archiveFile = getDirectoryPath().resolve( archiveName ).toFile();
+        return com.google.common.io.Files.asByteSource( archiveFile );
+    }
+
+    public void directUpload( String filename, ByteSource archiveByteSource )
+        throws IOException
+    {
+        final java.nio.file.Path archivePath = getDirectoryPath().resolve( filename );
+        final File archiveFile = archivePath.toFile();
+        try (FileOutputStream archiveOutputStream = new FileOutputStream( archiveFile ))
+        {
+            archiveByteSource.copyTo( archiveOutputStream );
+        }
     }
 
     protected abstract Path getArchiveDirectoryPath();

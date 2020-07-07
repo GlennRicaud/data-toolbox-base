@@ -1,5 +1,6 @@
 package systems.rcd.enonic.datatoolbox;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -89,28 +90,35 @@ public class RcdDumpScriptBean
     {
         return runSafely( () -> {
             final RcdJsonArray dumpsJsonArray = RcdJsonService.createJsonArray();
-
             final Path dumpDirectoryPath = getDirectoryPath();
             if ( dumpDirectoryPath.toFile().exists() )
             {
                 RcdFileService.listSubPaths( dumpDirectoryPath, dumpPath -> {
-                    if ( dumpPath.toFile().isDirectory() )
+                    final File dumpFile = dumpPath.toFile();
+                    final boolean isDirectory = dumpFile.isDirectory();
+                    final boolean isArchived = isArchivedDump( dumpFile );
+                    if ( isDirectory || isArchived )
                     {
                         final DumpInfo dumpInfo = getDumpInfo( dumpPath );
                         final String dumpType = getDumpType( dumpPath );
                         final RcdJsonObject dump = RcdJsonService.createJsonObject().
                             put( "name", dumpPath.getFileName().toString() ).
-                            put( "timestamp", dumpPath.toFile().lastModified() ).
+                            put( "timestamp", dumpFile.lastModified() ).
                             put( "type", dumpType ).
                             put( "xpVersion", dumpInfo.getXpVersion() ).
                             put( "modelVersion", dumpInfo.getModelVersion() ).
-                            put( "canLoad", "versioned".equals( dumpType ) && "8".equals( dumpInfo.getModelVersion() ) );
+                            put( "canLoad", canLoad( dumpInfo, dumpType ) );
                         dumpsJsonArray.add( dump );
                     }
                 } );
             }
             return createSuccessResult( dumpsJsonArray );
         }, "Error while listing dumps" );
+    }
+
+    private boolean canLoad( final DumpInfo dumpInfo, final String dumpType )
+    {
+        return ( "versioned".equals( dumpType ) || "archived".equals( dumpType ) ) && "8".equals( dumpInfo.getModelVersion() );
     }
 
     private String getDumpType( final Path dumpPath )
@@ -124,6 +132,10 @@ public class RcdDumpScriptBean
             else if ( isVersionedDump( dumpPath ) )
             {
                 return "versioned";
+            }
+            else if ( isArchivedDump( dumpPath ) )
+            {
+                return "archived";
             }
         }
         catch ( Exception e )
@@ -176,13 +188,15 @@ public class RcdDumpScriptBean
             build();
     }
 
-    public String create( final String dumpName, final boolean includeVersion, final Integer maxVersions, final Integer maxVersionsAge )
+    public String create( final String dumpName, final boolean includeVersion, final boolean archive, final Integer maxVersions,
+                          final Integer maxVersionsAge )
     {
         return runSafely( () -> {
             final SystemDumpParams params = SystemDumpParams.create().
                 dumpName( dumpName ).
                 includeBinaries( true ).
                 includeVersions( includeVersion ).
+                archive( archive ).
                 maxAge( maxVersionsAge ).
                 maxVersions( maxVersions ).
                 listener( createSystemDumpListener() ).
@@ -432,6 +446,29 @@ public class RcdDumpScriptBean
             exists();
     }
 
+    private boolean isArchivedDump( final Path dumpPath )
+    {
+        return isArchivedDump( dumpPath.toFile() );
+    }
+
+    private boolean isArchivedDump( final File dumpFile )
+    {
+        if ( dumpFile.isFile() )
+        {
+            final String dumpName = dumpFile.getName();
+            final int extensionIndex = dumpName.lastIndexOf( '.' );
+            if ( extensionIndex != -1 )
+            {
+                final String extension = dumpName.substring( extensionIndex + 1 );
+                if ( "zip".equalsIgnoreCase( extension ) )
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void loadUsingExportService( final String dumpName, final RcdJsonObject result )
     {
         final NodeImportResult systemRepoImportResult = importSystemRepo( dumpName );
@@ -451,9 +488,14 @@ public class RcdDumpScriptBean
 
     private SystemLoadResult loadUsingSystemDumpService( final String dumpName )
     {
+        final Path dumpPath = getDirectoryPath().resolve( dumpName );
+        final boolean archivedDump = isArchivedDump( dumpPath );
+        final String dumpNameRoot = archivedDump ? dumpName.substring( 0, dumpName.length() - ".zip".length() ) : dumpName;
+
         final SystemLoadParams systemLoadParams = SystemLoadParams.create().
-            dumpName( dumpName ).
+            dumpName( dumpNameRoot ).
             includeVersions( true ).
+            archive( archivedDump ).
             listener( createSystemLoadListener() ).
             build();
         return dumpServiceSupplier.get().load( systemLoadParams );
