@@ -91,15 +91,27 @@ public abstract class RcdDataScriptBean
         return com.google.common.io.Files.asByteSource( archiveFile );
     }
 
-    public void directUpload( String filename, ByteSource archiveByteSource )
+    public String directUpload( String filename, ByteSource archiveByteSource )
         throws IOException
     {
-        final java.nio.file.Path archivePath = getDirectoryPath().resolve( filename );
-        final File archiveFile = archivePath.toFile();
-        try (FileOutputStream archiveOutputStream = new FileOutputStream( archiveFile ))
-        {
-            archiveByteSource.copyTo( archiveOutputStream );
-        }
+        return runSafely( () -> {
+            final java.nio.file.Path archivePath = getDirectoryPath().resolve( filename );
+            final File archiveFile = archivePath.toFile();
+            if ( archiveFile.exists() )
+            {
+                return createErrorResult( "Dump [" + filename + "] already exists" );
+            }
+            try (FileOutputStream archiveOutputStream = new FileOutputStream( archiveFile ))
+            {
+                archiveByteSource.copyTo( archiveOutputStream );
+            }
+            catch ( IOException e )
+            {
+                throw new RcdException( "Error while uploading dump", e );
+            }
+            return createSuccessResult();
+        }, "Error while uploading dump" );
+
     }
 
     protected abstract Path getArchiveDirectoryPath();
