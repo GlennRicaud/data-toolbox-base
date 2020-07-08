@@ -138,10 +138,10 @@ class DumpsRoute extends DtbRoute {
                 })
             .addIconArea(new RcdGoogleMaterialIconArea('file_download', () => this.downloadDump())
                 .init()
-                .setTooltip('Download selected system dumps'), {min: 1, max: 1})
+                .setTooltip('Download selected system dump'), {min: 1, max: 1})
             .addIconArea(new RcdGoogleMaterialIconArea('file_upload', () => this.uploadDump())
                 .init()
-                .setTooltip('Upload system dumps', RcdMaterialTooltipAlignment.RIGHT), {max: 0})
+                .setTooltip('Upload system dump', RcdMaterialTooltipAlignment.RIGHT), {max: 0})
             .addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteDumps())
                 .init()
                 .setTooltip('Delete selected system dumps', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
@@ -310,7 +310,7 @@ class DumpsRoute extends DtbRoute {
     }
 
     archiveAndDownloadDump(dumpInfo) {
-        const infoDialog = showLongInfoDialog("Archiving dumps...");
+        const infoDialog = showLongInfoDialog("Archiving dump...");
         requestPostJson(config.servicesUrl + '/dump-archive', {
             data: {dumpNames: [dumpInfo.name]}
         })
@@ -345,13 +345,13 @@ class DumpsRoute extends DtbRoute {
     }
 
     doUploadDump() {
-        const infoDialog = showLongInfoDialog("Uploading dumps...");
+        const infoDialog = showLongInfoDialog("Uploading dump...");
         const formData = new FormData(this.uploadForm.domElement);
         requestJson(config.servicesUrl + '/dump-directupload', {
             method: 'POST',
             body: formData
         })
-            .then((result) => displaySuccess('Dump(s) uploaded'))
+            .then((result) => displaySuccess('Dump uploaded'))
             .catch(handleRequestError)
             .finally(() => {
                 this.retrieveDumps();
@@ -369,7 +369,7 @@ class DumpsRoute extends DtbRoute {
 
         const viewDefinition = 'The view lists in a table all the system dumps located in $XP_HOME/data/dump. ' +
                                'You can delete, load or archive (ZIP) and download existing dumps. ' +
-                               'You can also generate a new dump of your system or upload previously archived dumps.';
+                               'You can also generate a new dump of your system or upload previously downloaded dumps.';
 
         new HelpDialog('System Dumps', [definition, viewDefinition]).init()
             .addActionDefinition({iconName: 'add_circle', definition: 'Generate a system dump into $XP_HOME/data/dump/[dump-name]'})
