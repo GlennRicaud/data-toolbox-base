@@ -159,21 +159,18 @@ public class RcdDumpScriptBean
         {
             if ( isArchivedDump( dumpPath ) )
             {
-                System.out.println( "Archive" + dumpPath );
                 final File dumpFile = dumpPath.toFile();
                 size = dumpFile.length();
                 final ZipFile archiveZipFile = new ZipFile( dumpFile );
                 ZipEntry dumpJsonZipEntry = archiveZipFile.getEntry( "/dump.json" );
                 if ( dumpJsonZipEntry == null )
                 {
-                    System.out.println( "a" + dumpPath );
                     final String dumpArchiveFileName = dumpPath.getFileName().toString();
                     dumpJsonZipEntry =
                         archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/dump.json" );
                 }
                 if ( dumpJsonZipEntry != null )
                 {
-                    System.out.println( "b" + dumpPath );
                     final InputStream dumpJsonInputStream = archiveZipFile.getInputStream( dumpJsonZipEntry );
                     final BufferedInputStream dumpJsonBufferedInputStream = new BufferedInputStream( dumpJsonInputStream );
 
