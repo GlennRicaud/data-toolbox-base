@@ -4,7 +4,7 @@ class TaskManager extends RcdObject {
         this.taskMap = {};
         this.applicationTaskMapMap = {};
         this.applicationTaskMapMap[config.appName] = {};
-        this.ready = false;
+        this.open = false;
         this.taskEventRegexp = /^{"type":"task\./;
         this.onReady = params.onReady;
     }
@@ -35,6 +35,7 @@ class TaskManager extends RcdObject {
     openSocket() {
         const socket = new WebSocket(config.wsUrl);
         socket.addEventListener('open', () => {
+            this.open = true;
             if (this.resolve) {
                 this.resolve(this);
             }
@@ -43,6 +44,9 @@ class TaskManager extends RcdObject {
             if (this.reject) {
                 this.reject();
             }
+        });
+        socket.addEventListener('close', () => {
+            this.open = false;
         });
         socket.addEventListener('message', (event) => {
             if (this.taskEventRegexp.test(event.data)) {
