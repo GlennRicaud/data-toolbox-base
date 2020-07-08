@@ -6,10 +6,13 @@ public class DumpInfo
 
     private final String modelVersion;
 
+    private final long size;
+
     private DumpInfo( final Builder builder )
     {
         xpVersion = builder.xpVersion == null ? "" : builder.xpVersion;
         modelVersion = builder.modelVersion == null ? "" : builder.modelVersion;
+        size = builder.size;
     }
 
     public String getXpVersion()
@@ -20,6 +23,11 @@ public class DumpInfo
     public String getModelVersion()
     {
         return modelVersion;
+    }
+
+    public long getSize()
+    {
+        return size;
     }
 
     public static DumpInfo from( final String xpVersion )
@@ -48,6 +56,8 @@ public class DumpInfo
 
         private String modelVersion;
 
+        private long size = -1;
+
         private Builder()
         {
         }
@@ -61,6 +71,12 @@ public class DumpInfo
         public Builder modelVersion( final String modelVersion )
         {
             this.modelVersion = modelVersion;
+            return this;
+        }
+
+        public Builder size( final long size )
+        {
+            this.size = size;
             return this;
         }
 

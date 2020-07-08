@@ -1,12 +1,16 @@
 package systems.rcd.enonic.datatoolbox;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import jdk.nashorn.api.scripting.JSObject;
 import systems.rcd.fwk.core.exc.RcdException;
@@ -107,6 +111,7 @@ public class RcdDumpScriptBean
                             put( "type", dumpType ).
                             put( "xpVersion", dumpInfo.getXpVersion() ).
                             put( "modelVersion", dumpInfo.getModelVersion() ).
+                            put( "size", dumpInfo.getSize() ).
                             put( "canLoad", canLoad( dumpInfo, dumpType ) );
                         dumpsJsonArray.add( dump );
                     }
@@ -149,11 +154,43 @@ public class RcdDumpScriptBean
     {
         String xpVersion = null;
         String modelVersion = null;
+        long size = -1;
         try
         {
-            if ( isExportDump( dumpPath ) )
+            if ( isArchivedDump( dumpPath ) )
             {
-                RcdPropertiesService.read( dumpPath.resolve( "export.properties" ) ).
+                System.out.println( "Archive" + dumpPath );
+                final File dumpFile = dumpPath.toFile();
+                size = dumpFile.length();
+                final ZipFile archiveZipFile = new ZipFile( dumpFile );
+                ZipEntry dumpJsonZipEntry = archiveZipFile.getEntry( "/dump.json" );
+                if ( dumpJsonZipEntry == null )
+                {
+                    System.out.println( "a" + dumpPath );
+                    final String dumpArchiveFileName = dumpPath.getFileName().toString();
+                    dumpJsonZipEntry =
+                        archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/dump.json" );
+                }
+                if ( dumpJsonZipEntry != null )
+                {
+                    System.out.println( "b" + dumpPath );
+                    final InputStream dumpJsonInputStream = archiveZipFile.getInputStream( dumpJsonZipEntry );
+                    final BufferedInputStream dumpJsonBufferedInputStream = new BufferedInputStream( dumpJsonInputStream );
+
+                    try (dumpJsonBufferedInputStream)
+                    {
+                        final byte[] bytes = dumpJsonBufferedInputStream.readAllBytes();
+                        final String dumpJsonContent = new String( bytes );
+                        final JSObject dumpJson =
+                            (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
+                        xpVersion = (String) dumpJson.getMember( "xpVersion" );
+                        modelVersion = getModelVersion( dumpJson, xpVersion );
+                    }
+                }
+            }
+            else if ( isExportDump( dumpPath ) )
+            {
+                xpVersion = RcdPropertiesService.read( dumpPath.resolve( "export.properties" ) ).
                     get( "xp.version" );
             }
             else if ( isVersionedDump( dumpPath ) )
@@ -165,17 +202,7 @@ public class RcdDumpScriptBean
                     build() );
                 final JSObject dumpJson = (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
                 xpVersion = (String) dumpJson.getMember( "xpVersion" );
-                if ( dumpJson.hasMember( "modelVersion" ) )
-                {
-                    modelVersion = (String) dumpJson.getMember( "modelVersion" );
-                }
-                else
-                {
-                    if ( xpVersion != null && xpVersion.startsWith( "6." ) )
-                    {
-                        modelVersion = "0";
-                    }
-                }
+                modelVersion = getModelVersion( dumpJson, xpVersion );
             }
         }
         catch ( Exception e )
@@ -185,7 +212,21 @@ public class RcdDumpScriptBean
         return DumpInfo.create().
             xpVersion( xpVersion ).
             modelVersion( modelVersion ).
+            size( size ).
             build();
+    }
+
+    private String getModelVersion( final JSObject dumpJson, final String xpVersion )
+    {
+        if ( dumpJson.hasMember( "modelVersion" ) )
+        {
+            return (String) dumpJson.getMember( "modelVersion" );
+        }
+        if ( xpVersion != null && xpVersion.startsWith( "6." ) )
+        {
+            return "0";
+        }
+        return null;
     }
 
     public String create( final String dumpName, final boolean includeVersion, final boolean archive, final Integer maxVersions,

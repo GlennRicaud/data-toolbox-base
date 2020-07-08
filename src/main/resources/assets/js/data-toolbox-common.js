@@ -667,3 +667,16 @@ function displaySnackbar(text) {
         .init()
         .open();
 }
+
+function toHumanReadableSize(sizeInBytes) {
+    if (sizeInBytes < 1024) {
+        return sizeInBytes + ' B';
+    }
+    if (sizeInBytes < 1024 * 1024) {
+        return (sizeInBytes / 1024).toFixed(1) + ' KiB';
+    }
+    if (sizeInBytes < 1024 * 1024 * 1024) {
+        return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MiB';
+    }
+    return (sizeInBytes / (1024 * 1024 * 1024)).toFixed(1) + ' GiB'
+}

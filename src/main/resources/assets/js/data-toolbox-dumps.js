@@ -111,7 +111,7 @@ class DumpsRoute extends DtbRoute {
         this.tableCard = new RcdMaterialTableCard('System dumps')
             .init()
             .addColumn('Dump name')
-            .addColumn('Timestamp', {classes: ['non-mobile-cell']})
+            .addColumn('Timestamp<br/>Size', {classes: ['non-mobile-cell']})
             .addColumn('Model Version<br/>Creator (XP Version)', {classes: ['non-mobile-cell', 'version-cell']})
             .addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createDump())
                     .init()
@@ -158,7 +158,9 @@ class DumpsRoute extends DtbRoute {
                     .forEach((dump) => {
                         this.tableCard.createRow()
                             .addCell(dump.name)
-                            .addCell(toLocalDateTimeFormat(new Date(dump.timestamp)), {classes: ['non-mobile-cell']})
+                            .addCell(toLocalDateTimeFormat(new Date(dump.timestamp))
+                                     + (dump.size >= 0 ? '<br/>' + toHumanReadableSize(dump.size) : ''),
+                                {classes: ['non-mobile-cell']})
                             .addCell(dump.modelVersion + '<br/>' + dump.xpVersion, {classes: ['non-mobile-cell', 'version-cell']})
                             .setAttribute('dump', dump.name)
                             .setAttribute('type', dump.type)
@@ -372,7 +374,8 @@ class DumpsRoute extends DtbRoute {
         new HelpDialog('System Dumps', [definition, viewDefinition]).init()
             .addActionDefinition({iconName: 'add_circle', definition: 'Generate a system dump into $XP_HOME/data/dump/[dump-name]'})
             .addActionDefinition({iconName: 'refresh', definition: 'Load the selected system dumps into Enonic XP'})
-            .addActionDefinition({iconName: 'file_download', definition: 'Archive the selected dump, if necessary, and download the archive'})
+            .addActionDefinition(
+                {iconName: 'file_download', definition: 'Archive the selected dump, if necessary, and download the archive'})
             .addActionDefinition({iconName: 'file_upload', definition: 'Upload an archived dump into $XP_HOME/data/dump'})
             .addActionDefinition({iconName: 'delete', definition: 'Delete the selected system dumps.'})
             .open();
