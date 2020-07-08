@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -58,6 +60,9 @@ import com.enonic.xp.vfs.VirtualFiles;
 public class RcdDumpScriptBean
     extends RcdDataScriptBean
 {
+
+    public static final Pattern DUMP_JSON_ENTRY_NAME_PATTERN = Pattern.compile( "^[^/]+/dump.json$" );
+
     private Supplier<ExportService> exportServiceSupplier;
 
     private Supplier<DumpService> dumpServiceSupplier;
@@ -168,6 +173,19 @@ public class RcdDumpScriptBean
                     final String dumpArchiveFileName = dumpPath.getFileName().toString();
                     dumpJsonZipEntry =
                         archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/dump.json" );
+                }
+                if ( dumpJsonZipEntry == null )
+                {
+                    final Enumeration<? extends ZipEntry> entries = archiveZipFile.entries();
+                    while ( entries.hasMoreElements() )
+                    {
+                        final ZipEntry zipEntry = entries.nextElement();
+                        if ( DUMP_JSON_ENTRY_NAME_PATTERN.matcher( zipEntry.getName() ).matches() )
+                        {
+                            dumpJsonZipEntry = zipEntry;
+                            break;
+                        }
+                    }
                 }
                 if ( dumpJsonZipEntry != null )
                 {
