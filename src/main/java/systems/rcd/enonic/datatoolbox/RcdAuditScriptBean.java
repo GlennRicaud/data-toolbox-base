@@ -7,12 +7,22 @@ import java.util.function.Supplier;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
 import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
 
-import com.enonic.xp.audit.AuditLog;
-import com.enonic.xp.audit.AuditLogService;
-import com.enonic.xp.audit.FindAuditLogParams;
-import com.enonic.xp.audit.FindAuditLogResult;
+import com.enonic.xp.branch.Branch;
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.data.PropertySet;
+import com.enonic.xp.data.ValueFactory;
+import com.enonic.xp.node.FindNodesByQueryResult;
+import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeIndexPath;
+import com.enonic.xp.node.NodeQuery;
+import com.enonic.xp.node.NodeService;
+import com.enonic.xp.query.expr.FieldOrderExpr;
+import com.enonic.xp.query.expr.OrderExpr;
+import com.enonic.xp.query.filter.ValueFilter;
+import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.SecurityService;
@@ -21,53 +31,71 @@ import com.enonic.xp.security.User;
 public class RcdAuditScriptBean
     extends RcdScriptBean
 {
-    private Supplier<AuditLogService> auditLogServiceSupplier;
+    private Supplier<NodeService> nodeServiceSupplier;
 
     private Supplier<SecurityService> securityServiceSupplier;
 
-    public String query( final Integer start, final Integer count )
+    public String query( final int start, final int count )
     {
-        return runSafely( () -> {
-            final RcdJsonObject result = RcdJsonService.createJsonObject();
-
-            final FindAuditLogParams params = FindAuditLogParams.create().
-                start( start ).
-                count( count ).
-                build();
-            final FindAuditLogResult findAuditLogResult = auditLogServiceSupplier.get().
-                find( params );
-            result.put( "total", findAuditLogResult.getTotal() );
-
-            final Map<PrincipalKey, String> userDisplayNameMap = new HashMap<>();
-            final RcdJsonArray hitArray = result.createArray( "hits" );
-            findAuditLogResult.getHits().
-                forEach( hit -> {
-                    final PrincipalKey userKey = hit.getUser();
-                    final String userDisplayName = userDisplayNameMap.computeIfAbsent( userKey, this::getUserDisplayName );
-                    final RcdJsonObject hitObject = hitArray.createObject();
-                    hitObject.put( "id", hit.getId().toString() ).
-                        put( "user", userDisplayName == null ? hit.getUser().toString() : userDisplayName ).
-                        put( "action", getAction( hit ) ).
-                        put( "target", getTarget( hit ) ).
-                        put( "time", hit.getTime().toEpochMilli() );
-                    final RcdJsonArray objectArray = hitObject.createArray( "objects" );
-                    hit.getObjectUris().forEach( auditLogUri -> objectArray.add( auditLogUri.getValue() ) );
-                } );
-
-            return createSuccessResult( result );
-        }, "Error while retrieving audit log" );
+        return runSafely( () -> ContextBuilder.from( ContextAccessor.current() ).
+            repositoryId( RepositoryId.from( "system.auditlog" ) ).
+            branch( Branch.from( "master" ) ).
+            build().
+            callWith( () -> this.doQuery( start, count ) ), "Error while retrieving audit log" );
     }
 
-    private String getAction( final AuditLog record )
+    public RcdJsonValue doQuery( final int start, final int count )
     {
-        switch ( record.getType() )
+        final RcdJsonObject result = RcdJsonService.createJsonObject();
+
+        final NodeQuery nodeQuery = NodeQuery.create().
+            addQueryFilter( ValueFilter.create().
+                fieldName( NodeIndexPath.NODE_TYPE.toString() ).
+                addValue( ValueFactory.newString( "auditlog" ) ).
+                build() ).
+            addOrderBy( FieldOrderExpr.create( "time", OrderExpr.Direction.DESC ) ).
+            from( start ).
+            size( count ).
+            build();
+        final FindNodesByQueryResult findNodesByQueryResult = nodeServiceSupplier.get().
+            findByQuery( nodeQuery );
+        result.put( "total", findNodesByQueryResult.getTotalHits() );
+
+        final Map<String, String> userDisplayNameMap = new HashMap<>();
+        final RcdJsonArray hitArray = result.createArray( "hits" );
+        findNodesByQueryResult.getNodeHits().
+            forEach( nodeHit -> {
+                final Node node = nodeServiceSupplier.get().
+                    getById( nodeHit.getNodeId() );
+                final PropertySet nodeData = node.data().
+                    getRoot();
+
+                final String userKey = nodeData.getString( "user" );
+                final String userDisplayName = userDisplayNameMap.computeIfAbsent( userKey, this::getUserDisplayName );
+                final RcdJsonObject hitObject = hitArray.createObject();
+                hitObject.put( "id", node.id().toString() ).
+                    put( "user", userDisplayName == null ? userKey : userDisplayName ).
+                    put( "action", getAction( nodeData ) ).
+                    put( "target", getTarget( nodeData ) ).
+                    put( "time", nodeData.getInstant( "time" ).toEpochMilli() );
+                final RcdJsonArray objectArray = hitObject.createArray( "objects" );
+                nodeData.getStrings( "objects" ).forEach( objectArray::add );
+            } );
+
+        return createSuccessResult( result );
+    }
+
+    private String getAction( final PropertySet record )
+    {
+        final String recordType = record.getString( "type" );
+        switch ( recordType )
         {
             case "system.content.create":
                 return "created";
             case "system.content.update":
                 return "updated";
             case "system.content.delete":
-                return record.getData().getSet( "params" ).hasProperty( "contentPath" ) ? "deleted" : "undeleted";
+                return record.getSet( "data" ).getSet( "params" ).hasProperty( "contentPath" ) ? "deleted" : "undeleted";
             case "system.content.publish":
                 return "published";
             case "system.content.unpublishContent":
@@ -89,18 +117,18 @@ public class RcdAuditScriptBean
             case "system.content.reprocess":
                 return "reprocessed";
             default:
-                return "[" + record.getType() + "]";
+                return "[" + recordType + "]";
         }
     }
 
-    private String getTarget( final AuditLog record )
+    private String getTarget( final PropertySet record )
     {
-
-        if ( record.getType().startsWith( "system.content." ) )
+        final String recordType = record.getString( "type" );
+        if ( recordType.startsWith( "system.content." ) )
         {
-            final PropertySet params = record.getData().getSet( "params" );
-            final PropertySet result = record.getData().getSet( "result" );
-            switch ( record.getType() )
+            final PropertySet params = record.getSet( "data" ).getSet( "params" );
+            final PropertySet result = record.getSet( "data" ).getSet( "result" );
+            switch ( recordType )
             {
                 case "system.content.create":
                 case "system.content.update":
@@ -117,8 +145,8 @@ public class RcdAuditScriptBean
                     }
                     else
                     {
-                        final int undeletedCount = record.getData().getProperties( "result" ).size();
-                        return undeletedCount + " content(s)";
+                        final int undeletedCount = record.getSet( "data" ).getProperties( "result" ).size();
+                        return undeletedCount + " pending content(s)";
                     }
                 case "system.content.publish":
                     final int pushedCount = result.getProperties( "pushedContents" ).size();
@@ -137,31 +165,29 @@ public class RcdAuditScriptBean
                 case "system.content.setActiveContentVersion":
                     return "content [" + result.getString( "contentId" ) + "]";
                 case "system.content.reorderChildren":
-                    return "content [" + result.getString( "contentId" ) + "] (" + result.getLong( "size" ) + " reordered)";
+                    return "content [" + params.getString( "contentId" ) + "] (" + result.getLong( "size" ) + " reordered)";
                 case "system.content.applyPermissions":
-                    return "content [" + result.getString( "contentId" ) + "] (" + result.getProperties( "succeedContents" ).size() +
+                    return "content [" + params.getString( "contentId" ) + "] (" + result.getProperties( "succeedContents" ).size() +
                         " changed)";
             }
         }
 
-        final int objectCount = record.getObjectUris().getSize();
+        final int objectCount = record.getProperties( "objects" ).size();
         if ( objectCount == 0 )
         {
             return "";
         }
         if ( objectCount == 1 )
         {
-            return record.getObjectUris().
-                first().
-                getValue();
+            return record.getString( "objects" );
         }
         return objectCount + " objects";
     }
 
-    private String getUserDisplayName( final PrincipalKey userKey )
+    private String getUserDisplayName( final String userKey )
     {
         return securityServiceSupplier.get().
-            getUser( userKey ).
+            getUser( PrincipalKey.from( userKey ) ).
             map( User::getDisplayName ).
             orElse( userKey.toString() );
     }
@@ -169,7 +195,7 @@ public class RcdAuditScriptBean
     @Override
     public void initialize( final BeanContext context )
     {
-        this.auditLogServiceSupplier = context.getService( AuditLogService.class );
+        this.nodeServiceSupplier = context.getService( NodeService.class );
         this.securityServiceSupplier = context.getService( SecurityService.class );
     }
 }
