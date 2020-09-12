@@ -433,8 +433,8 @@ class DtbRoute extends RcdMaterialRoute {
         const infoDialog = showLongInfoDialog("Deleting nodes...");
         requestPostJson(config.servicesUrl + '/node-delete', {
             data: {
-                repositoryName: getRepoParameter(),
-                branchName: getBranchParameter(),
+                repositoryName: params.repo || getRepoParameter(),
+                branchName: params.branch || getBranchParameter(),
                 keys: params.nodeKeys
             },
         })

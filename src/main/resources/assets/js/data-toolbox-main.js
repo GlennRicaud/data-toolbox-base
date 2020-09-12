@@ -23,6 +23,7 @@ function createApp() {
         .addRoute(new ExportsRoute().init())
         .addRoute(new DumpsRoute().init())
         .addRoute(new SearchRoute().init())
+        .addRoute(new AuditRoute().init())
         .addRoute(new IamRoute().init())
         .addRoute(new UsersRoute().init())
         .addRoute(new GroupsRoute().init())
