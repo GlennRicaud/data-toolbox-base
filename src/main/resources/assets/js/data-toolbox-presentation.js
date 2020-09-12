@@ -54,6 +54,12 @@ function createPresentationRoute() {
         iconFileName: 'search.svg',
         text: 'Query nodes from all your repositories or a specific context.'
     }).init();
+    const auditViewSummary = new ViewSummary({
+        state: 'audit',
+        name: 'Audit Log',
+        iconFileName: 'audit.svg',
+        text: 'Oversee audit log records.'
+    }).init();
     const iamViewSummary = new ViewSummary({
         state: 'iam',
         name: 'IAM',
@@ -80,6 +86,7 @@ function createPresentationRoute() {
         .addChild(exportsViewSummary)
         .addChild(dumpsViewSummary)
         .addChild(searchViewSummary)
+        .addChild(auditViewSummary)
         .addChild(iamViewSummary)
         .addChild(tasksViewSummary)
         .addChild(aboutViewSummary);
