@@ -225,8 +225,7 @@ class SearchRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the Enonic XP query language. ' +
-                               'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/reference/query-language.html">Query Language</a> for more information. ';
+        const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#query_language">Node Query Language</a>.';
         new HelpDialog('Search', [viewDefinition]).init().open();
     }
 }

@@ -70,9 +70,10 @@ class IamRoute extends DtbRoute {
         const fullName = 'Identity and Access Management';
         const definition = 'All users and groups are created and managed in ID providers. ' +
                            'Each Enonic XP installation has a System ID provider that cannot be deleted. ' +
-                           'Additional id providers can be created as needed.';
+                           'Additional id providers can be created as needed. ' +
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/iam">IAM</a> for more information.';
 
-        const viewDefinition = 'The view lists in a table all the ID providers';
+        const viewDefinition = 'This view lists in a table all the ID providers';
         new HelpDialog('IAM', [fullName, definition, viewDefinition]).init()
             .addActionDefinition({iconName: 'person', definition: 'Display the users for this ID provider'})
             .addActionDefinition({iconName: 'group', definition: 'Display the groups for this ID provider'})

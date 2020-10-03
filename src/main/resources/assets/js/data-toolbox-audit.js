@@ -104,9 +104,9 @@ class AuditRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Any application can store audit logs.';
+        const definition = 'Any application can store audit log records.';
 
-        const viewDefinition = 'The view lists in a table all the audit log records with special treatment for Content API records. Contact me to include your audit log format';
+        const viewDefinition = 'The view lists in a table all the audit log records with special treatment for Content API records. Contact me to include your audit log format.';
         new HelpDialog('Audit Log', [definition, viewDefinition]).init()
             .addActionDefinition({iconName: 'delete', definition: 'Delete the selected records.'})
             .open();

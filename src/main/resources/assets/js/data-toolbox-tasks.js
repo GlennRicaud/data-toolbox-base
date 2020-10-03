@@ -68,7 +68,7 @@ class TasksRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Tasks allow the asynchronous execution of jobs.';
+        const definition = 'Tasks allow the asynchronous execution of jobs. See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/tasks">Tasks</a> for more information.';
         const viewDefinition = 'The view lists in a table all the tasks and their progress';
         new HelpDialog('Tasks', [definition, viewDefinition])
             .init()

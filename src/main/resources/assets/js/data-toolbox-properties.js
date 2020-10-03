@@ -619,8 +619,8 @@ class PropertiesRoute extends DtbRoute {
                 currentProperty += currentProperty ? '.' + subPropertyElement : subPropertyElement;
                 const constCurrentProperty = currentProperty;
                 const simplifiedSubPropertyElement = subPropertyElement.endsWith('[0]')
-                    ? subPropertyElement.substring(0, subPropertyElement.length - 3)
-                    : subPropertyElement;
+                                                     ? subPropertyElement.substring(0, subPropertyElement.length - 3)
+                                                     : subPropertyElement;
 
                 const currentPropertyBreadcrumb = new RcdMaterialBreadcrumb(simplifiedSubPropertyElement).init();
                 if (index < array.length - 1) {
@@ -634,9 +634,10 @@ class PropertiesRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'The view represents node properties in a tree structure. ' +
-                               'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/developer/node-domain/property.html">Property</a> and <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/developer/node-domain/value-types.html">Value Types</a> for more information. ';
-        new HelpDialog('Properties', [viewDefinition]).init()
+        const definition = 'Properties inside a node hold the actual data values. Properties use a key-value format. ' +
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#properties">Properties</a> for more information.';
+        const viewDefinition = 'This view represents node properties in a tree structure. Click on a row to display its children properties';
+        new HelpDialog('Properties', [definition, viewDefinition]).init()
             .addActionDefinition({
                 iconName: 'add_circle',
                 definition: 'Create a property.'
@@ -646,8 +647,16 @@ class PropertiesRoute extends DtbRoute {
                 definition: 'Delete the selected properties.'
             })
             .addActionDefinition({
+                iconName: 'file_download',
+                definition: 'Download referenced binary (For BinaryReference properties).'
+            })
+            .addActionDefinition({
+                iconName: 'arrow_forward',
+                definition: 'Display referenced node info (For Reference properties).'
+            })
+            .addActionDefinition({
                 iconName: 'edit',
-                definition: 'Edit property.'
+                definition: 'Edit property value (Not available for PropertySet properties).'
             })
             .open();
     }

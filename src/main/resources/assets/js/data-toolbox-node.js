@@ -241,8 +241,12 @@ class NodeRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'The view gathers the <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/developer/node-domain/system-properties.html">System properties</a>' +
+        const definition = 'A Node represents a single storable entity of data. ' +
+                           'It can be compared to a row in sql or a document in document oriented storage models.<br/>' +
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#nodes">Nodes</a> for more information. ';
+
+        const viewDefinition = 'This view gathers the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/system-properties">System properties</a>' +
                                ' and a list of actions to manage the node or retrieve more information about it.';
-        new HelpDialog('Node', [viewDefinition]).init().open();
+        new HelpDialog('Node', [definition, viewDefinition]).init().open();
     }
 }
