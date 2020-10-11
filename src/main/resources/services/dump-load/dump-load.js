@@ -6,7 +6,7 @@ exports.post = function (req) {
     const dumpName = body.dumpName;
 
     const taskId = taskLib.submit({
-        description: 'Dump deletion',
+        description: 'Dump load',
         task: function () {
             taskLib.progress({info: 'Loading dump...'});
             taskLib.progress({info: bean.load(dumpName)});

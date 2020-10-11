@@ -95,7 +95,8 @@ class GroupsRoute extends DtbRoute {
     displayHelp() {
         const definition = 'Groups assist with managing user permissions for content. ' +
                            'For example, all contents have security permissions which may include roles, groups and users. ' +
-                           'If a content has only one group named “Customers” (with read access) then only logged in members of that group can see the content.';
+                           'If a content has only one group named “Customers” (with read access) then only logged in members of that group can see the content. ' +
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/iam">IAM</a> for more information.';
 
         const viewDefinition = 'The view lists in a table all the groups for the current ID provider';
         new HelpDialog('Groups', [definition, viewDefinition]).init()

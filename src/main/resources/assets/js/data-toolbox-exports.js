@@ -123,7 +123,7 @@ class ExportsRoute extends DtbRoute {
         const definition = 'A node export is a serialization of a given content/node and its children. ' +
                            'This makes node exports well suited for transferring a specific content to another installation. ' +
                            'Warning: The export mechanism does not export old versions of your data. You will loose the version history of your contents. ' +
-                           'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.11/operations/export.html">Export and Import</a> for more information.';
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/deployment/data#export_and_import">Export & import</a> for more information.';
 
         const viewDefinition = 'The view lists in a table all the node exports located in $XP_HOME/data/export. ' +
                                'You can delete or archive (ZIP) and download existing exports. ' +

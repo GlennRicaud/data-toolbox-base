@@ -12,18 +12,31 @@
 
     <script>
         const config = {
-            adminRestUrl: "{{adminRestUrl}}",
-            servicesUrl: "{{servicesUrl}}",
-            assetsUrl: "{{assetsUrl}}",
-            xpVersion: "{{xpVersion}}"
+            adminRestUrl: '{{adminRestUrl}}',
+            servicesUrl: '{{servicesUrl}}',
+            assetsUrl: '{{assetsUrl}}',
+            wsUrl: '{{wsUrl}}',
+            xpVersion: '{{xpVersion}}',
+            appName: '{{appName}}'
         };
     </script>
 </head>
 
 <body class="rcd-body">
 <script>
-    const app = createApp();
-    app.start(document.body);
+    let taskManager;
+    let app;
+    new TaskManager().initPromise()
+        .then((value) => {
+            taskManager = value;
+            app = createApp();
+            app.start(document.body);
+        })
+        .catch(() => {
+            taskManager = null;
+            app = createApp();
+            app.start(document.body);
+        });
 </script>
 </body>
 

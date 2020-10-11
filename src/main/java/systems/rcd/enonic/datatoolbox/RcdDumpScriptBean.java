@@ -1,11 +1,18 @@
 package systems.rcd.enonic.datatoolbox;
 
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import jdk.nashorn.api.scripting.JSObject;
 import systems.rcd.fwk.core.exc.RcdException;
@@ -53,6 +60,9 @@ import com.enonic.xp.vfs.VirtualFiles;
 public class RcdDumpScriptBean
     extends RcdDataScriptBean
 {
+
+    public static final Pattern DUMP_JSON_ENTRY_NAME_PATTERN = Pattern.compile( "^[^/]+/dump.json$" );
+
     private Supplier<ExportService> exportServiceSupplier;
 
     private Supplier<DumpService> dumpServiceSupplier;
@@ -89,28 +99,36 @@ public class RcdDumpScriptBean
     {
         return runSafely( () -> {
             final RcdJsonArray dumpsJsonArray = RcdJsonService.createJsonArray();
-
             final Path dumpDirectoryPath = getDirectoryPath();
             if ( dumpDirectoryPath.toFile().exists() )
             {
                 RcdFileService.listSubPaths( dumpDirectoryPath, dumpPath -> {
-                    if ( dumpPath.toFile().isDirectory() )
+                    final File dumpFile = dumpPath.toFile();
+                    final boolean isDirectory = dumpFile.isDirectory();
+                    final boolean isArchived = isArchivedDump( dumpFile );
+                    if ( isDirectory || isArchived )
                     {
                         final DumpInfo dumpInfo = getDumpInfo( dumpPath );
                         final String dumpType = getDumpType( dumpPath );
                         final RcdJsonObject dump = RcdJsonService.createJsonObject().
                             put( "name", dumpPath.getFileName().toString() ).
-                            put( "timestamp", dumpPath.toFile().lastModified() ).
+                            put( "timestamp", dumpFile.lastModified() ).
                             put( "type", dumpType ).
                             put( "xpVersion", dumpInfo.getXpVersion() ).
                             put( "modelVersion", dumpInfo.getModelVersion() ).
-                            put( "canLoad", "versioned".equals( dumpType ) && "8".equals( dumpInfo.getModelVersion() ) );
+                            put( "size", dumpInfo.getSize() ).
+                            put( "canLoad", canLoad( dumpInfo, dumpType ) );
                         dumpsJsonArray.add( dump );
                     }
                 } );
             }
             return createSuccessResult( dumpsJsonArray );
         }, "Error while listing dumps" );
+    }
+
+    private boolean canLoad( final DumpInfo dumpInfo, final String dumpType )
+    {
+        return ( "versioned".equals( dumpType ) || "archived".equals( dumpType ) ) && "8".equals( dumpInfo.getModelVersion() );
     }
 
     private String getDumpType( final Path dumpPath )
@@ -125,6 +143,10 @@ public class RcdDumpScriptBean
             {
                 return "versioned";
             }
+            else if ( isArchivedDump( dumpPath ) )
+            {
+                return "archived";
+            }
         }
         catch ( Exception e )
         {
@@ -137,11 +159,53 @@ public class RcdDumpScriptBean
     {
         String xpVersion = null;
         String modelVersion = null;
+        long size = -1;
         try
         {
-            if ( isExportDump( dumpPath ) )
+            if ( isArchivedDump( dumpPath ) )
             {
-                RcdPropertiesService.read( dumpPath.resolve( "export.properties" ) ).
+                final File dumpFile = dumpPath.toFile();
+                size = dumpFile.length();
+                final ZipFile archiveZipFile = new ZipFile( dumpFile );
+                ZipEntry dumpJsonZipEntry = archiveZipFile.getEntry( "/dump.json" );
+                if ( dumpJsonZipEntry == null )
+                {
+                    final String dumpArchiveFileName = dumpPath.getFileName().toString();
+                    dumpJsonZipEntry =
+                        archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/dump.json" );
+                }
+                if ( dumpJsonZipEntry == null )
+                {
+                    final Enumeration<? extends ZipEntry> entries = archiveZipFile.entries();
+                    while ( entries.hasMoreElements() )
+                    {
+                        final ZipEntry zipEntry = entries.nextElement();
+                        if ( DUMP_JSON_ENTRY_NAME_PATTERN.matcher( zipEntry.getName() ).matches() )
+                        {
+                            dumpJsonZipEntry = zipEntry;
+                            break;
+                        }
+                    }
+                }
+                if ( dumpJsonZipEntry != null )
+                {
+                    final InputStream dumpJsonInputStream = archiveZipFile.getInputStream( dumpJsonZipEntry );
+                    final BufferedInputStream dumpJsonBufferedInputStream = new BufferedInputStream( dumpJsonInputStream );
+
+                    try (dumpJsonBufferedInputStream)
+                    {
+                        final byte[] bytes = dumpJsonBufferedInputStream.readAllBytes();
+                        final String dumpJsonContent = new String( bytes );
+                        final JSObject dumpJson =
+                            (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
+                        xpVersion = (String) dumpJson.getMember( "xpVersion" );
+                        modelVersion = getModelVersion( dumpJson, xpVersion );
+                    }
+                }
+            }
+            else if ( isExportDump( dumpPath ) )
+            {
+                xpVersion = RcdPropertiesService.read( dumpPath.resolve( "export.properties" ) ).
                     get( "xp.version" );
             }
             else if ( isVersionedDump( dumpPath ) )
@@ -153,17 +217,7 @@ public class RcdDumpScriptBean
                     build() );
                 final JSObject dumpJson = (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
                 xpVersion = (String) dumpJson.getMember( "xpVersion" );
-                if ( dumpJson.hasMember( "modelVersion" ) )
-                {
-                    modelVersion = (String) dumpJson.getMember( "modelVersion" );
-                }
-                else
-                {
-                    if ( xpVersion != null && xpVersion.startsWith( "6." ) )
-                    {
-                        modelVersion = "0";
-                    }
-                }
+                modelVersion = getModelVersion( dumpJson, xpVersion );
             }
         }
         catch ( Exception e )
@@ -173,16 +227,32 @@ public class RcdDumpScriptBean
         return DumpInfo.create().
             xpVersion( xpVersion ).
             modelVersion( modelVersion ).
+            size( size ).
             build();
     }
 
-    public String create( final String dumpName, final boolean includeVersion, final Integer maxVersions, final Integer maxVersionsAge )
+    private String getModelVersion( final JSObject dumpJson, final String xpVersion )
+    {
+        if ( dumpJson.hasMember( "modelVersion" ) )
+        {
+            return (String) dumpJson.getMember( "modelVersion" );
+        }
+        if ( xpVersion != null && xpVersion.startsWith( "6." ) )
+        {
+            return "0";
+        }
+        return null;
+    }
+
+    public String create( final String dumpName, final boolean includeVersion, final boolean archive, final Integer maxVersions,
+                          final Integer maxVersionsAge )
     {
         return runSafely( () -> {
             final SystemDumpParams params = SystemDumpParams.create().
                 dumpName( dumpName ).
                 includeBinaries( true ).
                 includeVersions( includeVersion ).
+                archive( archive ).
                 maxAge( maxVersionsAge ).
                 maxVersions( maxVersions ).
                 listener( createSystemDumpListener() ).
@@ -205,6 +275,8 @@ public class RcdDumpScriptBean
             private int currentProgress = 0;
 
             private int totalProgress = 0;
+
+            private long lastProgressReport = System.currentTimeMillis();
 
             @Override
             public void totalBranches( final long total )
@@ -230,8 +302,13 @@ public class RcdDumpScriptBean
                     action = "Repository: " + repository + "<br/>" + "Dumping versions";
                     currentProgress = 0;
                     totalProgress = 0;
+                    reportProgress( action, currentProgress, totalProgress );
                 }
-                reportProgress( action, currentProgress, totalProgress );
+                else if ( ( System.currentTimeMillis() - lastProgressReport ) > 200 )
+                {
+                    lastProgressReport = System.currentTimeMillis();
+                    reportProgress( action, currentProgress, totalProgress );
+                }
             }
         };
     }
@@ -248,6 +325,8 @@ public class RcdDumpScriptBean
             private int currentProgress = 0;
 
             private int totalProgress = 0;
+
+            private long lastProgressReport = System.currentTimeMillis();
 
             @Override
             public void totalBranches( final long total )
@@ -286,7 +365,11 @@ public class RcdDumpScriptBean
             public void entryLoaded()
             {
                 currentProgress++;
-                reportProgress( action, currentProgress, totalProgress );
+                if ( currentProgress == totalProgress || ( System.currentTimeMillis() - lastProgressReport ) > 200 )
+                {
+                    lastProgressReport = System.currentTimeMillis();
+                    reportProgress( action, currentProgress, totalProgress );
+                }
             }
         };
     }
@@ -419,6 +502,29 @@ public class RcdDumpScriptBean
             exists();
     }
 
+    private boolean isArchivedDump( final Path dumpPath )
+    {
+        return isArchivedDump( dumpPath.toFile() );
+    }
+
+    private boolean isArchivedDump( final File dumpFile )
+    {
+        if ( dumpFile.isFile() )
+        {
+            final String dumpName = dumpFile.getName();
+            final int extensionIndex = dumpName.lastIndexOf( '.' );
+            if ( extensionIndex != -1 )
+            {
+                final String extension = dumpName.substring( extensionIndex + 1 );
+                if ( "zip".equalsIgnoreCase( extension ) )
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void loadUsingExportService( final String dumpName, final RcdJsonObject result )
     {
         final NodeImportResult systemRepoImportResult = importSystemRepo( dumpName );
@@ -438,9 +544,14 @@ public class RcdDumpScriptBean
 
     private SystemLoadResult loadUsingSystemDumpService( final String dumpName )
     {
+        final Path dumpPath = getDirectoryPath().resolve( dumpName );
+        final boolean archivedDump = isArchivedDump( dumpPath );
+        final String dumpNameRoot = archivedDump ? dumpName.substring( 0, dumpName.length() - ".zip".length() ) : dumpName;
+
         final SystemLoadParams systemLoadParams = SystemLoadParams.create().
-            dumpName( dumpName ).
+            dumpName( dumpNameRoot ).
             includeVersions( true ).
+            archive( archivedDump ).
             listener( createSystemLoadListener() ).
             build();
         return dumpServiceSupplier.get().load( systemLoadParams );

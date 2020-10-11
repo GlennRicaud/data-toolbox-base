@@ -154,7 +154,8 @@ class VersionsRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'Node versions. ';
+        const viewDefinition = 'Node versions. ' +
+                               'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/branches">Repo branches</a> for more information';
         new HelpDialog('Versions', [viewDefinition]).init()
             .open();
     }

@@ -52,7 +52,7 @@ public abstract class RcdDataScriptBean
         final File archiveFile = new File( getArchiveDirectoryPath().toFile(), archiveName );
         return new TemporaryFileByteSource( archiveFile );
     }
-    
+
     public String upload( String filename, ByteSource archiveByteSource )
         throws IOException
     {
@@ -82,6 +82,37 @@ public abstract class RcdDataScriptBean
                 archiveFile.delete();
             }
         } );
+    }
+
+    public ByteSource directDownload( final String archiveName )
+        throws IOException
+    {
+        final File archiveFile = getDirectoryPath().resolve( archiveName ).toFile();
+        return com.google.common.io.Files.asByteSource( archiveFile );
+    }
+
+    public String directUpload( String filename, ByteSource archiveByteSource )
+        throws IOException
+    {
+        return runSafely( () -> {
+            final java.nio.file.Path archivePath = getDirectoryPath().resolve( filename );
+            final File archiveFile = archivePath.toFile();
+            archiveFile.getParentFile().mkdirs();
+            if ( archiveFile.exists() )
+            {
+                return createErrorResult( "Dump [" + filename + "] already exists" );
+            }
+            try (FileOutputStream archiveOutputStream = new FileOutputStream( archiveFile ))
+            {
+                archiveByteSource.copyTo( archiveOutputStream );
+            }
+            catch ( IOException e )
+            {
+                throw new RcdException( "Error while uploading dump", e );
+            }
+            return createSuccessResult();
+        }, "Error while uploading dump" );
+
     }
 
     protected abstract Path getArchiveDirectoryPath();

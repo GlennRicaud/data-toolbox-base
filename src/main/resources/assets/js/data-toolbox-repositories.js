@@ -90,15 +90,17 @@ class RepositoriesRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Enonic XP data is split in repositories. Enonic XP uses by default 2 repositories:<br/>' +
-                           '"system-repo", the core repository, contains the users, groups, roles, installed application, settings of repositories, ...<br/>' +
-                           '"com.enonic.cms.default", the content domain repository, contains the data managed by Content Studio.<br/>' +
-                           'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/developer/node-domain/repository.html">Repository</a> for more information.';
+        const definition = 'Enonic XP data is split into repositories, silos where nodes can be stored.<br/>' +
+                           'By default 2 repositories are present: ' +
+                           '<b>system-repo</b>, the core repository, containing the IAM data, installed applications, repository settings, ...' +
+                           'and <b>com.enonic.cms.default</b>, the CMS repository for the default project.<br/>' +
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#repositories">Repositories</a> for more information.';
 
-        const viewDefinition = 'The view lists in a table all the repositories. Click on a row to display its branches.';
+        const viewDefinition = 'This view lists in a table all the repositories. Click on a row to display its branches.';
 
-        new HelpDialog('Repositories', [definition, viewDefinition]).init().addActionDefinition(
-            {iconName: 'add_circle', definition: 'Create a repository with default settings'}).addActionDefinition(
-            {iconName: 'delete', definition: 'Delete the selected repositories.'}).open();
+        new HelpDialog('Repositories', [definition, viewDefinition]).init()
+            .addActionDefinition({iconName: 'add_circle', definition: 'Create a repository with default settings'})
+            .addActionDefinition({iconName: 'delete', definition: 'Delete the selected repositories.'})
+            .open();
     }
 }

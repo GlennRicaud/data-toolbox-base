@@ -293,7 +293,8 @@ class DtbRoute extends RcdMaterialRoute {
         this.callback = (main) => {
             main.addChild(breadcrumbsLayout).addChild(this.layout);
             this.onDisplay();
-        }
+        };
+        this.hideCallback = () => this.onHide();
         return this;
     }
 
@@ -307,6 +308,9 @@ class DtbRoute extends RcdMaterialRoute {
     }
 
     onDisplay() {
+    }
+
+    onHide() {
     }
 
     displayHelp() {
@@ -429,8 +433,8 @@ class DtbRoute extends RcdMaterialRoute {
         const infoDialog = showLongInfoDialog("Deleting nodes...");
         requestPostJson(config.servicesUrl + '/node-delete', {
             data: {
-                repositoryName: getRepoParameter(),
-                branchName: getBranchParameter(),
+                repositoryName: params.repo || getRepoParameter(),
+                branchName: params.branch || getBranchParameter(),
                 keys: params.nodeKeys
             },
         })
@@ -542,7 +546,7 @@ class DtbRoute extends RcdMaterialRoute {
 function handleTaskCreation(result, params) {
     const infoDialog = showLongInfoDialog(params.message).addClass('dt-progress-info-dialog');
     let progressIndicator;
-    retrieveTask({
+    retrieveTaskProgress({
         taskId: params.taskId,
         doneCallback: (task) => {
             if (task) {
@@ -581,21 +585,22 @@ function handleTaskCreation(result, params) {
     });
 }
 
-function retrieveTask(params) {
-    const intervalId = setInterval(() => {
+function retrieveTaskProgress(params) {
+    let attemptCounter = 0;
+    const intervalId = taskManager && taskManager.open ? setInterval(() => {
+        const task = taskManager.getTask(params.taskId);
+        if ((task == null || task.state === 'WAITING') && attemptCounter < 9) {
+            attemptCounter++;
+        } else {
+            onTaskRetrieved(task, params, intervalId);
+        }
+    }, 100) : setInterval(() => {
         requestJson(config.adminRestUrl + '/tasks/' + params.taskId)
             .then((task) => {
-                if (task && task.state === 'FINISHED') {
-                    clearInterval(intervalId);
-                    params.doneCallback(task);
-                    params.alwaysCallback();
-                } else if (task && task.state === 'RUNNING') {
-                    if (params.progressCallback) {
-                        params.progressCallback(task);
-                    }
+                if ((task == null || task.state === 'WAITING') && attemptCounter < 1) {
+                    attemptCounter++;
                 } else {
-                    clearInterval(intervalId);
-                    params.alwaysCallback();
+                    onTaskRetrieved(task, params, intervalId);
                 }
             })
             .catch((error) => {
@@ -604,6 +609,40 @@ function retrieveTask(params) {
                 params.alwaysCallback();
             });
     }, 1000);
+}
+
+function onTaskRetrieved(task, params, intervalId) {
+    if (task && task.state === 'FINISHED') {
+        clearInterval(intervalId);
+        params.doneCallback(task);
+        params.alwaysCallback();
+    } else if (task && task.state === 'RUNNING') {
+        if (params.progressCallback) {
+            params.progressCallback(task);
+        }
+    } else {
+        clearInterval(intervalId);
+        params.alwaysCallback();
+    }
+}
+
+function retrieveTasks(params) {
+    return new Promise((resolve, reject) => {
+        if (taskManager) {
+            const tasks = taskManager.getTasks(params.applicationKey);
+            resolve(tasks);
+        } else {
+            requestJson(config.adminRestUrl + '/tasks')
+                .then((result) => {
+                    const filteredTasks = result.tasks.filter(task => !params.applicationKey || params.applicationKey === task.application);
+                    resolve(filteredTasks);
+                })
+                .catch((error) => {
+                    handleRequestError(error);
+                    reject();
+                });
+        }
+    });
 }
 
 function encodeReservedCharacters(text) {
@@ -627,4 +666,17 @@ function displaySnackbar(text) {
     new RcdMaterialSnackbar(text)
         .init()
         .open();
+}
+
+function toHumanReadableSize(sizeInBytes) {
+    if (sizeInBytes < 1024) {
+        return sizeInBytes + ' B';
+    }
+    if (sizeInBytes < 1024 * 1024) {
+        return (sizeInBytes / 1024).toFixed(1) + ' KiB';
+    }
+    if (sizeInBytes < 1024 * 1024 * 1024) {
+        return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MiB';
+    }
+    return (sizeInBytes / (1024 * 1024 * 1024)).toFixed(1) + ' GiB'
 }

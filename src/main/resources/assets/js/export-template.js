@@ -1,6 +1,7 @@
 (function () {
     include('rcd-jsfwk-core.js');
     include('rcd-jsfwk-material.js');
+    const taskManager = null;
     include('data-toolbox-common.js');
     let tableCard;
     let exportWidgetContainer;

@@ -147,7 +147,8 @@ class UsersRoute extends DtbRoute {
     displayHelp() {
         const definition = 'The System ID provider has two built-in users. ' +
                            'One is the Super User which has full administrative permissions. ' +
-                           'The other is the Anonymous User which is the principal used by any site visitor that is not logged in.';
+                           'The other is the Anonymous User which is the principal used by any site visitor that is not logged in. ' +
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/iam">IAM</a> for more information.';
 
         const viewDefinition = 'The view lists in a table all the users for the current ID provider';
         new HelpDialog('Users', [definition, viewDefinition]).init()

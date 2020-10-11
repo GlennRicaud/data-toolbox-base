@@ -197,8 +197,9 @@ class NodesRoute extends DtbRoute {
     exportNode() {
         const nodePath = this.tableCard.getSelectedRows().map((row) => row.attributes['path'])[0];
         const baseExportName = getPathParameter()
-            ? (this.tableCard.getSelectedRows().map((row) => row.attributes['name'])[0] || 'export') + '-' + getBranchParameter()
-            : getRepoParameter() + '-' + getBranchParameter();
+                               ? (this.tableCard.getSelectedRows().map((row) => row.attributes['name'])[0] || 'export') + '-' +
+                                 getBranchParameter()
+                               : getRepoParameter() + '-' + getBranchParameter();
         const defaultExportName = baseExportName + '-' + toLocalDateTimeFormat(new Date(), '-', '-');
         showInputDialog({
             title: "Export node",
@@ -301,15 +302,15 @@ class NodesRoute extends DtbRoute {
     displayHelp() {
         const definition = 'A Node represents a single storable entity of data. ' +
                            'It can be compared to a row in sql or a document in document oriented storage models.<br/>' +
-                           'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/developer/node-domain/nodes.html">Nodes</a> for more information. ';
+                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#nodes">Nodes</a> for more information. ';
 
         const structureDefinition = 'This view represents nodes in a tree structure. ' +
                                     'While this solution is adapted to repositories like com.enonic.cms.default or system-repo, ' +
-                                    'it may be problematic for custom repositories or for nodes with too many children. ' +
-                                    'In these cases, we recommend to use the Node Search or the admin tool ' +
+                                    'it may not be suitable for custom repositories or for nodes with too many children. ' +
+                                    'In these cases, we recommend to use the <a class="rcd-material-link" href="#search">Node Search</a> or the admin tool ' +
                                     '<a class="rcd-material-link" href="https://market.enonic.com/vendors/runar-myklebust/repoxplorer">repoXPlorer</a>.';
 
-        const viewDefinition = 'The view lists in a table all the direct children nodes of the current node (or the root node for a branch). Click on a row to display its direct children.';
+        const viewDefinition = 'The view lists in a table all the direct children nodes of the current node (or the root node for a branch). Click on a row to display its children.';
         new HelpDialog('Node Tree', [definition, structureDefinition, viewDefinition]).init()
             .addActionDefinition({
                 iconSrc: config.assetsUrl + '/icons/export-icon.svg',
@@ -322,12 +323,12 @@ class NodesRoute extends DtbRoute {
             .addActionDefinition({
                 iconSrc: config.assetsUrl + '/icons/rename.svg',
                 definition: 'Move or rename node(s). If the value ends in slash \'/\', it specifies the parent path where to be moved. ' +
-                            'Otherwise, it means the new desired path or name for the node (available only if one node is selected).'
+                            'Otherwise, it means the new desired path or name for the node (renaming available only if one node is selected).'
             })
             .addActionDefinition({
                 iconName: 'filter_list', definition: 'Filter the nodes based on a query expression. ' +
                                                      'Example: "_id = \'role:system.admin"\'. ' +
-                                                     'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/reference/query-language.html#compareexpr">Query language</a> for more information.'
+                                                     'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query language</a> for more information.'
             })
             .addActionDefinition({
                 iconName: 'sort',
