@@ -191,18 +191,11 @@
       </plugin>
     </plugins>
   </build>
-  <!--distributionManagement>
+  <distributionManagement>
     <repository>
       <id>bintray-rcd-systems-rcd-repo</id>
       <name>rcd-systems-rcd-repo</name>
       <url>https://api.bintray.com/maven/rcd-systems/rcd-repo/datatoolbox-base/;publish=1</url>
-    </repository>
-  </distributionManagement-->
-  
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/GlennRicaud/data-toolbox-base</url>
     </repository>
   </distributionManagement>
 </project>
