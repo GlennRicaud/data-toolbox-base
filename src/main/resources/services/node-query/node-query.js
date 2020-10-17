@@ -1,5 +1,5 @@
 const nodeLib = require('/lib/xp/node');
-const repoLib = require('/lib/xp/repo');
+const queryLib = require('/lib/query');
 const utilLib = require('/lib/util');
 
 exports.post = function (req) {
@@ -19,40 +19,8 @@ exports.post = function (req) {
 };
 
 function doQuery(repositoryName, branchName, query, start, count, sort) {
-    let repoConnection;
-    if (repositoryName && branchName) {
-        repoConnection = nodeLib.connect({
-            repoId: repositoryName,
-            branch: branchName
-        });
-    } else if (repositoryName) {
-        const sources = [];
-        repoLib.get(repositoryName).branches.forEach(function (branch) {
-            sources.push({
-                repoId: repositoryName,
-                branch: branch,
-                principals: ["role:system.admin"] //Why is this mandatory
-            });
-        });
-        repoConnection = nodeLib.multiRepoConnect({
-            sources: sources
-        });
-    } else {
-        const sources = [];
-        repoLib.list().forEach(function (repository) {
-            repository.branches.forEach(function (branch) {
-                sources.push({
-                    repoId: repository.id,
-                    branch: branch,
-                    principals: ["role:system.admin"] //Why is this mandatory
-                });
-            });
-        });
-        repoConnection = nodeLib.multiRepoConnect({
-            sources: sources
-        });
-    }
-
+    const repoConnection = queryLib.createRepoConnection(repositoryName, branchName);
+    
     const result = repoConnection.query({
         query: query,
         start: start,

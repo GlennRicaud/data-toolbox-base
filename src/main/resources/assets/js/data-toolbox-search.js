@@ -1,3 +1,83 @@
+class ReportDialog extends RcdMaterialModalDialog {
+    constructor(params) {
+        super('Node Query Report', null, true, true);
+        this.params = params;
+        this.defaultReportName = 'query-report-' + toLocalDateTimeFormat(new Date(), '-', '-');
+        this.formatDropdownField = new RcdMaterialDropdown('Format', ['Node as JSON']).init();
+        this.reportNameTextField =
+            new RcdMaterialTextField('Report name', this.defaultReportName).init().setValue(this.defaultReportName || '');
+    }
+
+    init() {
+        return super.init()
+            .addItem(this.formatDropdownField)
+            .addItem(this.reportNameTextField)
+            .addAction('CLOSE', () => this.close())
+            .addAction('GENERATE', () => this.report());
+    }
+
+    report() {
+        this.close();
+        const infoDialog = showShortInfoDialog('Getting number of nodes...');
+        return requestPostJson(config.servicesUrl + '/node-query', {
+            data: {
+                repositoryNames: this.params.repositoryNames,
+                branchNames: this.params.branchNames,
+                query: this.params.query,
+                sort: this.params.sort,
+                count: 0
+            }
+        })
+            .then((result) => {
+                showConfirmationDialog('Estimated number of nodes included: ' + result.success.total, 'continue',
+                    () => this.doReport());
+            })
+            .catch((error) => handleRequestError(error) && this.resultCard.addRow('Search failure'))
+            .finally(() => {
+                infoDialog.close();
+            });
+    }
+
+    doReport() {
+        const infoDialog = showLongInfoDialog("Generating report...");
+        const reportName = this.reportNameTextField.getValue() || this.defaultReportName;
+        requestPostJson(config.servicesUrl + '/report-create', {
+            data: {
+                repositoryNames: this.params.repositoryNames,
+                branchNames: this.params.branchNames,
+                query: this.params.query,
+                sort: this.params.sort,
+                format: this.formatDropdownField.getSelectedValue(),
+                reportName: reportName
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Generating report...',
+                doneCallback: (success) => {
+                    const archiveNameInput = new RcdInputElement().init()
+                        .setAttribute('type', 'hidden')
+                        .setAttribute('name', 'archiveName')
+                        .setAttribute('value', success);
+                    const fileNameInput = new RcdInputElement().init()
+                        .setAttribute('type', 'hidden')
+                        .setAttribute('name', 'fileName')
+                        .setAttribute('value', reportName + '.zip');
+                    const downloadForm = new RcdFormElement().init()
+                        .setAttribute('action', config.servicesUrl + '/report-download')
+                        .setAttribute('method', 'post')
+                        .addChild(archiveNameInput)
+                        .addChild(fileNameInput);
+                    document.body.appendChild(downloadForm.domElement);
+                    downloadForm.submit();
+                    document.body.removeChild(downloadForm.domElement);
+                }
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+}
+
 class SearchParamsCard extends RcdDivElement {
     constructor() {
         super();
@@ -27,10 +107,18 @@ class SearchParamsCard extends RcdDivElement {
             .addClass('dtb-responsive-row')
             .addChild(this.queryField)
             .addChild(this.sortField);
+        this.reportButtonArea = new RcdMaterialButtonArea('Report', () => {
+        }, RcdMaterialButtonType.FLAT).init()
+            .addClass('dtb-search-button')
+            .addClickListener(() => this.report());
         this.searchButtonArea = new RcdMaterialButtonArea('Search', () => {
         }, RcdMaterialButtonType.FLAT).init()
             .addClass('dtb-search-button')
             .addClickListener(() => this.search());
+        this.buttonRow = new RcdDivElement().init()
+            .addClass('dtb-action-row')
+            .addChild(this.reportButtonArea)
+            .addChild(this.searchButtonArea);
     }
 
     init() {
@@ -38,21 +126,30 @@ class SearchParamsCard extends RcdDivElement {
             .addClass('dtb-search-params')
             .addChild(this.contextRow)
             .addChild(this.queryRow)
-            .addChild(this.searchButtonArea)
+            .addChild(this.buttonRow)
             .addKeyUpListener('Enter', () => this.search());
     }
 
     search() {
+        RcdHistoryRouter.setState('search', this.getSearchParams());
+    }
+
+    report() {
+        new ReportDialog(this.getSearchParams()).init()
+            .open();
+    }
+
+    getSearchParams() {
         const repo = this.repositoryDropdown.getSelectedValue();
         const branch = this.branchDropdown.getSelectedValue();
         const query = this.queryField.getValue();
         const sort = this.sortField.getValue();
-        RcdHistoryRouter.setState('search', {
+        return {
             repo: repo === 'All repositories' ? undefined : repo,
             branch: branch === 'All branches' ? undefined : branch,
             query: query,
             sort: sort
-        });
+        };
     }
 
     onDisplay(repositories) {
