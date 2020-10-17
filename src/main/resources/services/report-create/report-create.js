@@ -91,6 +91,7 @@ function generateReportEntries(repositoryName, branchName, queryResult, createEn
 function generateReportMeta(queryParams, queryResult, createEntryConsumer) {
     createEntryConsumer('report.json', JSON.stringify({
         version: "1",
+        format: 'Node as JSON',
         params: queryParams,
         result: queryResult
     }, null, 2));
