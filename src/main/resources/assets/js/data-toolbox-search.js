@@ -328,6 +328,7 @@ class SearchRoute extends DtbRoute {
 
     displayHelp() {
         const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#query_language">Node Query Language</a>.';
-        new HelpDialog('Search', [viewDefinition]).init().open();
+        const reportDescription = 'Report: Generate a report of the query result.<br/>Format "Node as JSON": Generate the matching nodes as JSON in a tree structure';
+        new HelpDialog('Search', [viewDefinition, reportDescription]).init().open();
     }
 }
