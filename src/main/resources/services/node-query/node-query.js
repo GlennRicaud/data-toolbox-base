@@ -31,18 +31,17 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
 
     let hits;
     if (repositoryName && branchName) {
-        const ids = result.hits.map(function (hit) {
-            return hit.id;
-        });
-        hits = utilLib.forceArray(repoConnection.get(ids)).map(function (node) {
+        hits = result.hits.map( hit => {
+            const node = repoConnection.get(hit.id);
             return {
                 repositoryName: repositoryName,
                 branchName: branchName,
                 _id: node._id,
                 _name: node._name,
-                _path: node._path
+                _path: node._path,
+                _score: hit.score
             };
-        })
+        });
     } else {
         hits = result.hits.map(function (hit) {
             const node = nodeLib.connect({
@@ -54,7 +53,8 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
                 branchName: hit.branch,
                 _id: node._id,
                 _name: node._name,
-                _path: node._path
+                _path: node._path,
+                _score: hit.score
             };
         });
     }

@@ -3,16 +3,16 @@ class ReportDialog extends RcdMaterialModalDialog {
         super('Node Query Report', null, true, true);
         this.params = params;
         this.defaultReportName = 'query-report-' + toLocalDateTimeFormat(new Date(), '-', '-');
-        this.formatDropdownField = new RcdMaterialDropdown('Format', ['Node as JSON']).init();
         this.reportNameTextField =
             new RcdMaterialTextField('Report name', this.defaultReportName).init().setValue(this.defaultReportName || '');
+        this.formatDropdownField = new RcdMaterialDropdown('Format', ['Node as JSON']).init();
         this.nodeCountField = new RcdTextElement('Number of exported nodes: ' + nodeCount).init();
     }
 
     init() {
         return super.init()
-            .addItem(this.formatDropdownField)
             .addItem(this.reportNameTextField)
+            .addItem(this.formatDropdownField)
             .addItem(this.nodeCountField)
             .addAction('CLOSE', () => this.close())
             .addAction('GENERATE', () => this.report());
@@ -112,7 +112,13 @@ class SearchParamsCard extends RcdDivElement {
     }
 
     search() {
-        RcdHistoryRouter.setState('search', this.getSearchParams());
+        const searchParams = this.getSearchParams();
+        RcdHistoryRouter.setState('search', {
+            repo: searchParams.repositoryName,
+            branch: searchParams.branchName,
+            query: searchParams.query,
+            sort: searchParams.sort
+        });
     }
 
     report() {
@@ -267,7 +273,8 @@ class SearchRoute extends DtbRoute {
         } else {
             result.success.hits.forEach(node => {
                 const primary = node._name;
-                const secondary = node.repositoryName + ':' + node.branchName + ':' + node._path;
+                const secondary = node.repositoryName + ':' + node.branchName + ':' + node._path +
+                                  (node._score ? ('<br/>Score: ' + node._score.toFixed(5)) : '');
                 this.resultCard.addRow(primary, secondary, {
                     callback: () => setState('node', {repo: node.repositoryName, branch: node.branchName, id: node._id})
                 });
