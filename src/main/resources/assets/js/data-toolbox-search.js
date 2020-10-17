@@ -1,50 +1,31 @@
 class ReportDialog extends RcdMaterialModalDialog {
-    constructor(params) {
+    constructor(params, nodeCount) {
         super('Node Query Report', null, true, true);
         this.params = params;
         this.defaultReportName = 'query-report-' + toLocalDateTimeFormat(new Date(), '-', '-');
         this.formatDropdownField = new RcdMaterialDropdown('Format', ['Node as JSON']).init();
         this.reportNameTextField =
             new RcdMaterialTextField('Report name', this.defaultReportName).init().setValue(this.defaultReportName || '');
+        this.nodeCountField = new RcdTextElement('Number of exported nodes: ' + nodeCount).init();
     }
 
     init() {
         return super.init()
             .addItem(this.formatDropdownField)
             .addItem(this.reportNameTextField)
+            .addItem(this.nodeCountField)
             .addAction('CLOSE', () => this.close())
             .addAction('GENERATE', () => this.report());
     }
 
     report() {
         this.close();
-        const infoDialog = showShortInfoDialog('Getting number of nodes...');
-        return requestPostJson(config.servicesUrl + '/node-query', {
-            data: {
-                repositoryNames: this.params.repositoryNames,
-                branchNames: this.params.branchNames,
-                query: this.params.query,
-                sort: this.params.sort,
-                count: 0
-            }
-        })
-            .then((result) => {
-                showConfirmationDialog('Estimated number of nodes included: ' + result.success.total, 'continue',
-                    () => this.doReport());
-            })
-            .catch((error) => handleRequestError(error) && this.resultCard.addRow('Search failure'))
-            .finally(() => {
-                infoDialog.close();
-            });
-    }
-
-    doReport() {
         const infoDialog = showLongInfoDialog("Generating report...");
         const reportName = this.reportNameTextField.getValue() || this.defaultReportName;
         requestPostJson(config.servicesUrl + '/report-create', {
             data: {
-                repositoryNames: this.params.repositoryNames,
-                branchNames: this.params.branchNames,
+                repositoryName: this.params.repositoryName,
+                branchName: this.params.branchName,
                 query: this.params.query,
                 sort: this.params.sort,
                 format: this.formatDropdownField.getSelectedValue(),
@@ -135,8 +116,25 @@ class SearchParamsCard extends RcdDivElement {
     }
 
     report() {
-        new ReportDialog(this.getSearchParams()).init()
-            .open();
+        const searchParams = this.getSearchParams();
+        const infoDialog = showShortInfoDialog('Retrieving result count...');
+        return requestPostJson(config.servicesUrl + '/node-query', {
+            data: {
+                repositoryName: searchParams.repositoryName,
+                branchNames: searchParams.branchNames,
+                query: searchParams.query,
+                sort: searchParams.sort,
+                count: 0
+            }
+        })
+            .then((result) => {
+                new ReportDialog(searchParams, result.success.total).init()
+                    .open();
+            })
+            .catch((error) => handleRequestError(error) && this.resultCard.addRow('Search failure'))
+            .finally(() => {
+                infoDialog.close();
+            });
     }
 
     getSearchParams() {
@@ -145,8 +143,8 @@ class SearchParamsCard extends RcdDivElement {
         const query = this.queryField.getValue();
         const sort = this.sortField.getValue();
         return {
-            repo: repo === 'All repositories' ? undefined : repo,
-            branch: branch === 'All branches' ? undefined : branch,
+            repositoryName: repo === 'All repositories' ? undefined : repo,
+            branchName: branch === 'All branches' ? undefined : branch,
             query: query,
             sort: sort
         };

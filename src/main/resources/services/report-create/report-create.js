@@ -62,7 +62,7 @@ function generateReportEntries(repositoryName, branchName, queryResult, createEn
             branch: hit.branch
         }).get(hit.id);
         createEntryConsumer((repositoryName || hit.repoId) + '/' + (branchName || hit.branch) + node._path + '.json',
-            JSON.stringify(node));
+            JSON.stringify(node, null, 2));
 
         current++;
         if (current % 10 === 0) {

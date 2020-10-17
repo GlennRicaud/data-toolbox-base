@@ -8,7 +8,7 @@ exports.post = function (req) {
     const branchName = body.branchName;
     const query = body.query;
     const start = body.start || 0;
-    const count = body.count || 10;
+    const count = body.count == null ? 10 : body.count;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
     const result = utilLib.runSafely(doQuery, [repositoryName, branchName, query, start, count, sort], 'Error while querying nodes');
@@ -20,7 +20,7 @@ exports.post = function (req) {
 
 function doQuery(repositoryName, branchName, query, start, count, sort) {
     const repoConnection = queryLib.createRepoConnection(repositoryName, branchName);
-    
+
     const result = repoConnection.query({
         query: query,
         start: start,
