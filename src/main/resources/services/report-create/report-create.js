@@ -22,7 +22,20 @@ exports.post = function (req) {
                 total: queryResult.total
             });
             const createReportFileCallback = __.toScriptValue(
-                (createEntryConsumer) => generateReportEntries(repositoryName, branchName, queryResult, createEntryConsumer));
+                (createEntryConsumer) => {
+                    generateReportEntries(repositoryName, branchName, queryResult, createEntryConsumer);
+                    generateReportMeta({
+                            repository: repositoryName || undefined,
+                            branch: branchName || undefined,
+                            query: query,
+                            sort: sort,
+                        },
+                        {
+                            total: queryResult.total
+                        },
+                        createEntryConsumer
+                    );
+                });
 
             const result = bean.createReportFile(reportName, createReportFileCallback);
             taskLib.progress({
@@ -73,4 +86,12 @@ function generateReportEntries(repositoryName, branchName, queryResult, createEn
             });
         }
     });
+}
+
+function generateReportMeta(queryParams, queryResult, createEntryConsumer) {
+    createEntryConsumer('report.json', JSON.stringify({
+        version: "1",
+        params: queryParams,
+        result: queryResult
+    }, null, 2));
 }
