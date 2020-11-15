@@ -65,6 +65,9 @@ class VersionsRoute extends DtbRoute {
                 {text: 'Display index blob', callback: displayIndexBlobCallback},
                 {text: 'Display access blob', callback: displayAccessBlobCallback},
             ];
+            if (version.nodeCommitId) {
+                moreIconAreaItems.push({text: 'Display commit', callback: () => this.displayCommitAsJson(version.nodeCommitId)})
+            }
             const moreIconArea = new RcdGoogleMaterialIconArea('more_vert', (source, event) => {
                 RcdMaterialMenuHelper.displayMenu(source, moreIconAreaItems, 200)
                 event.stopPropagation();
@@ -115,6 +118,23 @@ class VersionsRoute extends DtbRoute {
             previousCallback: previousCallback,
             nextCallback: nextCallback
         });
+    }
+
+    displayCommitAsJson(nodeCommitId) {
+        const infoDialog = showShortInfoDialog("Retrieving commit...");
+        return requestPostJson(config.servicesUrl + '/commit-get', {
+            data: {
+                repositoryName: getRepoParameter(),
+                nodeCommitId: nodeCommitId
+            }
+        })
+            .then((result) => {
+                const formattedJson = this.formatJson(result.success, '');
+                showDetailsDialog('Commit [' + nodeCommitId + ']', formattedJson)
+                    .addClass('node-details-dialog');
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     refreshBreadcrumbs() {

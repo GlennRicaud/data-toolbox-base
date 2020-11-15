@@ -1,5 +1,5 @@
 const nodeLib = require('/lib/xp/node');
-const repoLib = require('/lib/xp/repo');
+const queryLib = require('/lib/query');
 const utilLib = require('/lib/util');
 
 exports.post = function (req) {
@@ -8,7 +8,7 @@ exports.post = function (req) {
     const branchName = body.branchName;
     const query = body.query;
     const start = body.start || 0;
-    const count = body.count || 10;
+    const count = body.count == null ? 10 : body.count;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
     const result = utilLib.runSafely(doQuery, [repositoryName, branchName, query, start, count, sort], 'Error while querying nodes');
@@ -19,39 +19,7 @@ exports.post = function (req) {
 };
 
 function doQuery(repositoryName, branchName, query, start, count, sort) {
-    let repoConnection;
-    if (repositoryName && branchName) {
-        repoConnection = nodeLib.connect({
-            repoId: repositoryName,
-            branch: branchName
-        });
-    } else if (repositoryName) {
-        const sources = [];
-        repoLib.get(repositoryName).branches.forEach(function (branch) {
-            sources.push({
-                repoId: repositoryName,
-                branch: branch,
-                principals: ["role:system.admin"] //Why is this mandatory
-            });
-        });
-        repoConnection = nodeLib.multiRepoConnect({
-            sources: sources
-        });
-    } else {
-        const sources = [];
-        repoLib.list().forEach(function (repository) {
-            repository.branches.forEach(function (branch) {
-                sources.push({
-                    repoId: repository.id,
-                    branch: branch,
-                    principals: ["role:system.admin"] //Why is this mandatory
-                });
-            });
-        });
-        repoConnection = nodeLib.multiRepoConnect({
-            sources: sources
-        });
-    }
+    const repoConnection = queryLib.createRepoConnection(repositoryName, branchName);
 
     const result = repoConnection.query({
         query: query,
@@ -63,18 +31,17 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
 
     let hits;
     if (repositoryName && branchName) {
-        const ids = result.hits.map(function (hit) {
-            return hit.id;
-        });
-        hits = utilLib.forceArray(repoConnection.get(ids)).map(function (node) {
+        hits = result.hits.map( hit => {
+            const node = repoConnection.get(hit.id);
             return {
                 repositoryName: repositoryName,
                 branchName: branchName,
                 _id: node._id,
                 _name: node._name,
-                _path: node._path
+                _path: node._path,
+                _score: hit.score
             };
-        })
+        });
     } else {
         hits = result.hits.map(function (hit) {
             const node = nodeLib.connect({
@@ -86,7 +53,8 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
                 branchName: hit.branch,
                 _id: node._id,
                 _name: node._name,
-                _path: node._path
+                _path: node._path,
+                _score: hit.score
             };
         });
     }
