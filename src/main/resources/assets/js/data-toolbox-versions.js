@@ -64,7 +64,10 @@ class VersionsRoute extends DtbRoute {
                 {text: 'Display access blob', callback: displayAccessBlobCallback},
             ];
             if (version.nodeCommitId) {
-                moreIconAreaItems.push({text: 'Display commit', callback: () => this.displayCommitAsJson(version.nodeCommitId)})
+                moreIconAreaItems.push({text: 'Display commit', callback: () => this.displayCommitAsJson(version.nodeCommitId)});
+            }
+            if (!version.branches || version.branches.length < result.success.branches.length) {
+                moreIconAreaItems.push({text: 'Set active in...', callback: () => this.setActive(version, result.success.branches)})
             }
             const moreIconArea = new RcdGoogleMaterialIconArea('more_vert', (source, event) => {
                 RcdMaterialMenuHelper.displayMenu(source, moreIconAreaItems, 200)
@@ -132,6 +135,31 @@ class VersionsRoute extends DtbRoute {
                 showDetailsDialog('Commit [' + nodeCommitId + ']', formattedJson)
                     .addClass('node-details-dialog');
             })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+
+    setActive(version, branches) {
+        showSelectionDialog({
+            title: 'Set active in...',
+            label: 'Branch',
+            options: branches,
+            confirmationLabel: 'SET',
+            callback: (branch) => this.doSetActive(version, branch)
+        });
+    }
+
+    doSetActive(version, branch) {
+        const infoDialog = showShortInfoDialog("Setting version as active...");
+        return requestPostJson(config.servicesUrl + '/version-setactive', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: branch,
+                nodeId: version.nodeId,
+                nodeVersionId: version.versionId
+            }
+        })
+            .then(() => this.retrieveVersions())
             .catch(handleRequestError)
             .finally(() => infoDialog.close());
     }

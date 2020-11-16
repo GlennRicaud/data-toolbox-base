@@ -71,6 +71,8 @@ public class RcdVersionScriptBean
 
             final RcdJsonObject result = RcdJsonService.createJsonObject().
                 put( "total", versionQueryResult.getTotalHits() );
+            final RcdJsonArray branchJsonArray = result.createArray( "branches" );
+            branches.forEach( branch -> branchJsonArray.add( branch.getValue() ) );
             final RcdJsonArray hits = result.createArray( "hits" );
             versionQueryResult.getNodeVersionsMetadata().forEach( nodeVersionMetadata -> {
                 final NodeVersionKey nodeVersionKey = nodeVersionMetadata.getNodeVersionKey();
@@ -88,12 +90,28 @@ public class RcdVersionScriptBean
                 final List<Branch> activeInBranchList = branchesByCommitId.get( nodeVersionMetadata.getNodeVersionId() );
                 if ( activeInBranchList != null )
                 {
-                    final RcdJsonArray branchJsonArray = nodeVersion.createArray( "branches" );
-                    activeInBranchList.forEach( branch -> branchJsonArray.add( branch.getValue() ) );
+                    final RcdJsonArray activeInBranchJsonArray = nodeVersion.createArray( "branches" );
+                    activeInBranchList.forEach( branch -> activeInBranchJsonArray.add( branch.getValue() ) );
                 }
             } );
 
             return createSuccessResult( result );
         }, "Error while retrieving versions" );
+    }
+
+    public String setActive( final String repositoryName, final String branchName, final String nodeIdString,
+                             final String nodeVersionIdString )
+    {
+        return runSafely( () -> {
+            final RepositoryId repositoryId = RepositoryId.from( repositoryName );
+            final Branch branch = Branch.from( branchName );
+            final NodeId nodeId = NodeId.from( nodeIdString );
+            final NodeVersionId nodeVersionId = NodeVersionId.from( nodeVersionIdString );
+            createContext( repositoryId, branch ).
+                runWith( () -> nodeServiceSupplier.get().
+                    setActiveVersion( nodeId, nodeVersionId ) );
+
+            return createSuccessResult();
+        }, "Error while setting active version" );
     }
 }
