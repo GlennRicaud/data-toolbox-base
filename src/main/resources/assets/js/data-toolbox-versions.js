@@ -13,9 +13,8 @@ class VersionsRoute extends DtbRoute {
     createLayout() {
         this.tableCard = new RcdMaterialTableCard('Versions', {selectable: false}).init()
             .addClass('dtb-table-card-versions')
-            .addColumn('Version ID')
-            .addColumn('Path', {classes: ['non-mobile-cell']})
-            .addColumn('Commit', {classes: ['non-mobile-cell']})
+            .addColumn('Version ID<br/>Path')
+            .addColumn('Info', {classes: ['non-mobile-cell']})
             .addColumn('Timestamp')
             .addColumn('', {icon: true});
 
@@ -28,7 +27,6 @@ class VersionsRoute extends DtbRoute {
         this.tableCard.deleteRows();
         this.tableCard.createRow({selectable: false})
             .addCell('..')
-            .addCell('', {classes: ['non-mobile-cell']})
             .addCell('', {classes: ['non-mobile-cell']})
             .addCell('')
             .addCell('', {icon: true})
@@ -75,9 +73,10 @@ class VersionsRoute extends DtbRoute {
                 .setTooltip('Display...');
 
             this.tableCard.createRow()
-                .addCell(version.versionId)
-                .addCell(version.nodePath, {classes: ['non-mobile-cell']})
-                .addCell(version.nodeCommitId, {classes: ['non-mobile-cell']})
+                .addCell(version.versionId + '<br/>' + version.nodePath)
+                .addCell((version.branches ? 'Active in: ' + version.branches : '') + '<br/>' +
+                         (version.nodeCommitId ? 'Committed' : ''),
+                    {classes: ['non-mobile-cell']})
                 .addCell(version.timestamp)
                 .addCell(moreIconArea, {icon: true});
 
