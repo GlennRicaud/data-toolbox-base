@@ -39,6 +39,7 @@ class TaskManager extends RcdObject {
             if (this.resolve) {
                 this.resolve(this);
             }
+
         });
         socket.addEventListener('error', () => {
             if (this.reject) {
@@ -58,6 +59,11 @@ class TaskManager extends RcdObject {
                 }
             }
         });
+        setInterval(() => {
+            if (this.open) {
+                socket.send('KeepAlive');
+            }
+        }, 60000);
     }
 
     addTask(task) {
