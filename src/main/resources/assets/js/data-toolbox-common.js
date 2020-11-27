@@ -587,7 +587,7 @@ function handleTaskCreation(result, params) {
 
 function retrieveTaskProgress(params) {
     let attemptCounter = 0;
-    const intervalId = taskManager && taskManager.open ? setInterval(() => {
+    const intervalId = taskManager && taskManager.isLive() ? setInterval(() => {
         const task = taskManager.getTask(params.taskId);
         if ((task == null || task.state === 'WAITING') && attemptCounter < 9) {
             attemptCounter++;

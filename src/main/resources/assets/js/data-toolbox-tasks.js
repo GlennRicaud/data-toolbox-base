@@ -62,9 +62,11 @@ class TasksRoute extends DtbRoute {
                 row.children[3].addChild(progressIndicator);
             }
         });
-        if (taskManager && this.displayed) {
-            setTimeout(() => this.doRetrieveTasks(), 200);
-        }
+        setTimeout(() => {
+            if (this.displayed) {
+                this.doRetrieveTasks();
+            }
+        }, taskManager ? 200 : 1000);
     }
 
     displayHelp() {

@@ -1,4 +1,5 @@
 include('data-toolbox-common.js');
+include('data-toolbox-event-manager.js');
 include('data-toolbox-task-manager.js');
 include('data-toolbox-presentation.js');
 include('data-toolbox-dumps.js');

@@ -1,19 +1,22 @@
 class TaskManager extends RcdObject {
-    constructor(params = {}) {
+    constructor(eventManager) {
         super();
+        this.eventManager = eventManager;
         this.taskMap = {};
         this.applicationTaskMapMap = {};
         this.applicationTaskMapMap[config.appName] = {};
         this.open = false;
         this.taskEventRegexp = /^{"type":"task\./;
-        this.onReady = params.onReady;
     }
 
     init() {
         requestJson(config.adminRestUrl + '/tasks')
             .then((result) => {
                 result.tasks.forEach(task => this.addTask(task));
-                this.openSocket();
+                this.eventManager.addListener(this);
+                if (this.resolve) {
+                    this.resolve(this);
+                }
             })
             .catch((error) => {
                 handleRequestError(error);
@@ -32,43 +35,23 @@ class TaskManager extends RcdObject {
         })
     }
 
-    openSocket() {
-        const socket = new WebSocket(config.wsUrl);
-        socket.addEventListener('open', () => {
-            this.open = true;
-            if (this.resolve) {
-                this.resolve(this);
-            }
+    isLive() {
+        return this.eventManager.opened;
+    }
 
-        });
-        socket.addEventListener('error', () => {
-            if (this.reject) {
-                this.reject();
+    onEvent(event) {
+        if (this.taskEventRegexp.test(event.data)) {
+            const eventData = JSON.parse(event.data);
+            if ('task.finished' === eventData.type || 'task.updated' === eventData.type || 'task.submitted' === eventData.type) {
+                this.addTask(eventData.data);
+            } else if ('task.removed' === eventData.type) {
+                this.removeTask(eventData.data);
             }
-        });
-        socket.addEventListener('close', () => {
-            this.open = false;
-        });
-        socket.addEventListener('message', (event) => {
-            if (this.taskEventRegexp.test(event.data)) {
-                const eventData = JSON.parse(event.data);
-                if ('task.finished' === eventData.type || 'task.updated' === eventData.type || 'task.submitted' === eventData.type) {
-                    this.addTask(eventData.data);
-                } else if ('task.removed' === eventData.type) {
-                    this.removeTask(eventData.data);
-                }
-            }
-        });
-        setInterval(() => {
-            if (this.open) {
-                socket.send('KeepAlive');
-            }
-        }, 60000);
+        }
     }
 
     addTask(task) {
         this.taskMap[task.id] = task;
-
         if (!this.applicationTaskMapMap[task.application]) {
             this.applicationTaskMapMap[task.application] = {};
         }
@@ -96,7 +79,6 @@ class TaskManager extends RcdObject {
             }
             return [];
         }
-
         return Object.values(this.taskMap);
     }
 }

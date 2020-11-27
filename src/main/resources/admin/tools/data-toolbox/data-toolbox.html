@@ -26,14 +26,12 @@
 <script>
     let taskManager;
     let app;
-    new TaskManager().initPromise()
-        .then((value) => {
-            taskManager = value;
-            app = createApp();
-            app.start(document.body);
+    new EventManager().initPromise()
+        .then(eventManager => new TaskManager(eventManager).initPromise())
+        .then(initializedTaskManager => {
+            taskManager = initializedTaskManager;
         })
-        .catch(() => {
-            taskManager = null;
+        .finally(() => {
             app = createApp();
             app.start(document.body);
         });
