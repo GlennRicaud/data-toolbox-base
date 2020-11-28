@@ -19,5 +19,6 @@ include('data-toolbox-iam.js');
 include('data-toolbox-users.js');
 include('data-toolbox-groups.js');
 include('data-toolbox-tasks.js');
+include('data-toolbox-events.js');
 include('data-toolbox-about.js');
 include('data-toolbox-main.js');

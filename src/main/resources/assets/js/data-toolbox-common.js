@@ -345,7 +345,7 @@ class DtbRoute extends RcdMaterialRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog('Node [' + nodeKey + ']', formattedJson).addClass('node-details-dialog');
             })
             .catch(handleRequestError)
@@ -362,7 +362,7 @@ class DtbRoute extends RcdMaterialRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog(blobKey ? 'Blob [' + blobKey + ']' : type + ' Blob [' + versionKey + ']', formattedJson)
                     .addClass('node-details-dialog');
             })
@@ -370,7 +370,7 @@ class DtbRoute extends RcdMaterialRoute {
             .finally(() => infoDialog.close());
     }
 
-    formatJson(value, tab) {
+    formatJson(value, tab = '') {
         if (value === null) {
             return '<a class=json-null>null</a>';
         } else if (value === undefined) {

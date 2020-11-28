@@ -131,7 +131,7 @@ class VersionsRoute extends DtbRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog('Commit [' + nodeCommitId + ']', formattedJson)
                     .addClass('node-details-dialog');
             })

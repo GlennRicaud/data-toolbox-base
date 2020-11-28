@@ -166,7 +166,7 @@ class NodeRoute extends DtbRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog(type + ' Index Document [' + id + ']', formattedJson).addClass('node-details-dialog');
             })
             .catch(handleRequestError)
