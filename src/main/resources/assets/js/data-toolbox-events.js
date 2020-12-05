@@ -1,6 +1,22 @@
 class EventsCard extends RcdMaterialCard {
     constructor() {
         super({title: 'Events'});
+
+        this.count = 0;
+        this.playing = false;
+        this.playIconArea = new RcdGoogleMaterialIconArea('play_arrow', () => this.play(true))
+            .init()
+            .enable(!this.playing);
+        this.pauseIconArea = new RcdGoogleMaterialIconArea('pause', () => this.play(false))
+            .init();
+        this.clearIconArea = new RcdGoogleMaterialIconArea('clear', () => this.clear()).init();
+        this.actionsPanel = new RcdDivElement().init()
+            .addClass('dtb-events-actions')
+            .addChild(this.playIconArea)
+            .addChild(this.pauseIconArea)
+            .addChild(this.clearIconArea);
+
+        this.header.addChild(this.actionsPanel);
         this.eventsPanel = new RcdDivElement()
             .init()
             .addClass('events-panel');
@@ -8,12 +24,34 @@ class EventsCard extends RcdMaterialCard {
 
     init() {
         return super.init()
-            .addChild(this.eventsPanel);
+            .addChild(this.eventsPanel)
+            .refresh();
+    }
+
+    play(play) {
+        this.playing = play;
+        this.refresh();
     }
 
     addEvent(eventText) {
+        this.count++;
         const eventPanel = new RcdTextDivElement(eventText).init();
         this.eventsPanel.addChild(eventPanel);
+        this.refresh();
+        return this;
+    }
+
+    clear() {
+        this.count = 0;
+        this.eventsPanel.clear();
+        this.refresh();
+        return this;
+    }
+
+    refresh() {
+        this.playIconArea.enable(!this.playing);
+        this.pauseIconArea.enable(this.playing);
+        this.clearIconArea.enable(this.count > 0);
         return this;
     }
 }
@@ -43,8 +81,8 @@ class EventsRoute extends DtbRoute {
     }
 
     createLayout() {
-        this.eventsCard = new EventsCard().init()
-            .addEvent(this.formatJson({a: "ee", b: 2}));
+        this.eventsCard = new EventsCard().init();
+        eventManager.addEventListener((event) => this.onEvent(event))
         return new RcdMaterialLayout().init()
             .addChild(this.eventsCard);
     }
@@ -55,6 +93,13 @@ class EventsRoute extends DtbRoute {
         new HelpDialog('Events', [definition, viewDefinition])
             .init()
             .open();
+    }
+
+    onEvent(event) {
+        if (this.eventsCard.playing) {
+            const eventData = JSON.parse(event.data);
+            this.eventsCard.addEvent(this.formatJson(eventData))
+        }
     }
 
 }

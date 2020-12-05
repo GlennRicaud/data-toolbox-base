@@ -18,7 +18,7 @@ class EventManager extends RcdObject {
         })
     }
 
-    addListener(listener) {
+    addEventListener(listener) {
         this.listeners.push(listener);
     }
 
@@ -41,7 +41,7 @@ class EventManager extends RcdObject {
             this.opened = false;
         });
         socket.addEventListener('message', (event) => {
-            this.listeners.forEach(listener => listener.onEvent(event));
+            this.listeners.forEach(listener => listener(event));
         });
         setInterval(() => {
             if (this.opened) {

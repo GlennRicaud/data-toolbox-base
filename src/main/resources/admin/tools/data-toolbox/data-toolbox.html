@@ -24,10 +24,14 @@
 
 <body class="rcd-body">
 <script>
+    let eventManager;
     let taskManager;
     let app;
     new EventManager().initPromise()
-        .then(eventManager => new TaskManager(eventManager).initPromise())
+        .then(initializedEventManager => {
+            eventManager = initializedEventManager;
+            return new TaskManager(initializedEventManager).initPromise();
+        })
         .then(initializedTaskManager => {
             taskManager = initializedTaskManager;
         })
