@@ -1,21 +1,18 @@
 class EventsCard extends RcdMaterialCard {
     constructor() {
         super({title: 'Events'});
-
-        this.count = 0;
         this.playing = false;
-        this.playIconArea = new RcdGoogleMaterialIconArea('play_arrow', () => this.play(true))
+        this.typeRegexp = null;
+        this.playIconArea = new RcdGoogleMaterialIconArea('play_arrow', () => this.play())
             .init()
-            .enable(!this.playing);
-        this.pauseIconArea = new RcdGoogleMaterialIconArea('pause', () => this.play(false))
-            .init();
-        this.clearIconArea = new RcdGoogleMaterialIconArea('clear', () => this.clear()).init();
+            .setTooltip('Listen to events');
+        this.stopIconArea = new RcdGoogleMaterialIconArea('stop', () => this.stop())
+            .init()
+            .setTooltip('Stop listening');
         this.actionsPanel = new RcdDivElement().init()
             .addClass('dtb-events-actions')
             .addChild(this.playIconArea)
-            .addChild(this.pauseIconArea)
-            .addChild(this.clearIconArea);
-
+            .addChild(this.stopIconArea);
         this.header.addChild(this.actionsPanel);
         this.eventsPanel = new RcdDivElement()
             .init()
@@ -28,30 +25,36 @@ class EventsCard extends RcdMaterialCard {
             .refresh();
     }
 
-    play(play) {
-        this.playing = play;
-        this.refresh();
+    play() {
+        showInputDialog({
+            title: "Listen to events",
+            confirmationLabel: "LISTEN",
+            label: "Filter by type (optional)",
+            placeholder: 'ex: node\.created',
+            callback: (value) => {
+                this.eventsPanel.clear();
+                this.typeRegexp = value ? new RegExp(value) : null;
+                this.playing = true;
+                this.refresh()
+            }
+        });
     }
 
-    addEvent(eventText) {
-        this.count++;
-        const eventPanel = new RcdTextDivElement(eventText).init();
-        this.eventsPanel.addChild(eventPanel);
+    stop() {
+        this.playing = false;
         this.refresh();
-        return this;
-    }
-
-    clear() {
-        this.count = 0;
-        this.eventsPanel.clear();
-        this.refresh();
-        return this;
     }
 
     refresh() {
         this.playIconArea.enable(!this.playing);
-        this.pauseIconArea.enable(this.playing);
-        this.clearIconArea.enable(this.count > 0);
+        this.stopIconArea.enable(this.playing);
+        return this;
+    }
+
+    addEvent(eventText) {
+        const eventPanel = new RcdTextDivElement(eventText).init();
+        this.eventsPanel.addChild(eventPanel);
+        this.refresh();
         return this;
     }
 }
@@ -63,14 +66,6 @@ class EventsRoute extends DtbRoute {
             name: 'Events',
             iconArea: new RcdGoogleMaterialIconArea('announcement').init()
         });
-    }
-
-    onDisplay() {
-        this.displayed = true;
-    }
-
-    onHide() {
-        this.displayed = false;
     }
 
     createBreadcrumbsLayout() {
@@ -88,9 +83,8 @@ class EventsRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Tasks allow the asynchronous execution of jobs. See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/tasks">Tasks</a> for more information.';
-        const viewDefinition = 'The view lists in a table all the tasks and their progress';
-        new HelpDialog('Events', [definition, viewDefinition])
+        const viewDefinition = 'The view allows to listen to events for the current Enonic XP instance. See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/events ">Events</a> for more information. A filtering by type can be applied using a regular expression';
+        new HelpDialog('Events', [viewDefinition])
             .init()
             .open();
     }
@@ -98,7 +92,9 @@ class EventsRoute extends DtbRoute {
     onEvent(event) {
         if (this.eventsCard.playing) {
             const eventData = JSON.parse(event.data);
-            this.eventsCard.addEvent(this.formatJson(eventData))
+            if (!this.eventsCard.typeRegexp || (eventData.type && eventData.type.match(this.eventsCard.typeRegexp))) {
+                this.eventsCard.addEvent(this.formatJson(eventData))
+            }
         }
     }
 
