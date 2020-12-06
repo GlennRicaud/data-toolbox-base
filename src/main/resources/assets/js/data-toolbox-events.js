@@ -4,36 +4,66 @@ class ListenEventsDialog extends RcdMaterialInputDialog {
             title: "Listen to events",
             confirmationLabel: "LISTEN",
             label: "Filter by type (optional)",
-            placeholder: 'ex: node\.created',
+            placeholder: 'ex: node\\.created',
             callback: (value) => params.callback({
                 type: value,
                 chronological: this.orderDropdown.getSelectedValue() === 'Chronological',
                 maxEventCount: parseInt(this.maxEventCountField.getValue()),
-                discardOldEvents: this.discardOldEventsCheckbox.isSelected()
+                discardOldEvents: this.discardOldEventsRadiobox.isSelected()
             })
         });
 
-        this.orderDropdown = new RcdMaterialDropdown('Order', ['Chronological', 'Reversed chronological']).init();
-        this.maxEventCountField = new RcdMaterialTextField('Max. displayed event count', '1024').init()
+        this.orderDropdown = new RcdMaterialDropdown('Order', ['Chronological', 'Reverse chronological']).init();
+        this.maxEventCountField = new RcdMaterialTextField('Maximum event number', '1024').init()
             .setPattern('[0-9]+')
-            .setValue('50');
-        this.discardOldEventsCheckbox = new RcdMaterialCheckbox().init()
-            .addClickListener(() => this.discardOldEventsCheckbox.select(!this.discardOldEventsCheckbox.isSelected()));
-        this.discardOldEventsLabel = new RcdTextDivElement('On max. displayed event count,<br/>discard old events')
+            .setValue('50')
+            .addInputListener(() => this.checkValidity());
+
+        this.maxEventsRadioGroup = new RcdMaterialRadioboxGroup().init();
+        this.stopListeningRadiobox = this.maxEventsRadioGroup.createRadiobox();
+        this.discardOldEventsRadiobox = this.maxEventsRadioGroup.createRadiobox();
+        this.maxEventsRadioGroup.select(this.stopListeningRadiobox);
+
+        const mavEventsStrategyLabel = new RcdTextDivElement('On maximum event number:').init();
+        const stopListeningLabel = new RcdTextDivElement('Stop listening').init();
+        const discardOldEventsLabel = new RcdTextDivElement('Discard old events').init();
+
+        const stopListeningField = new RcdDivElement()
             .init()
-            .addClass('dtb-dump-input-label');
-        this.discardOldEventsField = new RcdDivElement()
+            .addClass('dtb-field')
+            .addChild(this.stopListeningRadiobox)
+            .addChild(stopListeningLabel);
+        const discardOldEventsField = new RcdDivElement()
             .init()
-            .addClass('dtb-dump-input-field')
-            .addChild(this.discardOldEventsCheckbox)
-            .addChild(this.discardOldEventsLabel);
+            .addClass('dtb-field')
+            .addChild(this.discardOldEventsRadiobox)
+            .addChild(discardOldEventsLabel);
+
+        this.maxEventsStategyPanel = new RcdDivElement()
+            .init()
+            .addClass('dtb-max-events-strategy-panel')
+            .addChild(mavEventsStrategyLabel)
+            .addChild(stopListeningField)
+            .addChild(discardOldEventsField);
     }
 
     init() {
         return super.init()
             .addItem(this.orderDropdown)
             .addItem(this.maxEventCountField)
-            .addItem(this.discardOldEventsField);
+            .addItem(this.maxEventsStategyPanel);
+    }
+
+    checkValidity() {
+        this.enable(this.isValid());
+        return this;
+    }
+
+    isValid() {
+        if (!this.maxEventCountField.checkValidity()) {
+            return false;
+        }
+        return true;
     }
 }
 
