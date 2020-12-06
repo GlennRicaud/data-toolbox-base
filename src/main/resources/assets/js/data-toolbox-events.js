@@ -1,7 +1,47 @@
+class ListenEventsDialog extends RcdMaterialInputDialog {
+    constructor(params) {
+        super({
+            title: "Listen to events",
+            confirmationLabel: "LISTEN",
+            label: "Filter by type (optional)",
+            placeholder: 'ex: node\.created',
+            callback: (value) => params.callback({
+                type: value,
+                chronological: this.orderDropdown.getSelectedValue() === 'Chronological',
+                maxEventCount: parseInt(this.maxEventCountField.getValue()),
+                discardOldEvents: this.discardOldEventsCheckbox.isSelected()
+            })
+        });
+
+        this.orderDropdown = new RcdMaterialDropdown('Order', ['Chronological', 'Reversed chronological']).init();
+        this.maxEventCountField = new RcdMaterialTextField('Max. displayed event count', '1024').init()
+            .setPattern('[0-9]+')
+            .setValue('50');
+        this.discardOldEventsCheckbox = new RcdMaterialCheckbox().init()
+            .addClickListener(() => this.discardOldEventsCheckbox.select(!this.discardOldEventsCheckbox.isSelected()));
+        this.discardOldEventsLabel = new RcdTextDivElement('On max. displayed event count,<br/>discard old events')
+            .init()
+            .addClass('dtb-dump-input-label');
+        this.discardOldEventsField = new RcdDivElement()
+            .init()
+            .addClass('dtb-dump-input-field')
+            .addChild(this.discardOldEventsCheckbox)
+            .addChild(this.discardOldEventsLabel);
+    }
+
+    init() {
+        return super.init()
+            .addItem(this.orderDropdown)
+            .addItem(this.maxEventCountField)
+            .addItem(this.discardOldEventsField);
+    }
+}
+
 class EventsCard extends RcdMaterialCard {
     constructor() {
         super({title: 'Events'});
         this.playing = false;
+        this.eventCount = 0;
         this.typeRegexp = null;
         this.playIconArea = new RcdGoogleMaterialIconArea('play_arrow', () => this.play())
             .init()
@@ -21,23 +61,23 @@ class EventsCard extends RcdMaterialCard {
 
     init() {
         return super.init()
+            .addClass('dtb-events-card')
             .addChild(this.eventsPanel)
             .refresh();
     }
 
     play() {
-        showInputDialog({
-            title: "Listen to events",
-            confirmationLabel: "LISTEN",
-            label: "Filter by type (optional)",
-            placeholder: 'ex: node\.created',
-            callback: (value) => {
+        new ListenEventsDialog({
+            callback: (listeningParams) => {
                 this.eventsPanel.clear();
-                this.typeRegexp = value ? new RegExp(value) : null;
+                this.listeningParams = listeningParams;
+                this.typeRegexp = listeningParams.type ? new RegExp(listeningParams.type) : null;
+                this.eventCount = 0;
                 this.playing = true;
                 this.refresh()
             }
-        });
+        }).init()
+            .open();
     }
 
     stop() {
@@ -53,7 +93,18 @@ class EventsCard extends RcdMaterialCard {
 
     addEvent(eventText) {
         const eventPanel = new RcdTextDivElement(eventText).init();
-        this.eventsPanel.addChild(eventPanel);
+        this.eventsPanel.addChild(eventPanel, this.listeningParams.chronological);
+        this.eventCount++;
+        if (this.listeningParams.discardOldEvents) {
+            if (this.eventCount > this.listeningParams.maxEventCount) {
+                this.eventsPanel.removeChild(this.eventsPanel.children[0]);
+                this.eventCount--;
+            }
+        } else {
+            if (this.eventCount >= this.listeningParams.maxEventCount) {
+                this.playing = false;
+            }
+        }
         this.refresh();
         return this;
     }

@@ -18,12 +18,12 @@
     <dependency>
       <groupId>systems.rcd.js.fwk.core</groupId>
       <artifactId>rcd-jsfwk-core</artifactId>
-      <version>3.1.1</version>
+      <version>5.0.0</version>
     </dependency>
     <dependency>
       <groupId>systems.rcd.js.fwk.material</groupId>
       <artifactId>rcd-jsfwk-material</artifactId>
-      <version>4.1.3-SNAPSHOT</version>
+      <version>4.1.3</version>
     </dependency>
     <dependency>
       <groupId>com.enonic.xp</groupId>
