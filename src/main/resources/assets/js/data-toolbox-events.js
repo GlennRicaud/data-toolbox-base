@@ -89,11 +89,25 @@ class EventsCard extends RcdMaterialCard {
     refresh() {
         this.playIconArea.enable(!this.playing);
         this.stopIconArea.enable(this.playing);
+        if (this.eventCount == 0) {
+            let emptyPanelText;
+            if (this.playing) {
+                emptyPanelText = 'Listening...';
+            } else {
+                emptyPanelText = 'Not listening';
+            }
+            this.eventsPanel.clear();
+            this.eventsPanel.addChild(new RcdTextDivElement(emptyPanelText).init()
+                .addClass('dtb-events-empty-panel-text'))
+        }
         return this;
     }
 
     addEvent(eventText) {
         const eventPanel = new RcdTextDivElement(eventText).init();
+        if (this.eventCount == 0) {
+            this.eventsPanel.clear();
+        }
         this.eventsPanel.addChild(eventPanel, this.listeningParams.chronological);
         this.eventCount++;
         if (this.eventCount > this.listeningParams.maxEventCount) {
