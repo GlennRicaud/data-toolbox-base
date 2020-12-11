@@ -8,50 +8,21 @@ class ListenEventsDialog extends RcdMaterialInputDialog {
             callback: (value) => params.callback({
                 type: value,
                 chronological: this.orderDropdown.getSelectedValue() === 'Chronological',
-                maxEventCount: parseInt(this.maxEventCountField.getValue()),
-                discardOldEvents: this.discardOldEventsRadiobox.isSelected()
+                maxEventCount: parseInt(this.maxEventCountField.getValue())
             })
         });
 
         this.orderDropdown = new RcdMaterialDropdown('Order', ['Chronological', 'Reverse chronological']).init();
-        this.maxEventCountField = new RcdMaterialTextField('Maximum event number', '1024').init()
+        this.maxEventCountField = new RcdMaterialTextField('Maximum number of events displayed', '1024').init()
             .setPattern('[0-9]+')
             .setValue('50')
             .addInputListener(() => this.checkValidity());
-
-        this.maxEventsRadioGroup = new RcdMaterialRadioboxGroup().init();
-        this.stopListeningRadiobox = this.maxEventsRadioGroup.createRadiobox();
-        this.discardOldEventsRadiobox = this.maxEventsRadioGroup.createRadiobox();
-        this.maxEventsRadioGroup.select(this.stopListeningRadiobox);
-
-        const mavEventsStrategyLabel = new RcdTextDivElement('On maximum event number:').init();
-        const stopListeningLabel = new RcdTextDivElement('Stop listening').init();
-        const discardOldEventsLabel = new RcdTextDivElement('Discard old events').init();
-
-        const stopListeningField = new RcdDivElement()
-            .init()
-            .addClass('dtb-field')
-            .addChild(this.stopListeningRadiobox)
-            .addChild(stopListeningLabel);
-        const discardOldEventsField = new RcdDivElement()
-            .init()
-            .addClass('dtb-field')
-            .addChild(this.discardOldEventsRadiobox)
-            .addChild(discardOldEventsLabel);
-
-        this.maxEventsStategyPanel = new RcdDivElement()
-            .init()
-            .addClass('dtb-max-events-strategy-panel')
-            .addChild(mavEventsStrategyLabel)
-            .addChild(stopListeningField)
-            .addChild(discardOldEventsField);
     }
 
     init() {
         return super.init()
             .addItem(this.orderDropdown)
-            .addItem(this.maxEventCountField)
-            .addItem(this.maxEventsStategyPanel);
+            .addItem(this.maxEventCountField);
     }
 
     checkValidity() {
@@ -125,15 +96,9 @@ class EventsCard extends RcdMaterialCard {
         const eventPanel = new RcdTextDivElement(eventText).init();
         this.eventsPanel.addChild(eventPanel, this.listeningParams.chronological);
         this.eventCount++;
-        if (this.listeningParams.discardOldEvents) {
-            if (this.eventCount > this.listeningParams.maxEventCount) {
-                this.eventsPanel.removeChild(this.eventsPanel.children[0]);
-                this.eventCount--;
-            }
-        } else {
-            if (this.eventCount >= this.listeningParams.maxEventCount) {
-                this.playing = false;
-            }
+        if (this.eventCount > this.listeningParams.maxEventCount) {
+            this.eventsPanel.removeChild(this.eventsPanel.children[0]);
+            this.eventCount--;
         }
         this.refresh();
         return this;
@@ -158,13 +123,16 @@ class EventsRoute extends DtbRoute {
 
     createLayout() {
         this.eventsCard = new EventsCard().init();
-        eventManager.addEventListener((event) => this.onEvent(event))
+        eventManager.addEventListener((event) => this.onEvent(event));
         return new RcdMaterialLayout().init()
             .addChild(this.eventsCard);
     }
 
     displayHelp() {
-        const viewDefinition = 'The view allows to listen to events for the current Enonic XP instance. See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/events ">Events</a> for more information. A filtering by type can be applied using a regular expression';
+        const viewDefinition = 'The view allows to listen to and display events. ' +
+                               'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/events ">Events</a> for more information. ' +
+                               'A filtering by type can be applied using a regular expression. ' +
+                               'When the maximum number of events displayed is reached, the oldest events will be discarded';
         new HelpDialog('Events', [viewDefinition])
             .init()
             .open();
