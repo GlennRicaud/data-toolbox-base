@@ -8,12 +8,14 @@ exports.post = function (req) {
     const branchName = body.branchName;
     const nodeKey = body.nodeKey;
     const target = body.target;
+    const includeDependencies = body.includeDependencies;
+    const includeChildren = body.includeChildren;
 
     const taskId = taskLib.submit({
         description: 'Node push',
         task: function () {
             taskLib.progress({info: 'Pushing nodes...'});
-            const result = utilLib.runSafely(pushNodes, [repositoryName, branchName, nodeKey, target], 'Error while pushing nodes')
+            const result = utilLib.runSafely(pushNodes, [repositoryName, branchName, nodeKey, target, includeDependencies, includeChildren], 'Error while pushing nodes')
             taskLib.progress({info: JSON.stringify(result)});
         }
     });
@@ -24,7 +26,7 @@ exports.post = function (req) {
     };
 };
 
-function pushNodes(repositoryName, branchName, key, target) {
+function pushNodes(repositoryName, branchName, key, target, includeDependencies, includeChildren) {
     const repoConnection = nodeLib.connect({
         repoId: repositoryName,
         branch: branchName
@@ -33,7 +35,9 @@ function pushNodes(repositoryName, branchName, key, target) {
     return {
         success: repoConnection.push({
             key: key,
-            target: target
+            target: target,
+            resolve: includeDependencies,
+            includeChildren: includeChildren
         })
     };
 }

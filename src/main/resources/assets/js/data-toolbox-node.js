@@ -30,19 +30,36 @@ class DtbNodePushDialog extends RcdMaterialSelectionDialog {
             confirmationLabel: "PUSH",
             label: "Target branch",
             options: targetBranches,
-            callback: (value) => this.doPushNode(meta._id, value)
+            callback: (value) => this.doPushNode(meta._id, value, this.includeDependenciesField.isSelected(), this.includeChildrenField.isSelected())
         });
         this.meta = meta;
+        this.includeDependenciesField = new DtbCheckboxField({
+            label: 'Include dependencies',
+            callback: () => this.includeDependenciesField.select(!this.includeDependenciesField.isSelected())
+        }).init();
+        this.includeChildrenField = new DtbCheckboxField({
+            label: 'Include children',
+            callback: () => this.includeChildrenField.select(!this.includeChildrenField.isSelected())
+        }).init()
+            .select(false);
+    }
+    
+    init() {
+        return super.init()
+            .addItem(this.includeDependenciesField)
+            .addItem(this.includeChildrenField);
     }
 
-    doPushNode(nodeKey, target) {
+    doPushNode(nodeKey, target, includeDependencies, includeChildren) {
         const infoDialog = showLongInfoDialog("Pushing nodes...");
         return requestPostJson(config.servicesUrl + '/node-push', {
             data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 nodeKey: nodeKey,
-                target: target
+                target: target,
+                includeDependencies: includeDependencies,
+                includeChildren: includeChildren
             }
         })
             .then((result) => handleTaskCreation(result, {
