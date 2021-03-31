@@ -170,6 +170,10 @@ function getSortParameter(defaultValue) {
     return RcdHistoryRouter.getParameters().sort || defaultValue || '';
 }
 
+function getFiltersParameter(defaultValue) {
+    return RcdHistoryRouter.getParameters().filters || defaultValue || '';
+}
+
 function getPropertyParameter() {
     return RcdHistoryRouter.getParameters().property;
 }

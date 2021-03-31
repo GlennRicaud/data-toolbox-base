@@ -8,6 +8,8 @@ exports.post = function (req) {
     const repositoryName = body.repositoryName;
     const branchName = body.branchName;
     const query = body.query;
+    const filters = body.filters;
+    const parsedFilters = filters ? JSON.parse(filters) : null;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
     const reportName = body.reportName;
 
@@ -15,7 +17,7 @@ exports.post = function (req) {
         description: 'Report generation',
         task: function () {
             taskLib.progress({info: 'Querying...'});
-            const queryResult = executeQuery(repositoryName, branchName, query, sort);
+            const queryResult = executeQuery(repositoryName, branchName, query, parsedFilters, sort);
             taskLib.progress({
                 info: 'Generating report (0/' + queryResult.total + ')...',
                 current: 0,
@@ -28,6 +30,7 @@ exports.post = function (req) {
                             repository: repositoryName || undefined,
                             branch: branchName || undefined,
                             query: query,
+                            filters: parsedFilters || undefined,
                             sort: sort,
                         },
                         {
@@ -53,10 +56,11 @@ exports.post = function (req) {
     }
 };
 
-function executeQuery(repositoryName, branchName, query, sort) {
+function executeQuery(repositoryName, branchName, query, filters, sort) {
     const repoConnection = queryLib.createRepoConnection(repositoryName, branchName);
     return repoConnection.query({
         query: query,
+        filters: filters,
         start: 0,
         count: -1,
         sort: sort

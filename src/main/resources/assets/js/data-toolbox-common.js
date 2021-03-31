@@ -696,15 +696,23 @@ function displaySuccess(text) {
     displaySnackbar(text);
 }
 
-function displayError(text) {
+function displayError(text, parent) {
     console.error(text);
-    displaySnackbar(text);
+    displaySnackbar(text, parent);
 }
 
-function displaySnackbar(text) {
+function displaySnackbar(text, parent) {
     new RcdMaterialSnackbar(text)
         .init()
-        .open();
+        .open(parent);
+}
+
+function parseJson(value) {
+    try {
+        return JSON.parse(value);
+    } catch (value) {
+        return null;
+    }
 }
 
 function toHumanReadableSize(sizeInBytes) {
