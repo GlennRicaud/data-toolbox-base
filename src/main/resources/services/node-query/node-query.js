@@ -7,22 +7,26 @@ exports.post = function (req) {
     const repositoryName = body.repositoryName;
     const branchName = body.branchName;
     const query = body.query;
+    const filters = body.filters;
     const start = body.start || 0;
     const count = body.count == null ? 10 : body.count;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
 
-    const result = utilLib.runSafely(doQuery, [repositoryName, branchName, query, start, count, sort], 'Error while querying nodes');
+    const result = utilLib.runSafely(doQuery, [repositoryName, branchName, query, filters, start, count, sort],
+        'Error while querying nodes');
     return {
         contentType: 'application/json',
         body: result
     };
 };
 
-function doQuery(repositoryName, branchName, query, start, count, sort) {
+function doQuery(repositoryName, branchName, query, filters, start, count, sort) {
+    const parsedFilters = filters ? JSON.parse(filters) : null;
     const repoConnection = queryLib.createRepoConnection(repositoryName, branchName);
 
     const result = repoConnection.query({
         query: query,
+        filters: parsedFilters,
         start: start,
         count: count,
         sort: sort
@@ -31,7 +35,7 @@ function doQuery(repositoryName, branchName, query, start, count, sort) {
 
     let hits;
     if (repositoryName && branchName) {
-        hits = result.hits.map( hit => {
+        hits = result.hits.map(hit => {
             const node = repoConnection.get(hit.id);
             return {
                 repositoryName: repositoryName,

@@ -1,3 +1,21 @@
+.dtb-search-filters-dialog {
+  .rcd-material-dialog {
+    flex-grow: 1;
+    height: 80%;
+  }
+
+  .rcd-material-dialog-content-area, .rcd-material-dialog-body, .rcd-material-textarea {
+    flex-grow: 1;
+  }
+
+  .rcd-material-textarea {
+    textarea {
+      flex-grow: 1;
+      width: 100%;
+    }
+  }
+}
+
 .dtb-search-params :extend(.rcd-flex-vbox, .rcd-material-shadow) {
   background-color: #fff;
   padding-top: 12px;
@@ -15,13 +33,13 @@
     }
   }
 
-  .dtb-search-query, .dtb-search-sort {
+  .dtb-search-query, .dtb-search-sort, .dtb-search-filters {
     & > input {
       width: 100%;
     }
   }
 
-  .dtb-search-query {
+  .dtb-search-query, .dtb-search-filters {
     flex-grow: 1;
   }
 

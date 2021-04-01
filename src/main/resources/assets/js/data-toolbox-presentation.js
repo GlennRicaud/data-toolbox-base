@@ -72,6 +72,12 @@ function createPresentationRoute() {
         iconFileName: 'tasks.svg',
         text: 'Monitor the state of tasks.'
     }).init();
+    const eventsViewSummary = new ViewSummary({
+        state: 'events',
+        name: 'Events',
+        iconFileName: 'events.svg',
+        text: 'Listen to events.'
+    }).init();
     const aboutViewSummary = new ViewSummary({
         state: 'about',
         name: 'About',
@@ -89,6 +95,7 @@ function createPresentationRoute() {
         .addChild(auditViewSummary)
         .addChild(iamViewSummary)
         .addChild(tasksViewSummary)
+        .addChild(eventsViewSummary)
         .addChild(aboutViewSummary);
 
     const layout = new RcdMaterialLayout().init().addClass('presentation-view').addChild(subTitle).addChild(viewSummaries);

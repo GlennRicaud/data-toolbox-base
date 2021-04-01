@@ -1,4 +1,5 @@
 include('data-toolbox-common.js');
+include('data-toolbox-event-manager.js');
 include('data-toolbox-task-manager.js');
 include('data-toolbox-presentation.js');
 include('data-toolbox-dumps.js');
@@ -18,5 +19,6 @@ include('data-toolbox-iam.js');
 include('data-toolbox-users.js');
 include('data-toolbox-groups.js');
 include('data-toolbox-tasks.js');
+include('data-toolbox-events.js');
 include('data-toolbox-about.js');
 include('data-toolbox-main.js');

@@ -13,9 +13,8 @@ class VersionsRoute extends DtbRoute {
     createLayout() {
         this.tableCard = new RcdMaterialTableCard('Versions', {selectable: false}).init()
             .addClass('dtb-table-card-versions')
-            .addColumn('Version ID')
-            .addColumn('Path', {classes: ['non-mobile-cell']})
-            .addColumn('Commit', {classes: ['non-mobile-cell']})
+            .addColumn('Version ID<br/>Path')
+            .addColumn('Info', {classes: ['non-mobile-cell']})
             .addColumn('Timestamp')
             .addColumn('', {icon: true});
 
@@ -28,7 +27,6 @@ class VersionsRoute extends DtbRoute {
         this.tableCard.deleteRows();
         this.tableCard.createRow({selectable: false})
             .addCell('..')
-            .addCell('', {classes: ['non-mobile-cell']})
             .addCell('', {classes: ['non-mobile-cell']})
             .addCell('')
             .addCell('', {icon: true})
@@ -66,7 +64,10 @@ class VersionsRoute extends DtbRoute {
                 {text: 'Display access blob', callback: displayAccessBlobCallback},
             ];
             if (version.nodeCommitId) {
-                moreIconAreaItems.push({text: 'Display commit', callback: () => this.displayCommitAsJson(version.nodeCommitId)})
+                moreIconAreaItems.push({text: 'Display commit', callback: () => this.displayCommitAsJson(version.nodeCommitId)});
+            }
+            if (!version.branches || version.branches.length < result.success.branches.length) {
+                moreIconAreaItems.push({text: 'Set active in...', callback: () => this.setActive(version, result.success.branches)})
             }
             const moreIconArea = new RcdGoogleMaterialIconArea('more_vert', (source, event) => {
                 RcdMaterialMenuHelper.displayMenu(source, moreIconAreaItems, 200)
@@ -75,9 +76,10 @@ class VersionsRoute extends DtbRoute {
                 .setTooltip('Display...');
 
             this.tableCard.createRow()
-                .addCell(version.versionId)
-                .addCell(version.nodePath, {classes: ['non-mobile-cell']})
-                .addCell(version.nodeCommitId, {classes: ['non-mobile-cell']})
+                .addCell(version.versionId + '<br/>' + version.nodePath)
+                .addCell((version.branches ? 'Active in: ' + version.branches : '') + '<br/>' +
+                         (version.nodeCommitId ? 'Committed' : ''),
+                    {classes: ['non-mobile-cell']})
                 .addCell(version.timestamp)
                 .addCell(moreIconArea, {icon: true});
 
@@ -129,10 +131,35 @@ class VersionsRoute extends DtbRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog('Commit [' + nodeCommitId + ']', formattedJson)
                     .addClass('node-details-dialog');
             })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+
+    setActive(version, branches) {
+        showSelectionDialog({
+            title: 'Set active in...',
+            label: 'Branch',
+            options: branches,
+            confirmationLabel: 'SET',
+            callback: (branch) => this.doSetActive(version, branch)
+        });
+    }
+
+    doSetActive(version, branch) {
+        const infoDialog = showShortInfoDialog("Setting version as active...");
+        return requestPostJson(config.servicesUrl + '/version-setactive', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: branch,
+                nodeId: version.nodeId,
+                nodeVersionId: version.versionId
+            }
+        })
+            .then(() => this.retrieveVersions())
             .catch(handleRequestError)
             .finally(() => infoDialog.close());
     }

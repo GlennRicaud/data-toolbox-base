@@ -28,6 +28,7 @@ function createApp() {
         .addRoute(new UsersRoute().init())
         .addRoute(new GroupsRoute().init())
         .addRoute(new TasksRoute().init())
+        .addRoute(new EventsRoute().init())
         .addRoute(new AboutRoute().init());
 }
 
@@ -167,6 +168,10 @@ function getQueryParameter() {
 
 function getSortParameter(defaultValue) {
     return RcdHistoryRouter.getParameters().sort || defaultValue || '';
+}
+
+function getFiltersParameter(defaultValue) {
+    return RcdHistoryRouter.getParameters().filters || defaultValue || '';
 }
 
 function getPropertyParameter() {

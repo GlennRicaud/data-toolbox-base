@@ -23,6 +23,56 @@ class NodeDetailsCard extends RcdDivElement {
     }
 }
 
+class DtbNodePushDialog extends RcdMaterialSelectionDialog {
+    constructor(meta, targetBranches) {
+        super({
+            title: "Push node",
+            confirmationLabel: "PUSH",
+            label: "Target branch",
+            options: targetBranches,
+            callback: (value) => this.doPushNode(meta._id, value, this.includeDependenciesField.isSelected(), this.includeChildrenField.isSelected())
+        });
+        this.meta = meta;
+        this.includeDependenciesField = new DtbCheckboxField({
+            label: 'Include dependencies',
+            callback: () => this.includeDependenciesField.select(!this.includeDependenciesField.isSelected())
+        }).init();
+        this.includeChildrenField = new DtbCheckboxField({
+            label: 'Include children',
+            callback: () => this.includeChildrenField.select(!this.includeChildrenField.isSelected())
+        }).init()
+            .select(false);
+    }
+    
+    init() {
+        return super.init()
+            .addItem(this.includeDependenciesField)
+            .addItem(this.includeChildrenField);
+    }
+
+    doPushNode(nodeKey, target, includeDependencies, includeChildren) {
+        const infoDialog = showLongInfoDialog("Pushing nodes...");
+        return requestPostJson(config.servicesUrl + '/node-push', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: getBranchParameter(),
+                nodeKey: nodeKey,
+                target: target,
+                includeDependencies: includeDependencies,
+                includeChildren: includeChildren
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Pushing nodes...',
+                doneCallback: (success) => new PushResultDialog(success).init().open(),
+                alwaysCallback: () => setState('node', {repo: getRepoParameter(), branch: getBranchParameter(), id: this.meta._id})
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+}
+
 class NodeRoute extends DtbRoute {
     constructor() {
         super({
@@ -119,6 +169,10 @@ class NodeRoute extends DtbRoute {
         this.actionsCard
             .addRow('Export node', null,
                 {callback: () => this.exportNode(meta), icon: new RcdImageIcon(config.assetsUrl + '/icons/export-icon.svg').init()})
+            .addRow('Push node', null, {
+                callback: () => this.pushNode(meta),
+                icon: new RcdImageIcon(config.assetsUrl + '/icons/push.svg').init()
+            })
             .addRow('Move/rename node', null, {
                 callback: () => this.moveNode([{
                     id: meta._id,
@@ -166,7 +220,7 @@ class NodeRoute extends DtbRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog(type + ' Index Document [' + id + ']', formattedJson).addClass('node-details-dialog');
             })
             .catch(handleRequestError)
@@ -184,6 +238,26 @@ class NodeRoute extends DtbRoute {
             value: defaultExportName,
             callback: (value) => this.doExportNode(meta._path, value || defaultExportName)
         });
+    }
+
+    pushNode(meta) {
+        const infoDialog = showShortInfoDialog('Retrieving branch list...');
+        return requestPostJson(config.servicesUrl + '/repository-get', {
+            data: {repositoryName: getRepoParameter()}
+        })
+            .then((result) => {
+                const currentBranch = getBranchParameter();
+                const branches = result.success.branches.sort((branch1, branch2) => branch1 - branch2)
+                    .filter(branch => currentBranch !== branch);
+                if (branches.length == 0) {
+                    displayError('Error: Single branch repository');
+                } else {
+                    new DtbNodePushDialog(meta, branches).init()
+                        .open()
+                }
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     refreshBreadcrumbs() {

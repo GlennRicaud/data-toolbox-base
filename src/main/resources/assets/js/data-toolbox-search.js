@@ -1,3 +1,49 @@
+class FiltersDialog extends RcdMaterialModalDialog {
+    constructor(filtersField) {
+        super('Filters', null, true, true);
+        this.filtersField = filtersField;
+        const parsedValue = parseJson(this.filtersField.getValue());
+        this.filtersArea = new RcdMaterialTextArea('Filters', this.prettify(parseJson('{"exists":{"field":"modifiedTime"}}'))).init()
+            .setValue(parsedValue ? this.prettify(parsedValue) : this.filtersField.getValue());
+    }
+
+    init() {
+        return super.init()
+            .addClass('dtb-search-filters-dialog')
+            .addItem(this.filtersArea)
+            .addAction('CLOSE', () => this.close())
+            .addAction('PRETTIFY', () => this.prettifyContent())
+            .addAction('SET', () => this.setFilter());
+    }
+
+    prettifyContent() {
+        const parsedValue = parseJson(this.filtersArea.getValue());
+        if (parsedValue) {
+            this.filtersArea.setValue(this.prettify(parsedValue));
+        } else {
+            displayError('Invalid JSON', this);
+        }
+    }
+
+    prettify(object) {
+        return JSON.stringify(object, null, 2);
+    }
+
+    minify(object) {
+        return JSON.stringify(object, null, 0);
+    }
+
+    setFilter() {
+        const parsedValue = parseJson(this.filtersArea.getValue());
+        if (parsedValue) {
+            this.close();
+            this.filtersField.setValue(this.minify(parsedValue));
+        } else {
+            displayError('Invalid JSON', this);
+        }
+    }
+}
+
 class ReportDialog extends RcdMaterialModalDialog {
     constructor(params, nodeCount) {
         super('Node Query Report', null, true, true);
@@ -27,6 +73,7 @@ class ReportDialog extends RcdMaterialModalDialog {
                 repositoryName: this.params.repositoryName,
                 branchName: this.params.branchName,
                 query: this.params.query,
+                filters: this.params.filters,
                 sort: this.params.sort,
                 format: this.formatDropdownField.getSelectedValue(),
                 reportName: reportName
@@ -79,6 +126,15 @@ class SearchParamsCard extends RcdDivElement {
             .addClass('dtb-responsive-row')
             .addChild(this.repositoryDropdown)
             .addChild(this.branchDropdown);
+        this.filtersField = new RcdMaterialTextField('Filters (JSON format)', '{"exists":{"field":"modifiedTime"}}').init()
+            .addClass('dtb-search-filters');
+        this.filtersIconArea =
+            new RcdGoogleMaterialIconArea('fullscreen', () => new FiltersDialog(this.filtersField).init().open()).init();
+        this.filtersRow = new RcdDivElement().init()
+            .addClass('dtb-search-params-row')
+            .addClass('dtb-row')
+            .addChild(this.filtersField)
+            .addChild(this.filtersIconArea);
         this.queryField = new RcdMaterialTextField('Query', '').init()
             .addClass('dtb-search-query');
         this.sortField = new RcdMaterialTextField('Sort', '').init()
@@ -106,6 +162,7 @@ class SearchParamsCard extends RcdDivElement {
         return super.init()
             .addClass('dtb-search-params')
             .addChild(this.contextRow)
+            .addChild(this.filtersRow)
             .addChild(this.queryRow)
             .addChild(this.buttonRow)
             .addKeyUpListener('Enter', () => this.search());
@@ -113,10 +170,23 @@ class SearchParamsCard extends RcdDivElement {
 
     search() {
         const searchParams = this.getSearchParams();
+        if (searchParams.filters) {
+            const parsedJson = parseJson(searchParams.filters);
+            if (parsedJson) {
+                if (!(parsedJson instanceof Object)) {
+                    displayError('Not a JSON object');
+                    return;
+                }
+            } else {
+                displayError('Invalid JSON');
+                return;
+            }
+        }
         RcdHistoryRouter.setState('search', {
             repo: searchParams.repositoryName,
             branch: searchParams.branchName,
             query: searchParams.query,
+            filters: searchParams.filters,
             sort: searchParams.sort
         });
     }
@@ -129,6 +199,7 @@ class SearchParamsCard extends RcdDivElement {
                 repositoryName: searchParams.repositoryName,
                 branchNames: searchParams.branchNames,
                 query: searchParams.query,
+                filters: searchParams.filters,
                 sort: searchParams.sort,
                 count: 0
             }
@@ -148,10 +219,12 @@ class SearchParamsCard extends RcdDivElement {
         const branch = this.branchDropdown.getSelectedValue();
         const query = this.queryField.getValue();
         const sort = this.sortField.getValue();
+        const filters = this.filtersField.getValue();
         return {
             repositoryName: repo === 'All repositories' ? undefined : repo,
             branchName: branch === 'All branches' ? undefined : branch,
             query: query,
+            filters: filters,
             sort: sort
         };
     }
@@ -183,15 +256,15 @@ class SearchParamsCard extends RcdDivElement {
         }
 
         const queryParameter = getQueryParameter();
+        const filtersParameter = getFiltersParameter();
 
-
-        this.sortField.setValue(getSortParameter('_score DESC'))
-        this.queryField
-            .setValue(queryParameter)
+        this.sortField.setValue(getSortParameter('_score DESC'));
+        this.filtersField.setValue(filtersParameter);
+        this.queryField.setValue(queryParameter)
             .focus()
             .select();
 
-        if (queryParameter) {
+        if (queryParameter || filtersParameter) {
             this.notifySearchListeners();
         }
     }
@@ -208,6 +281,7 @@ class SearchParamsCard extends RcdDivElement {
             repositoryName: repositoryName === 'All repositories' ? null : repositoryName,
             branchName: branchName === 'All branches' ? null : branchName,
             query: this.queryField.getValue(),
+            filters: this.filtersField.getValue(),
             sort: this.sortField.getValue(),
             start: getStartParameter(),
             count: getCountParameter(20)
@@ -327,7 +401,7 @@ class SearchRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#query_language">Node Query Language</a>.';
+        const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query Language</a> or <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/filters">Filters</a>.';
         const reportDescription = 'Report: Generate a report of the query result.<br/>Format "Node as JSON": Generate the matching nodes as JSON in a tree structure';
         new HelpDialog('Search', [viewDefinition, reportDescription]).init().open();
     }

@@ -12,3 +12,10 @@
     }
   }
 }
+
+.dtb-row :extend(.rcd-flex-box){
+  flex-direction: row;
+  & > div:not(:last-child) {
+    margin-right: 12px;
+  }
+}

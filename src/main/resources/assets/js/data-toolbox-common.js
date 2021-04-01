@@ -270,6 +270,45 @@ class DumpResultDialog extends RcdMaterialModalDialog {
     }
 }
 
+class PushResultDialog extends RcdMaterialModalDialog {
+    constructor(result) {
+        super('Push result', undefined, true, true);
+        this.result = result;
+    }
+
+    init() {
+        const closeCallback = () => this.close();
+        const detailsCallback = () => this.displayDetails();
+        
+        const summary = 'Pushed nodes: ' + this.result.success.length + '\n' +
+                        'Deleted nodes: ' + this.result.deleted.length + '\n' +
+                        'Errors: ' + this.result.failed.length;
+        const resultItem = new RcdTextElement(summary).init();
+
+        super.init()
+            .addItem(resultItem)
+            .addAction('CLOSE', closeCallback)
+            .addAction('DETAILS', detailsCallback)
+            .addKeyUpListener('Enter', detailsCallback)
+            .addKeyUpListener('Escape', closeCallback);
+        return this;
+    }
+
+    displayDetails() {
+        this.close();
+
+        let text = '';
+        text += '# pushed nodes: ' + this.result.success.length + '\n' +
+                '# deleted nodes: ' + this.result.deleted.length + '\n' +
+                '# errors: ' + this.result.failed.length + '\n' +
+                'Pushed nodes: ' + JSON.stringify(this.result.success, null, 2) + '\n' +
+                'Deleted nodes: ' + JSON.stringify(this.result.deleted, null, 2) + '\n' +
+                'Errors: ' + JSON.stringify(this.result.failed, null, 2) + '\n\n';
+
+        showDetailsDialog('Export result details', text);
+    }
+}
+
 function nodePathToContentPath(nodePath) {
     if (!nodePath || !nodePath.startsWith('/content')) {
         return nodePath;
@@ -345,7 +384,7 @@ class DtbRoute extends RcdMaterialRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog('Node [' + nodeKey + ']', formattedJson).addClass('node-details-dialog');
             })
             .catch(handleRequestError)
@@ -362,7 +401,7 @@ class DtbRoute extends RcdMaterialRoute {
             }
         })
             .then((result) => {
-                const formattedJson = this.formatJson(result.success, '');
+                const formattedJson = this.formatJson(result.success);
                 showDetailsDialog(blobKey ? 'Blob [' + blobKey + ']' : type + ' Blob [' + versionKey + ']', formattedJson)
                     .addClass('node-details-dialog');
             })
@@ -370,7 +409,7 @@ class DtbRoute extends RcdMaterialRoute {
             .finally(() => infoDialog.close());
     }
 
-    formatJson(value, tab) {
+    formatJson(value, tab = '') {
         if (value === null) {
             return '<a class=json-null>null</a>';
         } else if (value === undefined) {
@@ -587,7 +626,7 @@ function handleTaskCreation(result, params) {
 
 function retrieveTaskProgress(params) {
     let attemptCounter = 0;
-    const intervalId = taskManager && taskManager.open ? setInterval(() => {
+    const intervalId = taskManager && taskManager.isLive() ? setInterval(() => {
         const task = taskManager.getTask(params.taskId);
         if ((task == null || task.state === 'WAITING') && attemptCounter < 9) {
             attemptCounter++;
@@ -657,15 +696,23 @@ function displaySuccess(text) {
     displaySnackbar(text);
 }
 
-function displayError(text) {
+function displayError(text, parent) {
     console.error(text);
-    displaySnackbar(text);
+    displaySnackbar(text, parent);
 }
 
-function displaySnackbar(text) {
+function displaySnackbar(text, parent) {
     new RcdMaterialSnackbar(text)
         .init()
-        .open();
+        .open(parent);
+}
+
+function parseJson(value) {
+    try {
+        return JSON.parse(value);
+    } catch (value) {
+        return null;
+    }
 }
 
 function toHumanReadableSize(sizeInBytes) {
@@ -679,4 +726,32 @@ function toHumanReadableSize(sizeInBytes) {
         return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MiB';
     }
     return (sizeInBytes / (1024 * 1024 * 1024)).toFixed(1) + ' GiB'
+}
+
+class DtbCheckboxField extends RcdDivElement {
+    constructor(params) {
+        super();
+        this.checkbox = new RcdMaterialCheckbox().init()
+            .select(true)
+            .addClickListener(params.callback);
+        this.label = new RcdTextDivElement(params.label)
+            .init()
+            .addClass('dtb-checkbox-label');
+    }
+
+    init() {
+        return super.init()
+            .addClass('dtb-checkbox-field')
+            .addChild(this.checkbox)
+            .addChild(this.label);
+    }
+    
+    isSelected() {
+        return this.checkbox.isSelected();
+    }
+    
+    select(select) {
+        this.checkbox.select(select);
+        return this;
+    }
 }

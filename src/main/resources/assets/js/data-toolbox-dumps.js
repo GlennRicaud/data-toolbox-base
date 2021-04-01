@@ -9,48 +9,34 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
             callback: (value) => {
                 params.callback({
                     name: value || params.defaultValue,
-                    includeVersions: this.includeVersionsCheckbox.isSelected(),
-                    archive: this.archiveCheckbox.isSelected(),
-                    maxVersions: this.includeVersionsCheckbox.isSelected() && this.maxVersionsField.getValue()
+                    includeVersions: this.includeVersionsField.isSelected(),
+                    archive: this.archiveField.isSelected(),
+                    maxVersions: this.includeVersionsField.isSelected() && this.maxVersionsField.getValue()
                                  ? Number(this.maxVersionsField.getValue()) : undefined,
-                    maxVersionsAge: this.includeVersionsCheckbox.isSelected() && this.maxVersionsAgeField.getValue()
+                    maxVersionsAge: this.includeVersionsField.isSelected() && this.maxVersionsAgeField.getValue()
                                     ? Number(this.maxVersionsAgeField.getValue()) : undefined
                 });
             }
         });
-
-        this.includeVersionsCheckbox = new RcdMaterialCheckbox().init()
-            .select(true)
-            .addClickListener(() => {
-                const includeVersion = !this.includeVersionsCheckbox.isSelected();
-                this.includeVersionsCheckbox.select(includeVersion);
+        
+        this.includeVersionsField = new DtbCheckboxField({
+            label: 'Include version history',
+            callback: () => {
+                const includeVersion = !this.includeVersionsField.isSelected();
+                this.includeVersionsField.select(includeVersion);
                 this.maxVersionsField.show(includeVersion);
                 this.maxVersionsAgeField.show(includeVersion);
                 this.checkValidity();
-            });
-        this.includeVersionsLabel = new RcdTextDivElement('Include version history')
-            .init()
-            .addClass('dtb-dump-input-label');
-        this.includeVersionsField = new RcdDivElement()
-            .init()
-            .addClass('dtb-dump-input-field')
-            .addChild(this.includeVersionsCheckbox)
-            .addChild(this.includeVersionsLabel);
-
-        this.archiveCheckbox = new RcdMaterialCheckbox().init()
-            .select(true)
-            .addClickListener(() => {
-                const archive = !this.archiveCheckbox.isSelected();
-                this.archiveCheckbox.select(archive);
-            });
-        this.archiveLabel = new RcdTextDivElement('Archive system dump')
-            .init()
-            .addClass('dtb-dump-input-label');
-        this.archiveField = new RcdDivElement()
-            .init()
-            .addClass('dtb-dump-input-field')
-            .addChild(this.archiveCheckbox)
-            .addChild(this.archiveLabel);
+            }
+        }).init();
+        
+        this.archiveField = new DtbCheckboxField({
+            label: 'Archive system dump',
+            callback: () => {
+                const archive = !this.archiveField.isSelected();
+                this.archiveField.select(archive);
+            }
+        }).init();
 
         this.maxVersionsField = new RcdMaterialTextField('', 'Max. number of versions (opt.)')
             .init()
@@ -75,7 +61,7 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
     }
 
     isValid() {
-        if (this.includeVersionsCheckbox.isSelected()) {
+        if (this.includeVersionsField.isSelected()) {
             if (!this.maxVersionsField.checkValidity()) {
                 return false;
             }
