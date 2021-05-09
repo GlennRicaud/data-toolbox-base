@@ -34,9 +34,9 @@ class RepositoriesRoute extends DtbRoute {
         return requestJson(config.servicesUrl + '/repository-list')
             .then((result) => {
                 result.success.sort((repository1, repository2) => repository1.name - repository2.name).forEach((repository) => {
-                    const row = this.tableCard.createRow().addCell(repository.name).setAttribute('repository',
-                        repository.name).addClass('rcd-clickable').addClickListener(
-                        () => setState('branches', {repo: repository.name}));
+                    const row = this.tableCard.createRow()
+                        .addCell(repository.name, {href: buildStateRef('branches', {repo: repository.name})})
+                        .setAttribute('repository', repository.name);
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
             })

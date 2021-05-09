@@ -126,6 +126,19 @@ function setState(state, params) {
     RcdHistoryRouter.setState(state, params);
 }
 
+function buildStateRef(state, params) {
+    return '#' + buildState(state, params);
+}
+
+function buildState(state, params) {
+    for (let paramKey in params) {
+        if (params[paramKey] == null) {
+            delete params[paramKey];
+        }
+    }
+    return RcdHistoryRouter.buildState(state, params);
+}
+
 function getRepoParameter() {
     return RcdHistoryRouter.getParameters().repo;
 }

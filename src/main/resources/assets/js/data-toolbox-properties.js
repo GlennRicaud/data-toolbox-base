@@ -318,24 +318,25 @@ class PropertiesRoute extends DtbRoute {
     retrieveProperties() {
         const infoDialog = showShortInfoDialog('Retrieving properties...');
         this.tableCard.deleteRows();
-        const headerRow = this.tableCard
-            .createRow({selectable: false})
-            .addCell('..', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('..', {classes: ['mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['mobile-cell']})
+        const parentStateRef = getPropertyParameter() ? buildStateRef('properties', {
+            repo: getRepoParameter(), 
+            branch: getBranchParameter(),
+            path: getPathParameter(),
+            property: this.getParentProperty()
+        }) : buildStateRef('node', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getPathParameter()
+        });
+        this.tableCard.createRow({selectable: false})
+            .addCell('..', {href: parentStateRef, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('..', {href: parentStateRef, reachable: false, classes: ['mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['mobile-cell']})
             .addCell('', {icon: true, classes: ['non-mobile-cell']})
-            .addCell('', {icon: true})
-            .addClass('rcd-clickable');
-        if (getPropertyParameter()) {
-            headerRow.addClickListener(() => setState('properties',
-                {repo: getRepoParameter(), branch: getBranchParameter(), path: getPathParameter(), property: this.getParentProperty()}));
-        } else {
-            headerRow.addClickListener(
-                () => setState('node', {repo: getRepoParameter(), branch: getBranchParameter(), path: getPathParameter()}));
-        }
+            .addCell('', {icon: true});
         return requestPostJson(config.servicesUrl + '/property-list', {
             data: {
                 repositoryName: getRepoParameter(),
@@ -419,27 +420,24 @@ class PropertiesRoute extends DtbRoute {
             }
 
             const encodedValue = encodeReservedCharacters(property.value);
+            const stateRef = property.type === 'PropertySet' ? buildStateRef('properties', {
+                repo: getRepoParameter(),
+                branch: getBranchParameter(),
+                path: getPathParameter(),
+                property: (getPropertyParameter() ? getPropertyParameter() + '.' + property.name : property.name) + '[' +
+                          property.index + ']'
+            }) : undefined;
             const row = this.tableCard.createRow()
-                .addCell(property.name, {classes: ['non-mobile-cell']})
-                .addCell(property.index, {classes: ['non-mobile-cell']})
-                .addCell(property.name + '[' + property.index + ']', {classes: ['mobile-cell']})
-                .addCell(encodedValue, {classes: ['non-mobile-cell']})
-                .addCell(property.type, {classes: ['non-mobile-cell']})
-                .addCell(property.type + ': ' + encodedValue, {classes: ['mobile-cell']})
+                .addCell(property.name, {href: stateRef, classes: ['non-mobile-cell']})
+                .addCell(property.index, {href: stateRef, reachable: false, classes: ['non-mobile-cell']})
+                .addCell(property.name + '[' + property.index + ']', {href: stateRef, reachable: false, classes: ['mobile-cell']})
+                .addCell(encodedValue, {href: stateRef, reachable: false, classes: ['non-mobile-cell']})
+                .addCell(property.type, {href: stateRef, reachable: false, classes: ['non-mobile-cell']})
+                .addCell(property.type + ': ' + encodedValue, {href: stateRef, reachable: false, classes: ['mobile-cell']})
                 .addCell(customIconArea, {icon: true, classes: ['non-mobile-cell']})
                 .addCell(editPropertyIconArea, {icon: true})
                 .setAttribute('name', property.name)
                 .setAttribute('index', property.index);
-
-            if (property.type === 'PropertySet') {
-                row.addClass('rcd-clickable').addClickListener(() => setState('properties', {
-                    repo: getRepoParameter(),
-                    branch: getBranchParameter(),
-                    path: getPathParameter(),
-                    property: (getPropertyParameter() ? getPropertyParameter() + '.' + property.name : property.name) + '[' +
-                              property.index + ']'
-                }))
-            }
         });
 
         const startInt = parseInt(getStartParameter());

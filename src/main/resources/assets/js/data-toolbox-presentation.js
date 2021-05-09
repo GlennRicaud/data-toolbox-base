@@ -1,25 +1,24 @@
 function createPresentationRoute() {
 
-    class ViewSummary extends RcdDivElement {
+    class ViewSummary extends RcdAElement {
         constructor(params) {
-            super();
+            super(undefined, buildStateRef(params.state));
             this.state = params.state;
-            this.name = new RcdSpanElement().init().setText(params.name).addClass('view-summary-title');
+            this.name = new RcdSpanElement().init()
+                .setText(params.name)
+                .addClass('view-summary-title');
             this.icon = new RcdImageIcon(config.assetsUrl + '/icons/views/' + params.iconFileName).init();
             this.text = new RcdPElement().init().setText(params.text);
         }
 
         init() {
-            return super.init().addClass('view-summary').addChild(this.icon).addChild(this.name).addChild(this.text).addClickListener(
-                () => setState(this.state));
+            return super.init()
+                .addClass('view-summary')
+                .addChild(this.icon)
+                .addChild(this.name)
+                .addChild(this.text);
         }
     }
-
-    const exportsSectionContent = new RcdPElement().init()
-        .setText('A node export is a serialization of a given content/node. ' +
-                 'This makes node exports well suited for transferring a specific content to another installation. ' +
-                 'Warning: The current export mechanism does not export old versions of your data. You will loose the version history of your contents. ' +
-                 'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/operations/export.html">Export and Import</a> for more information.');
 
     const subTitle = new RcdH2Element().init()
         .setText('A web interface to visualize and manage your Enonic XP data');

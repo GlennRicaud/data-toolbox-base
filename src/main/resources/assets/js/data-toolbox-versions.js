@@ -25,17 +25,16 @@ class VersionsRoute extends DtbRoute {
     retrieveVersions() {
         const infoDialog = showShortInfoDialog('Retrieving versions...');
         this.tableCard.deleteRows();
+        const parentStateRef = buildStateRef('node', {
+            repo: getRepoParameter(),
+            branch: getBranchParameter(),
+            path: getIdParameter()
+        })
         this.tableCard.createRow({selectable: false})
-            .addCell('..')
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('')
-            .addCell('', {icon: true})
-            .addClass('rcd-clickable')
-            .addClickListener(() => setState('node', {
-                repo: getRepoParameter(),
-                branch: getBranchParameter(),
-                path: getIdParameter()
-            }));
+            .addCell('..', {href: parentStateRef})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false})
+            .addCell('', {icon: true});
         return requestPostJson(config.servicesUrl + '/version-list', {
             data: {
                 repositoryName: getRepoParameter(),

@@ -28,18 +28,17 @@ class PermissionsRoute extends DtbRoute {
     retrievePermissions() {
         const infoDialog = showShortInfoDialog('Retrieving permissions...');
         this.tableCard.deleteRows();
+        const parentStateRef = buildStateRef('node', {repo: getRepoParameter(), branch: getBranchParameter(), path: getPathParameter()});
         this.tableCard.createRow({selectable: false})
-            .addCell('..')
-            .addCell('', {classes: ['mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addCell('', {classes: ['non-mobile-cell']})
-            .addClass('rcd-clickable')
-            .addClickListener(() => setState('node', {repo: getRepoParameter(), branch: getBranchParameter(), path: getPathParameter()}));
+            .addCell('..', {href: parentStateRef})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']});
 
         return requestPostJson(config.servicesUrl + '/permission-list', {
             data: {

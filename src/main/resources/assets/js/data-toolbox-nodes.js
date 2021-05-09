@@ -39,22 +39,22 @@ class NodesRoute extends DtbRoute {
     retrieveNodes() {
         const infoDialog = showShortInfoDialog('Retrieving node list...');
         this.tableCard.deleteRows();
+        const parentStateRef = getPathParameter() ? 
+            buildStateRef('nodes', {
+                repo: getRepoParameter(),
+                branch: getBranchParameter(),
+                path: getPathParameter() === '/' ? null : this.getParentPath()
+            }): buildStateRef('branches', {
+                repo: getRepoParameter()
+            });
         this.tableCard.createRow({selectable: false})
-            .addCell('..')
-            .addCell('', {classes: ['non-mobile-cell']})
+            .addCell('..', {href: parentStateRef})
+            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
             .addCell(null, {icon: true})
             .addCell(null, {icon: true})
             .addClass('rcd-clickable')
             .addClickListener(() => {
-                if (getPathParameter()) {
-                    setState('nodes', {
-                        repo: getRepoParameter(),
-                        branch: getBranchParameter(),
-                        path: getPathParameter() === '/' ? null : this.getParentPath()
-                    });
-                } else {
-                    setState('branches', {repo: getRepoParameter()});
-                }
+                
             });
         return requestPostJson(config.servicesUrl + '/node-getchildren', {
             data: {
@@ -88,16 +88,19 @@ class NodesRoute extends DtbRoute {
                 event.stopPropagation();
             }).init().setTooltip('Display as JSON');
 
+            const stateRef = buildStateRef('nodes', {
+                repo: getRepoParameter(), 
+                branch: getBranchParameter(), 
+                path: node._path
+            });
             const row = this.tableCard.createRow()
-                .addCell(node._name)
-                .addCell(node._id, {classes: ['non-mobile-cell']})
+                .addCell(node._name, {href: stateRef})
+                .addCell(node._id, {href: stateRef, reachable: false, classes: ['non-mobile-cell']})
                 .addCell(displayNodeIconArea, {icon: true})
                 .addCell(displayJsonIconArea, {icon: true})
                 .setAttribute('id', node._id)
                 .setAttribute('path', node._path)
-                .setAttribute('name', node._name)
-                .addClass('rcd-clickable')
-                .addClickListener(() => setState('nodes', {repo: getRepoParameter(), branch: getBranchParameter(), path: node._path}));
+                .setAttribute('name', node._name);
             row.checkbox.addClickListener((event) => event.stopPropagation());
         });
 

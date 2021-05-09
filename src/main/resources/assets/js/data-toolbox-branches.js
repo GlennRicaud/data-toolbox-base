@@ -24,16 +24,15 @@ class BranchesRoute extends DtbRoute {
         const infoDialog = showShortInfoDialog('Retrieving branch list...');
         this.tableCard.deleteRows();
         this.tableCard.createRow({selectable: false})
-            .addCell('..')
-            .addClass('rcd-clickable')
-            .addClickListener(() => setState('repositories'));
+            .addCell('..', {href: buildStateRef('repositories')});
         return requestPostJson(config.servicesUrl + '/repository-get', {
             data: {repositoryName: getRepoParameter()}
         })
             .then((result) => {
                 result.success.branches.sort((branch1, branch2) => branch1 - branch2).forEach((branch) => {
-                    const row = this.tableCard.createRow().addCell(branch).setAttribute('branch', branch).addClass(
-                        'rcd-clickable').addClickListener(() => setState('nodes', {repo: getRepoParameter(), branch: branch}));
+                    const row = this.tableCard.createRow()
+                        .addCell(branch, {href: buildStateRef('nodes', {repo: getRepoParameter(), branch: branch})})
+                        .setAttribute('branch', branch);
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
             })
