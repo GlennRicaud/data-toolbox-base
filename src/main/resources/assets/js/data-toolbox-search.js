@@ -127,7 +127,8 @@ class SearchParamsCard extends RcdDivElement {
             .addChild(this.repositoryDropdown)
             .addChild(this.branchDropdown);
         this.filtersField = new RcdMaterialTextField('Filters (JSON format)', '{"exists":{"field":"modifiedTime"}}').init()
-            .addClass('dtb-search-filters');
+            .addClass('dtb-search-filters')
+            .addKeyDownListener('Enter', () => this.search());
         this.filtersIconArea =
             new RcdGoogleMaterialIconArea('fullscreen', () => new FiltersDialog(this.filtersField).init().open()).init();
         this.filtersRow = new RcdDivElement().init()
@@ -136,7 +137,8 @@ class SearchParamsCard extends RcdDivElement {
             .addChild(this.filtersField)
             .addChild(this.filtersIconArea);
         this.queryField = new RcdMaterialTextField('Query', '').init()
-            .addClass('dtb-search-query');
+            .addClass('dtb-search-query')
+            .addKeyDownListener('Enter', () => this.search());
         this.sortField = new RcdMaterialTextField('Sort', '').init()
             .addClass('dtb-search-sort');
         this.queryRow = new RcdDivElement().init()
@@ -164,8 +166,7 @@ class SearchParamsCard extends RcdDivElement {
             .addChild(this.contextRow)
             .addChild(this.filtersRow)
             .addChild(this.queryRow)
-            .addChild(this.buttonRow)
-            .addKeyUpListener('Enter', () => this.search());
+            .addChild(this.buttonRow);
     }
 
     search() {
