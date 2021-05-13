@@ -7,7 +7,9 @@ class HelpDialog extends RcdMaterialModalDialog {
 
     init() {
         const closeCallback = () => this.close();
-        super.init().addAction('CLOSE', closeCallback).addKeyDownListener('Enter', closeCallback).addKeyDownListener('Escape', closeCallback);
+        super.init()
+            .addAction('CLOSE', closeCallback)
+            .addKeyDownListener('Escape', closeCallback);
 
         this.definitions.forEach(definition => {
             const definitionElement = new RcdPElement().init().setText(definition).addClass('help-definition');
@@ -58,8 +60,11 @@ class ImportResultDialog extends RcdMaterialModalDialog {
                         'Errors: ' + errorCount;
         const resultItem = new RcdTextElement(summary).init();
 
-        super.init().addItem(resultItem).addAction('CLOSE', closeCallback).addAction('DETAILS', detailsCallback).addKeyDownListener('Enter',
-            detailsCallback).addKeyDownListener('Escape', closeCallback);
+        super.init()
+            .addItem(resultItem)
+            .addAction('CLOSE', closeCallback)
+            .addAction('DETAILS', detailsCallback)
+            .addKeyDownListener('Escape', closeCallback);
         return this;
     }
 
@@ -129,8 +134,11 @@ class LoadExportDumpDialog extends RcdMaterialModalDialog {
                   + summary;
         const resultItem = new RcdTextElement(summary).init();
 
-        super.init().addItem(resultItem).addAction('CLOSE', closeCallback).addAction('DETAILS', detailsCallback).addKeyDownListener('Enter',
-            detailsCallback).addKeyDownListener('Escape', closeCallback);
+        super.init()
+            .addItem(resultItem)
+            .addAction('CLOSE', closeCallback)
+            .addAction('DETAILS', detailsCallback)
+            .addKeyDownListener('Escape', closeCallback);
         return this;
     }
 
@@ -178,8 +186,11 @@ class ExportResultDialog extends RcdMaterialModalDialog {
                         'Errors: ' + errorCount;
         const resultItem = new RcdTextElement(summary).init();
 
-        super.init().addItem(resultItem).addAction('CLOSE', closeCallback).addAction('DETAILS', detailsCallback).addKeyDownListener('Enter',
-            detailsCallback).addKeyDownListener('Escape', closeCallback);
+        super.init()
+            .addItem(resultItem)
+            .addAction('CLOSE', closeCallback)
+            .addAction('DETAILS', detailsCallback)
+            .addKeyDownListener('Escape', closeCallback);
         return this;
     }
 
@@ -236,12 +247,12 @@ class DumpResultDialog extends RcdMaterialModalDialog {
                   + summary;
         const resultItem = new RcdTextElement(summary).init();
 
-        super.init().addItem(resultItem).addAction('CLOSE', closeCallback).addKeyDownListener('Escape', closeCallback);
+        super.init().addItem(resultItem)
+            .addAction('CLOSE', closeCallback)
+            .addKeyDownListener('Escape', closeCallback);
 
         if (errorCount > 0) {
-            this.addAction('ERRORS', errorsCallback).addKeyDownListener('Enter', errorsCallback);
-        } else {
-            this.addKeyDownListener('Enter', closeCallback);
+            this.addAction('ERRORS', errorsCallback);
         }
 
         return this;
@@ -289,7 +300,6 @@ class PushResultDialog extends RcdMaterialModalDialog {
             .addItem(resultItem)
             .addAction('CLOSE', closeCallback)
             .addAction('DETAILS', detailsCallback)
-            .addKeyDownListener('Enter', detailsCallback)
             .addKeyDownListener('Escape', closeCallback);
         return this;
     }

@@ -63,7 +63,6 @@ class PropertyDialog extends RcdMaterialModalDialog {
             .addClass('dtb-property-dialog')
             .addAction('CANCEL', closeCallback)
             .addAction(this.action == 'Create' ? 'Create' : 'Update', confirmationCallback)
-            .addKeyDownListener('Enter', confirmationCallback)
             .addKeyDownListener('Escape', closeCallback)
             .addItem(this.nameField)
             .addItem(this.typeDropdown)
