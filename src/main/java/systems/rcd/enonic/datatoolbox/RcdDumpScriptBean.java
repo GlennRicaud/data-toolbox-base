@@ -14,7 +14,10 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jdk.nashorn.api.scripting.JSObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+
 import systems.rcd.fwk.core.exc.RcdException;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
@@ -24,7 +27,6 @@ import systems.rcd.fwk.core.format.properties.RcdPropertiesService;
 import systems.rcd.fwk.core.io.file.RcdFileService;
 import systems.rcd.fwk.core.io.file.RcdTextFileService;
 import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
-import systems.rcd.fwk.core.script.js.RcdJavascriptService;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.dump.BranchDumpResult;
@@ -70,6 +72,8 @@ public class RcdDumpScriptBean
     private Supplier<RepositoryService> repositoryServiceSupplier;
 
     private Supplier<NodeRepositoryService> nodeRepositoryServiceSupplier;
+
+    private ObjectReader objectReader = new ObjectMapper().reader();
 
     private static final Path DUMP_ARCHIVE_DIRECTORY_PATH;
 
@@ -196,9 +200,8 @@ public class RcdDumpScriptBean
                     {
                         final byte[] bytes = dumpJsonBufferedInputStream.readAllBytes();
                         final String dumpJsonContent = new String( bytes );
-                        final JSObject dumpJson =
-                            (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
-                        xpVersion = (String) dumpJson.getMember( "xpVersion" );
+                        final JsonNode dumpJson = objectReader.readTree( dumpJsonContent );
+                        xpVersion = dumpJson.get( "xpVersion" ).asText();
                         modelVersion = getModelVersion( dumpJson, xpVersion );
                     }
                 }
@@ -215,8 +218,9 @@ public class RcdDumpScriptBean
                     path( dumpPath.resolve( "dump.json" ) ).
                     contentConsumer( dumpJsonContent::append ).
                     build() );
-                final JSObject dumpJson = (JSObject) RcdJavascriptService.eval( "JSON.parse('" + dumpJsonContent.toString() + "')" );
-                xpVersion = (String) dumpJson.getMember( "xpVersion" );
+
+                final JsonNode dumpJson = objectReader.readTree( dumpJsonContent.toString() );
+                xpVersion = dumpJson.get( "xpVersion" ).asText();
                 modelVersion = getModelVersion( dumpJson, xpVersion );
             }
         }
@@ -231,11 +235,11 @@ public class RcdDumpScriptBean
             build();
     }
 
-    private String getModelVersion( final JSObject dumpJson, final String xpVersion )
+    private String getModelVersion( final JsonNode dumpJson, final String xpVersion )
     {
-        if ( dumpJson.hasMember( "modelVersion" ) )
+        if ( dumpJson.has( "modelVersion" ) )
         {
-            return (String) dumpJson.getMember( "modelVersion" );
+            return dumpJson.get( "modelVersion" ).asText();
         }
         if ( xpVersion != null && xpVersion.startsWith( "6." ) )
         {
