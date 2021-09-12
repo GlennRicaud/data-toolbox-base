@@ -14,6 +14,7 @@ include('data-toolbox-properties.js');
 include('data-toolbox-permissions.js');
 include('data-toolbox-versions.js');
 include('data-toolbox-search.js');
+include('data-toolbox-analyze.js');
 include('data-toolbox-audit.js');
 include('data-toolbox-iam.js');
 include('data-toolbox-users.js');

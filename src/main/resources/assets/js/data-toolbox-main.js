@@ -23,6 +23,7 @@ function createApp() {
         .addRoute(new ExportsRoute().init())
         .addRoute(new DumpsRoute().init())
         .addRoute(new SearchRoute().init())
+        .addRoute(new AnalyzeRoute().init())
         .addRoute(new AuditRoute().init())
         .addRoute(new IamRoute().init())
         .addRoute(new UsersRoute().init())
@@ -193,5 +194,17 @@ function getPropertyParameter() {
 
 function getApplicationParameter() {
     return RcdHistoryRouter.getParameters().application;
+}
+
+function getAnalyzerParameter() {
+    return RcdHistoryRouter.getParameters().analyzer || '';
+}
+
+function getFieldParameter() {
+    return RcdHistoryRouter.getParameters().field || '';
+}
+
+function getTextParameter() {
+    return RcdHistoryRouter.getParameters().text || '';
 }
 
