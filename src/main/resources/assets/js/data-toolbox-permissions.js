@@ -1,3 +1,38 @@
+class EditPermissionsDialog extends RcdMaterialModalDialog {
+    constructor(permissionsInfo, editCallback) {
+        super('Edit permissions', null, true, true);
+        this.permissionsInfo = permissionsInfo;
+        this.editCallback = editCallback;
+        this.inheritPermissionsField = new DtbCheckboxField({
+            label: 'Inherit permissions',
+            callback: () => this.inheritPermissionsField.select(!this.inheritPermissionsField.isSelected())
+        }).init()
+            .select(permissionsInfo.inheritsPermissions);
+        this.overwriteChildPermissionsField = new DtbCheckboxField({
+            label: 'Overwrite child permissions',
+            callback: () => this.overwriteChildPermissionsField.select(!this.overwriteChildPermissionsField.isSelected())
+        }).init().select(false);
+    }
+
+    init() {
+        return super.init()
+            .addItem(this.inheritPermissionsField)
+            .addItem(this.overwriteChildPermissionsField)
+            .addAction('CANCEL', () => this.close())
+            .addAction('EDIT', () => {
+                this.close();
+                this.editCallback({
+                    repositoryName: getRepoParameter(),
+                    branchName: getBranchParameter(),
+                    nodeId: this.permissionsInfo.id,
+                    inheritPermissions: this.inheritPermissionsField.isSelected(),
+                    overwriteChildPermissions: this.overwriteChildPermissionsField.isSelected()
+                });
+            })
+            .addKeyDownListener('Escape', () => this.close());
+    }
+}
+
 class PermissionsRoute extends DtbRoute {
     constructor() {
         super({
@@ -15,14 +50,45 @@ class PermissionsRoute extends DtbRoute {
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Permissions').init().addClass('dtb-table-card-permissions').addColumn('Principal',
-            {classes: ['principal']}).addColumn('Permissions', {classes: ['mobile-cell']}).addColumn('Read',
-            {classes: ['non-mobile-cell']}).addColumn('Create', {classes: ['non-mobile-cell']}).addColumn('Modify',
-            {classes: ['non-mobile-cell']}).addColumn('Delete', {classes: ['non-mobile-cell']}).addColumn('Publish',
-            {classes: ['non-mobile-cell']}).addColumn('Read<br/>Perm.', {classes: ['non-mobile-cell']}).addColumn('Write<br/>Perm.',
-            {classes: ['non-mobile-cell']});
+        const editIconArea = new RcdGoogleMaterialIconArea('edit', () => this.editPermissions()).init()
+            .setTooltip('Edit permissions', RcdMaterialTooltipAlignment.RIGHT);
+        this.tableCard = new RcdMaterialTableCard('Permissions', {selectable: false}).init()
+            .addClass('dtb-table-card-permissions')
+            .addIconArea(editIconArea)
+            .addColumn('Principal', {classes: ['principal']})
+            .addColumn('Permissions', {classes: ['mobile-cell']})
+            .addColumn('Read', {classes: ['non-mobile-cell']})
+            .addColumn('Create', {classes: ['non-mobile-cell']})
+            .addColumn('Modify', {classes: ['non-mobile-cell']})
+            .addColumn('Delete', {classes: ['non-mobile-cell']})
+            .addColumn('Publish', {classes: ['non-mobile-cell']})
+            .addColumn('Read<br/>Perm.', {classes: ['non-mobile-cell']})
+            .addColumn('Write<br/>Perm.', {classes: ['non-mobile-cell']});
 
         return new RcdMaterialLayout().init().addChild(this.tableCard);
+    }
+
+    editPermissions() {
+        if (this.permissionsInfo) {
+            new EditPermissionsDialog(this.permissionsInfo, (params) => this.doEditPermissions(params)).init()
+                .open();
+        }
+    }
+
+    doEditPermissions(params) {
+        const infoDialog = showLongInfoDialog("Applying permissions...");
+        requestPostJson(config.servicesUrl + '/permission-apply', {
+            data: params
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Applying permissions...',
+                doneCallback: (success) => displaySuccess(
+                    success.succeedNodes + ' nodes updated'),
+                alwaysCallback: () => this.retrievePermissions()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     retrievePermissions() {
@@ -53,8 +119,9 @@ class PermissionsRoute extends DtbRoute {
     }
 
     onPermissionsRetrieval(result) {
-        this.setInheritPermission(result.success._inheritsPermissions);
-        result.success._permissions.forEach((accessControlEntry) => {
+        this.setInheritPermission(result.success.inheritsPermissions);
+        result.success.permissions.forEach((accessControlEntry) => {
+            this.permissionsInfo = result.success;
             this.tableCard.createRow({selectable: false})
                 .addCell(accessControlEntry.principal, {classes: ['principal']})
                 .addCell(

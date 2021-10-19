@@ -24,8 +24,9 @@ function getPermissions(repositoryName, branchName, key) {
 
     return {
         success: {
-            _inheritsPermissions: result._inheritsPermissions,
-            _permissions: result._permissions
+            id: result._id,
+            inheritsPermissions: result._inheritsPermissions,
+            permissions: result._permissions
         }
     };
 }
