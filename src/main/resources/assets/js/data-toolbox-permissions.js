@@ -1,3 +1,32 @@
+class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
+    constructor(accessControlEntry) {
+        super('Edit access control entry', null, true, true);
+        const principalComponents = accessControlEntry.principal.split(':');
+        this.principalTypeField = new RcdMaterialDropdown('Principal type', ['role', 'user', 'group']).init()
+            .selectOption(principalComponents[0]);
+        this.idProviderField = new RcdMaterialTextField('ID Provider').init();
+        this.principalIdField = new RcdMaterialTextField('Principal ID').init();
+
+        if (principalComponents[0] !== 'role') {
+            this.idProviderField.setValue(principalComponents[1]);
+        }
+        this.principalIdField.setValue(principalComponents[principalComponents.length - 1])
+    }
+
+    init() {
+        return super.init()
+            .addItem(this.principalTypeField)
+            .addItem(this.idProviderField)
+            .addItem(this.principalIdField)
+            .addAction('CANCEL', () => this.close())
+            .addAction('DELETE', () => this.close())
+            .addAction('EDIT', () => {
+                this.close();
+            })
+            .addKeyDownListener('Escape', () => this.close());
+    }
+}
+
 class EditPermissionsDialog extends RcdMaterialModalDialog {
     constructor(permissionsInfo, editCallback) {
         super('Edit permissions', null, true, true);
@@ -12,14 +41,23 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
             label: 'Overwrite child permissions',
             callback: () => this.overwriteChildPermissionsField.select(!this.overwriteChildPermissionsField.isSelected())
         }).init().select(false);
+
+        this.permissionList = new RcdMaterialList().init();
+        permissionsInfo.permissions.forEach(accessControlEntry => this.permissionList.addRow(accessControlEntry.principal,
+            PermissionsRoute.createPermissionResume(accessControlEntry), {callback: () => this.editEntry(accessControlEntry)}));
+    }
+
+    editEntry(accessControlEntry) {
+        new EditAccessControlEntryDialog(accessControlEntry).init().open();
     }
 
     init() {
         return super.init()
             .addItem(this.inheritPermissionsField)
             .addItem(this.overwriteChildPermissionsField)
+            .addItem(this.permissionList)
             .addAction('CANCEL', () => this.close())
-            .addAction('EDIT', () => {
+            .addAction('APPLY', () => {
                 this.close();
                 this.editCallback({
                     repositoryName: getRepoParameter(),
@@ -125,7 +163,7 @@ class PermissionsRoute extends DtbRoute {
             this.tableCard.createRow({selectable: false})
                 .addCell(accessControlEntry.principal, {classes: ['principal']})
                 .addCell(
-                    this.createPermissionResume(accessControlEntry), {classes: ['mobile-cell']})
+                    PermissionsRoute.createPermissionResume(accessControlEntry), {classes: ['mobile-cell']})
                 .addCell(
                     this.createPermissionIcon(accessControlEntry, 'READ'),
                     {icon: true, classes: ['non-mobile-cell', 'permission']})
@@ -164,10 +202,10 @@ class PermissionsRoute extends DtbRoute {
         return '';
     }
 
-    createPermissionResume(accessControlEntry) {
+    static createPermissionResume(accessControlEntry) {
         let permissions = [];
         PermissionsRoute.getPermissions().forEach(permission => {
-            if (this.hasPermission(accessControlEntry, permission)) {
+            if (PermissionsRoute.hasPermission(accessControlEntry, permission)) {
                 permissions.push(permission);
             }
         });
@@ -175,7 +213,7 @@ class PermissionsRoute extends DtbRoute {
         return permissions.join(', ');
     }
 
-    hasPermission(accessControlEntry, permission) {
+    static hasPermission(accessControlEntry, permission) {
         return accessControlEntry.deny.indexOf(permission) === -1 &&
                accessControlEntry.allow.indexOf(permission) !== -1;
     }
