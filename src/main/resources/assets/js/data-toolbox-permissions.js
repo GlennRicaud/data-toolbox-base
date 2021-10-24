@@ -86,8 +86,12 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
     }
 
     onEntryEdited(accessControlEntry, row, newAccessControlEntry) {
-        this.onEntryDeleted(accessControlEntry, row);
-        this.onEntryAdded(newAccessControlEntry);
+        const index = this.accessControlEntries.indexOf(accessControlEntry);
+        if (index !== -1) {
+            this.permissionList.deleteRows();
+            this.accessControlEntries[index] = newAccessControlEntry;
+            this.accessControlEntries.forEach(accessControlEntry => this.onEntryAdded(accessControlEntry));
+        }
     }
 
     onEntryDeleted(accessControlEntry, row) {
