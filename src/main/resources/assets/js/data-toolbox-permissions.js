@@ -6,7 +6,8 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
         this.deleteCallback = deleteCallback;
         const principalComponents = accessControlEntry.principal.split(':');
         this.principalTypeField = new RcdMaterialDropdown('Principal type', ['role', 'user', 'group']).init()
-            .selectOption(principalComponents[0]);
+            .selectOption(principalComponents[0])
+            .addChangeListener(() => this.refresh());
         this.idProviderField = new RcdMaterialTextField('ID Provider').init();
         this.principalIdField = new RcdMaterialTextField('Principal ID').init();
         const permissionResume = PermissionsRoute.createPermissionResume(accessControlEntry);
@@ -20,41 +21,51 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
     }
 
     init() {
-        return super.init()
+        super.init()
             .addItem(this.principalTypeField)
             .addItem(this.idProviderField)
             .addItem(this.principalIdField)
             .addItem(this.permissionResumeField)
-            .addAction('CANCEL', () => this.close())
-            .addAction('DELETE', () => {
+            .addAction('CANCEL', () => this.close());
+
+        if (this.deleteCallback) {
+            this.addAction('DELETE', () => {
                 this.close();
                 this.deleteCallback();
-            })
-            .addAction(this.mode, () => {
-                const principalType = this.principalTypeField.getSelectedValue();
-                const principal = principalType + ':'
-                                  + (principalType === 'role' ? '' : (this.idProviderField.getValue() + ':'))
-                                  + this.principalIdField.getValue();
-                const permissionResume = this.permissionResumeField.getSelectedValue();
+            });
+        }
 
-                this.close();
-                if (permissionResume === 'Custom') {
-                    this.callback({
-                        principal: principal,
-                        allow: [],
-                        deny: []
-                    });
-                } else {
-                    this.callback({
-                        principal: principal,
-                        allow: PermissionsRoute.createAllowedPermissionfromResume(permissionResume),
-                        deny: []
-                    });
-                }
+        return this.addAction(this.mode, () => {
+            const principalType = this.principalTypeField.getSelectedValue();
+            const principal = principalType + ':'
+                              + (principalType === 'role' ? '' : (this.idProviderField.getValue() + ':'))
+                              + this.principalIdField.getValue();
+            const permissionResume = this.permissionResumeField.getSelectedValue();
+
+            this.close();
+            if (permissionResume === 'Custom') {
+                this.callback({
+                    principal: principal,
+                    allow: [],
+                    deny: []
+                });
+            } else {
+                this.callback({
+                    principal: principal,
+                    allow: PermissionsRoute.createAllowedPermissionfromResume(permissionResume),
+                    deny: []
+                });
+            }
 
 
-            })
-            .addKeyDownListener('Escape', () => this.close());
+        })
+            .addKeyDownListener('Escape', () => this.close())
+            .refresh();
+    }
+
+    refresh() {
+        this.idProviderField.show(this.principalTypeField.getSelectedValue() !== 'role');
+        return this;
     }
 }
 
@@ -74,41 +85,9 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
         }).init().select(false);
 
         this.permissionList = new RcdMaterialList().init();
-        this.accessControlEntries = [];
-        this.permissionList.createRow('Add permission', null, {icon: new RcdGoogleMaterialIcon('add').init()});
-        permissionsInfo.permissions.forEach(accessControlEntry => this.onEntryAdded(accessControlEntry));
+        this.accessControlEntries = permissionsInfo.permissions.slice();
     }
 
-    editEntry(accessControlEntry, row) {
-        new EditAccessControlEntryDialog('Edit', accessControlEntry,
-            (newAccessControlEntry) => this.onEntryEdited(accessControlEntry, row, newAccessControlEntry),
-            () => this.onEntryDeleted(accessControlEntry, row)).init().open();
-    }
-
-    onEntryEdited(accessControlEntry, row, newAccessControlEntry) {
-        const index = this.accessControlEntries.indexOf(accessControlEntry);
-        if (index !== -1) {
-            this.permissionList.deleteRows();
-            this.accessControlEntries[index] = newAccessControlEntry;
-            this.accessControlEntries.forEach(accessControlEntry => this.onEntryAdded(accessControlEntry));
-        }
-    }
-
-    onEntryDeleted(accessControlEntry, row) {
-        this.accessControlEntries.indexOf(accessControlEntry);
-        this.permissionList.deleteRow(row);
-        return this;
-    }
-
-    onEntryAdded(accessControlEntry) {
-        this.accessControlEntries.push(accessControlEntry);
-        const row = this.permissionList.createRow(accessControlEntry.principal,
-            PermissionsRoute.createPermissionResume(accessControlEntry).text,
-            {
-                callback: () => this.editEntry(accessControlEntry, row),
-                icon: new RcdGoogleMaterialIcon('edit').init()
-            });
-    }
 
     init() {
         return super.init()
@@ -126,7 +105,62 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
                     overwriteChildPermissions: this.overwriteChildPermissionsField.isSelected()
                 });
             })
-            .addKeyDownListener('Escape', () => this.close());
+            .addKeyDownListener('Escape', () => this.close())
+            .refreshRows();
+    }
+
+    editEntry(accessControlEntry, row) {
+        new EditAccessControlEntryDialog('Edit', accessControlEntry,
+            (newAccessControlEntry) => this.onEntryEdited(accessControlEntry, row, newAccessControlEntry),
+            () => this.onEntryDeleted(accessControlEntry, row)).init().open();
+    }
+
+    addEntry() {
+        new EditAccessControlEntryDialog('Add', {
+                principal: 'role:',
+                allow: ['READ'],
+                deny: [],
+            },
+            (accessControlEntry) => this.onEntryAdded(accessControlEntry)).init().open();
+    }
+
+    onEntryEdited(accessControlEntry, row, newAccessControlEntry) {
+        const index = this.accessControlEntries.indexOf(accessControlEntry);
+        if (index !== -1) {
+            this.accessControlEntries[index] = newAccessControlEntry;
+            this.refreshRows(this.accessControlEntries);
+        }
+    }
+
+    onEntryDeleted(accessControlEntry, row) {
+        this.accessControlEntries.indexOf(accessControlEntry);
+        this.permissionList.deleteRow(row);
+        return this;
+    }
+
+    onEntryAdded(accessControlEntry) {
+        this.accessControlEntries.push(accessControlEntry);
+        this.addRow(accessControlEntry);
+    }
+
+
+    refreshRows() {
+        this.permissionList.deleteRows();
+        this.permissionList.createRow('Add permission', null, {
+            icon: new RcdGoogleMaterialIcon('add').init(),
+            callback: () => this.addEntry()
+        });
+        this.accessControlEntries.forEach(accessControlEntry => this.addRow(accessControlEntry));
+        return this;
+    }
+
+    addRow(accessControlEntry) {
+        const row = this.permissionList.createRow(accessControlEntry.principal,
+            PermissionsRoute.createPermissionResume(accessControlEntry).text,
+            {
+                callback: () => this.editEntry(accessControlEntry, row),
+                icon: new RcdGoogleMaterialIcon('edit').init()
+            });
     }
 }
 
