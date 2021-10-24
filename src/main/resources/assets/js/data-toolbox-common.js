@@ -290,7 +290,7 @@ class PushResultDialog extends RcdMaterialModalDialog {
     init() {
         const closeCallback = () => this.close();
         const detailsCallback = () => this.displayDetails();
-        
+
         const summary = 'Pushed nodes: ' + this.result.success.length + '\n' +
                         'Deleted nodes: ' + this.result.deleted.length + '\n' +
                         'Errors: ' + this.result.failed.length;
@@ -755,13 +755,25 @@ class DtbCheckboxField extends RcdDivElement {
             .addChild(this.checkbox)
             .addChild(this.label);
     }
-    
+
     isSelected() {
         return this.checkbox.isSelected();
     }
-    
+
     select(select) {
         this.checkbox.select(select);
         return this;
     }
+}
+
+function isEqualArray(array1, array2) {
+    if (array1.length !== array2.length) {
+        return false;
+    }
+    for (const elementArray1 of array1) {
+        if (array2.indexOf(elementArray1) === -1) {
+            return false;
+        }
+    }
+    return true;
 }

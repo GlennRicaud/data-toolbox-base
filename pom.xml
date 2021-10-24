@@ -23,7 +23,7 @@
     <dependency>
       <groupId>systems.rcd.js.fwk.material</groupId>
       <artifactId>rcd-jsfwk-material</artifactId>
-      <version>6.0.0</version>
+      <version>6.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.enonic.xp</groupId>
