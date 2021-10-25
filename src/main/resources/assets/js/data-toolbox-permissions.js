@@ -18,6 +18,14 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
             this.idProviderField.setValue(principalComponents[1]);
         }
         this.principalIdField.setValue(principalComponents[principalComponents.length - 1]);
+
+        this.permissionDropdownMap = {};
+        this.permissionDropdownArray = [];
+        PermissionsRoute.getPermissions().forEach(permission => {
+            const dropdown = new RcdMaterialDropdown(permission, ['-', 'allow', 'deny']).init();
+            this.permissionDropdownMap[permission] = dropdown;
+            this.permissionDropdownArray.push(dropdown);
+        })
     }
 
     init() {
@@ -27,6 +35,8 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
             .addItem(this.principalIdField)
             .addItem(this.permissionResumeField)
             .addAction('CANCEL', () => this.close());
+
+        this.permissionDropdownArray.forEach(permissionDropdown => this.addItem(permissionDropdown));
 
         if (this.deleteCallback) {
             this.addAction('DELETE', () => {

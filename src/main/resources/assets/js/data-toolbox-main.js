@@ -166,6 +166,9 @@ function getParentPathParameter() {
         return '/';
     }
     const pathElements = path.split('/');
+    if (pathElements.length < 3) {
+        return '/';
+    }
     return pathElements.slice(0, pathElements.length - 1).join('/');
 }
 
