@@ -8,12 +8,14 @@ exports.post = function (req) {
     const nodeId = body.nodeId;
     const inheritPermissions = body.inheritPermissions;
     const overwriteChildPermissions = body.overwriteChildPermissions;
+    const permissions = body.permissions;
 
     const taskId = taskLib.submit({
         description: 'Permissions application',
         task: function () {
             taskLib.progress({info: 'Applying permissions...'});
-            taskLib.progress({info: bean.apply(repositoryName, branchName, nodeId, inheritPermissions, overwriteChildPermissions)});
+            taskLib.progress(
+                {info: bean.apply(repositoryName, branchName, nodeId, inheritPermissions, overwriteChildPermissions, permissions)});
         }
     });
 
