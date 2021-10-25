@@ -74,10 +74,11 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
         super('Edit permissions', null, true, true);
         this.permissionsInfo = permissionsInfo;
         this.editCallback = editCallback;
+        this.setInheritMode(permissionsInfo.inheritsPermissions);
         this.inheritPermissionsField = new DtbCheckboxField({
             label: 'Inherit permissions',
             callback: () => {
-                this.inherit = !this.inheritPermissionsField.isSelected();
+                this.setInheritMode(!this.inheritPermissionsField.isSelected());
                 this.inheritPermissionsField.select(this.inherit);
                 if (this.inherit) {
                     this.inheritPermissions();
@@ -94,9 +95,19 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
         this.accessControlEntries = permissionsInfo.permissions.slice();
     }
 
+    setInheritMode(inherit) {
+        this.inherit = inherit;
+        if (inherit) {
+            this.addClass('inherit');
+        } else {
+            this.removeClass('inherit');
+        }
+    }
+
 
     init() {
         return super.init()
+            .addClass('dtb-permissions-edit-permissions')
             .addItem(this.inheritPermissionsField)
             .addItem(this.overwriteChildPermissionsField)
             .addItem(this.permissionList)
@@ -187,8 +198,20 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
             PermissionsRoute.createPermissionResume(accessControlEntry).text,
             {
                 callback: () => !this.inherit && this.editEntry(accessControlEntry),
-                icon: new RcdGoogleMaterialIcon('edit').init()
+                icon: new RcdGoogleMaterialIcon(this.getIconName(accessControlEntry.principal)).init()
             });
+    }
+
+    getIconName(principal) {
+        const type = principal.split(':')[0];
+        switch (type) {
+        case 'role':
+            return 'portrait';
+        case 'group':
+            return 'group';
+        case 'user':
+            return 'person';
+        }
     }
 }
 
