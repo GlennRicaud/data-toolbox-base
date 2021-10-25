@@ -160,6 +160,15 @@ function getPathParameter() {
     return RcdHistoryRouter.getParameters().path;
 }
 
+function getParentPathParameter() {
+    const path = getPathParameter();
+    if (path === '/') {
+        return '/';
+    }
+    const pathElements = path.split('/');
+    return pathElements.slice(0, pathElements.length - 1).join('/');
+}
+
 function getIdProviderParameter() {
     return RcdHistoryRouter.getParameters().idprovider;
 }

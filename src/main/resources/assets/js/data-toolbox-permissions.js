@@ -77,8 +77,11 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
         this.inheritPermissionsField = new DtbCheckboxField({
             label: 'Inherit permissions',
             callback: () => {
-                this.inheritPermissionsField.select(!this.inheritPermissionsField.isSelected());
-                this.refresh();
+                this.inherit = !this.inheritPermissionsField.isSelected();
+                this.inheritPermissionsField.select(this.inherit);
+                if (this.inherit) {
+                    this.inheritPermissions();
+                }
             }
         }).init()
             .select(permissionsInfo.inheritsPermissions);
@@ -110,8 +113,7 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
                 });
             })
             .addKeyDownListener('Escape', () => this.close())
-            .refreshRows()
-            .refresh();
+            .refreshRows();
     }
 
     editEntry(accessControlEntry) {
@@ -151,19 +153,32 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
         this.addRow(accessControlEntry);
     }
 
+    inheritPermissions() {
+        const infoDialog = showShortInfoDialog('Retrieving permissions...');
+        requestPostJson(config.servicesUrl + '/permission-list', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: getBranchParameter(),
+                key: getParentPathParameter()
+            }
+        })
+            .then((result) => this.onParentPermissionsRetrieval(result.success.permissions))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+
+    onParentPermissionsRetrieval(parentPermissions) {
+        this.accessControlEntries = parentPermissions.slice();
+        this.refreshRows();
+    }
 
     refreshRows() {
         this.permissionList.deleteRows();
         this.permissionList.createRow('Add permission', null, {
             icon: new RcdGoogleMaterialIcon('add').init(),
-            callback: () => this.addEntry()
+            callback: () => !this.inherit && this.addEntry()
         });
         this.accessControlEntries.forEach(accessControlEntry => this.addRow(accessControlEntry));
-        return this;
-    }
-
-    refresh() {
-        this.permissionList.show(!this.inheritPermissionsField.isSelected());
         return this;
     }
 
@@ -171,7 +186,7 @@ class EditPermissionsDialog extends RcdMaterialModalDialog {
         this.permissionList.createRow(accessControlEntry.principal,
             PermissionsRoute.createPermissionResume(accessControlEntry).text,
             {
-                callback: () => this.editEntry(accessControlEntry),
+                callback: () => !this.inherit && this.editEntry(accessControlEntry),
                 icon: new RcdGoogleMaterialIcon('edit').init()
             });
     }
