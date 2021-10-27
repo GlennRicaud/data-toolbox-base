@@ -8,8 +8,10 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
         this.principalTypeField = new RcdMaterialDropdown('Principal type', ['role', 'user', 'group']).init()
             .selectOption(principalComponents[0])
             .addChangeListener(() => this.refresh());
-        this.idProviderField = new RcdMaterialTextField('ID Provider').init();
-        this.principalIdField = new RcdMaterialTextField('Principal ID').init();
+        this.idProviderField = new RcdMaterialTextField('ID Provider').init()
+            .addInputListener(() => this.refresh());
+        this.principalIdField = new RcdMaterialTextField('Principal ID').init()
+            .addInputListener(() => this.refresh());
         const permissionResume = PermissionsRoute.createPermissionResume(accessControlEntry);
         this.permissionResumeField =
             new RcdMaterialDropdown('Permission', ['Can Read', 'Can Write', 'Can Publish', 'Full Access', 'Custom']).init()
@@ -82,9 +84,12 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
     }
 
     refresh() {
-        this.idProviderField.show(this.principalTypeField.getSelectedValue() !== 'role');
+        const isRole = this.principalTypeField.getSelectedValue() === 'role';
+        this.idProviderField.show(!isRole);
         this.permissionDropdownArray.forEach(
-            permissionDropdown => permissionDropdown.show(this.permissionResumeField.getSelectedValue() === 'Custom'))
+            permissionDropdown => permissionDropdown.show(this.permissionResumeField.getSelectedValue() === 'Custom'));
+        const missingInput = this.principalIdField.getValue() === '' || (!isRole && this.idProviderField.getValue() === '')
+        this.dialog.actions.children[this.dialog.actions.children.length - 1].enable(!missingInput); //TODO
         return this;
     }
 }
