@@ -13,7 +13,8 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
         const permissionResume = PermissionsRoute.createPermissionResume(accessControlEntry);
         this.permissionResumeField =
             new RcdMaterialDropdown('Permission', ['Can Read', 'Can Write', 'Can Publish', 'Full Access', 'Custom']).init()
-                .selectOption(permissionResume.custom ? 'Custom' : permissionResume.text);
+                .selectOption(permissionResume.custom ? 'Custom' : permissionResume.text)
+                .addChangeListener(() => this.refresh());
         if (principalComponents[0] !== 'role') {
             this.idProviderField.setValue(principalComponents[1]);
         }
@@ -25,7 +26,9 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
             const dropdown = new RcdMaterialDropdown(permission, ['-', 'allow', 'deny']).init();
             this.permissionDropdownMap[permission] = dropdown;
             this.permissionDropdownArray.push(dropdown);
-        })
+        });
+        accessControlEntry.allow.forEach(allowedPermission => this.permissionDropdownMap[allowedPermission].selectOption('allow'));
+        accessControlEntry.deny.forEach(allowedPermission => this.permissionDropdownMap[allowedPermission].selectOption('deny'));
     }
 
     init() {
@@ -56,8 +59,8 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
             if (permissionResume === 'Custom') {
                 this.callback({
                     principal: principal,
-                    allow: [],
-                    deny: []
+                    allow: this.getCustomPermissions('allow'),
+                    deny: this.getCustomPermissions('deny')
                 });
             } else {
                 this.callback({
@@ -73,8 +76,15 @@ class EditAccessControlEntryDialog extends RcdMaterialModalDialog {
             .refresh();
     }
 
+    getCustomPermissions(selectedValue) {
+        return PermissionsRoute.getPermissions().filter(
+            permission => this.permissionDropdownMap[permission].getSelectedValue() === selectedValue);
+    }
+
     refresh() {
         this.idProviderField.show(this.principalTypeField.getSelectedValue() !== 'role');
+        this.permissionDropdownArray.forEach(
+            permissionDropdown => permissionDropdown.show(this.permissionResumeField.getSelectedValue() === 'Custom'))
         return this;
     }
 }
