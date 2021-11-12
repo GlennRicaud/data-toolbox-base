@@ -7,54 +7,83 @@ class NodesRoute extends DtbRoute {
 
     onDisplay() {
         this.refreshBreadcrumbs();
+        this.refreshTable();
         this.retrieveNodes();
     }
 
     createLayout() {
-        const exportIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/export-icon.svg', () => this.exportNode()).init().setTooltip(
+        this.exportIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/export-icon.svg', () => this.exportNode()).init().setTooltip(
             'Export selected node');
-        const importIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/import-icon.svg', () => this.importNode()).init().setTooltip(
+        this.importIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/import-icon.svg', () => this.importNode()).init().setTooltip(
             'Import node export');
-        const moveIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/rename.svg', () => this.moveNode()).init().setTooltip(
+        this.moveIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/rename.svg', () => this.moveNode()).init().setTooltip(
             'Move/rename node');
-        const filterIconArea = new RcdGoogleMaterialIconArea('filter_list', () => this.filterNodes()).init().setTooltip('Filter nodes');
-        const sortIconArea = new RcdGoogleMaterialIconArea('sort', () => this.sortNodes()).init().setTooltip('Sort nodes');
-        const deleteIconArea = new RcdGoogleMaterialIconArea('delete', () => this.deleteNodes()).init().setTooltip('Delete selected nodes',
+        this.fieldsIconArea = new RcdGoogleMaterialIconArea('view_column', () => this.setDisplayedFields()).init().setTooltip(
+            'Set displayed fields');
+        this.filterIconArea = new RcdGoogleMaterialIconArea('filter_list', () => this.filterNodes()).init().setTooltip('Filter nodes');
+        this.sortIconArea = new RcdGoogleMaterialIconArea('sort', () => this.sortNodes()).init().setTooltip('Sort nodes');
+        this.deleteIconArea = new RcdGoogleMaterialIconArea('delete', () => this.deleteNodes()).init().setTooltip('Delete selected nodes',
             RcdMaterialTooltipAlignment.RIGHT);
-        this.tableCard = new RcdMaterialTableCard('Nodes').init()
-            .addColumn('Node name')
-            .addColumn('Node ID', {classes: ['non-mobile-cell']})
-            .addColumn('', {icon: true})
-            .addColumn('', {icon: true})
-            .addIconArea(exportIconArea, {min: 1, max: 1})
-            .addIconArea(importIconArea, {max: 0})
-            .addIconArea(moveIconArea, {min: 1})
-            .addIconArea(filterIconArea, {max: 0})
-            .addIconArea(sortIconArea, {max: 0})
-            .addIconArea(deleteIconArea, {min: 1});
+        return new RcdMaterialLayout().init();
+    }
 
-        return new RcdMaterialLayout().init().addChild(this.tableCard);
+    refreshTable() {
+        this.layout.removeChild(this.tableCard);
+        this.tableCard = new RcdMaterialTableCard('Nodes').init();
+        getFields().forEach((field, index) => {
+            this.tableCard.addColumn(this.getFieldDisplayName(field), index === 0 ? {} : {classes: ['non-mobile-cell']})
+        });
+        this.tableCard.addColumn('', {icon: true})
+            .addColumn('', {icon: true})
+            .addIconArea(this.exportIconArea, {min: 1, max: 1})
+            .addIconArea(this.importIconArea, {max: 0})
+            .addIconArea(this.moveIconArea, {min: 1})
+            .addIconArea(this.fieldsIconArea, {max: 0})
+            .addIconArea(this.filterIconArea, {max: 0})
+            .addIconArea(this.sortIconArea, {max: 0})
+            .addIconArea(this.deleteIconArea, {min: 1});
+        this.layout.addChild(this.tableCard);
+    }
+
+    getFieldDisplayName(field) {
+        switch (field) {
+        case '_id':
+            return 'Node ID';
+        case '_name':
+            return 'Node name';
+        default:
+            return field;
+        }
+    }
+
+    getFieldValue(node, field) {
+        const separatorIndex = field.indexOf('.');
+        if (separatorIndex !== -1) {
+            return this.getFieldValue(node[field.substring(0, separatorIndex)], field.substring(separatorIndex + 1))
+        }
+        return node[field];
     }
 
     retrieveNodes() {
         const infoDialog = showShortInfoDialog('Retrieving node list...');
         this.tableCard.deleteRows();
-        const parentStateRef = getPathParameter() ? 
-            buildStateRef('nodes', {
-                repo: getRepoParameter(),
-                branch: getBranchParameter(),
-                path: getPathParameter() === '/' ? null : this.getParentPath()
-            }): buildStateRef('branches', {
+        const parentStateRef = getPathParameter() ?
+                               buildStateRef('nodes', {
+                                   repo: getRepoParameter(),
+                                   branch: getBranchParameter(),
+                                   path: getPathParameter() === '/' ? null : this.getParentPath(),
+                                   fields: getFieldsParameter()
+                               }) : buildStateRef('branches', {
                 repo: getRepoParameter()
             });
-        this.tableCard.createRow({selectable: false})
-            .addCell('..', {href: parentStateRef})
-            .addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']})
-            .addCell(null, {icon: true})
+        const row = this.tableCard.createRow({selectable: false})
+            .addCell('..', {href: parentStateRef});
+        getFields().slice(1).forEach(field => row.addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']}));
+        row.addCell(null, {icon: true})
             .addCell(null, {icon: true})
             .addClass('rcd-clickable')
             .addClickListener(() => {
-                
+
             });
         return requestPostJson(config.servicesUrl + '/node-getchildren', {
             data: {
@@ -63,6 +92,7 @@ class NodesRoute extends DtbRoute {
                 parentPath: getPathParameter(),
                 start: getStartParameter(),
                 count: getCountParameter(),
+                fields: getFieldsParameter(),
                 filter: getFilterParameter(),
                 sort: getSortParameter()
             },
@@ -89,14 +119,19 @@ class NodesRoute extends DtbRoute {
             }).init().setTooltip('Display as JSON');
 
             const stateRef = buildStateRef('nodes', {
-                repo: getRepoParameter(), 
-                branch: getBranchParameter(), 
-                path: node._path
+                repo: getRepoParameter(),
+                branch: getBranchParameter(),
+                path: node._path,
+                fields: getFieldsParameter()
             });
-            const row = this.tableCard.createRow()
-                .addCell(node._name, {href: stateRef})
-                .addCell(node._id, {href: stateRef, reachable: false, classes: ['non-mobile-cell']})
-                .addCell(displayNodeIconArea, {icon: true})
+
+            const row = this.tableCard.createRow();
+            getFields().forEach((field, index) => {
+
+                row.addCell(this.getFieldValue(node, field),
+                    index === 0 ? {href: stateRef} : {href: stateRef, classes: ['non-mobile-cell']});
+            });
+            row.addCell(displayNodeIconArea, {icon: true})
                 .addCell(displayJsonIconArea, {icon: true})
                 .setAttribute('id', node._id)
                 .setAttribute('path', node._path)
@@ -112,6 +147,7 @@ class NodesRoute extends DtbRoute {
             path: getPathParameter(),
             start: getStartParameter(),
             count: rowCount,
+            fields: getFieldsParameter(),
             filter: getFilterParameter(),
             sort: getSortParameter()
         });
@@ -121,6 +157,7 @@ class NodesRoute extends DtbRoute {
             path: getPathParameter(),
             start: Math.max(0, startInt - countInt),
             count: getCountParameter(),
+            fields: getFieldsParameter(),
             filter: getFilterParameter(),
             sort: getSortParameter()
         });
@@ -130,6 +167,7 @@ class NodesRoute extends DtbRoute {
             path: getPathParameter(),
             start: startInt + countInt,
             count: getCountParameter(),
+            fields: getFieldsParameter(),
             filter: getFilterParameter(),
             sort: getSortParameter()
         });
@@ -159,6 +197,26 @@ class NodesRoute extends DtbRoute {
         return super.moveNode(sources);
     }
 
+    setDisplayedFields() {
+        showInputDialog({
+            title: "Set displayed fields",
+            confirmationLabel: "SET",
+            label: "Fields (comma separated)",
+            placeholder: '',
+            value: decodeURIComponent(getFieldsParameter()),
+            callback: (value) => setState('nodes', {
+                repo: getRepoParameter(),
+                branch: getBranchParameter(),
+                path: getPathParameter(),
+                start: 0,
+                count: getCountParameter(),
+                fields: encodeURIComponent(value),
+                filter: getFilterParameter(),
+                sort: getSortParameter()
+            })
+        });
+    }
+
     filterNodes() {
         showInputDialog({
             title: "Filter nodes",
@@ -172,6 +230,7 @@ class NodesRoute extends DtbRoute {
                 path: getPathParameter(),
                 start: 0,
                 count: getCountParameter(),
+                fields: getFieldsParameter(),
                 filter: encodeURIComponent(value),
                 sort: getSortParameter()
             })
@@ -191,6 +250,7 @@ class NodesRoute extends DtbRoute {
                 path: getPathParameter(),
                 start: 0,
                 count: getCountParameter(),
+                fields: getFieldsParameter(),
                 filter: getFilterParameter(),
                 sort: encodeURIComponent(value)
             })

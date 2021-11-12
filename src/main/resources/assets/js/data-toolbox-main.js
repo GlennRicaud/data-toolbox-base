@@ -184,6 +184,14 @@ function getCountParameter(defaultValue) {
     return RcdHistoryRouter.getParameters().count || defaultValue || '50';
 }
 
+function getFieldsParameter() {
+    return RcdHistoryRouter.getParameters().fields || '_id%2C_name';
+}
+
+function getFields() {
+    return decodeURIComponent(getFieldsParameter()).split(',').map(fieldName => fieldName.trim());
+}
+
 function getFilterParameter() {
     return RcdHistoryRouter.getParameters().filter || '';
 }
