@@ -389,6 +389,10 @@ class NodesRoute extends DtbRoute {
                             'Otherwise, it means the new desired path or name for the node (renaming available only if one node is selected).'
             })
             .addActionDefinition({
+                iconName: 'view_column', definition: 'Set the displayed fields in the Nodes table. ' +
+                                                     'Example: "_id,_ts,_name,_indexConfig.default.enabled"'
+            })
+            .addActionDefinition({
                 iconName: 'filter_list', definition: 'Filter the nodes based on a query expression. ' +
                                                      'Example: "_id = \'role:system.admin"\'. ' +
                                                      'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query language</a> for more information.'
