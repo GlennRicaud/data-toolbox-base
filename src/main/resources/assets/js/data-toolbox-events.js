@@ -136,6 +136,12 @@ class EventsRoute extends DtbRoute {
     }
 
     createLayout() {
+        if (!eventManager) {
+            return new RcdMaterialLayout().init()
+                .addChild(new RcdTextDivElement('Event websocket required').init()
+                    .addClass('dt-error-div'));
+        }
+
         this.eventsCard = new EventsCard().init();
         eventManager.addEventListener((event) => this.onEvent(event));
         return new RcdMaterialLayout().init()

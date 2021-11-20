@@ -35,6 +35,9 @@
         .then(initializedTaskManager => {
             taskManager = initializedTaskManager;
         })
+        .catch(() => {
+            //Nothing to do
+        })
         .finally(() => {
             app = createApp();
             app.start(document.body);
