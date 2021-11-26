@@ -7,7 +7,6 @@ exports.get = () => {
         .get()
         .toString();
     const body = mustacheLib.render(view, {
-        adminRestUrl: portalLib.url({path: "/admin/rest"}),
         servicesUrl: portalLib.serviceUrl({service: ""}),
         assetsUrl: portalLib.assetUrl({path: ""}),
         wsUrl: portalLib.url({path: '/admin/event', type: 'absolute'}).replace(/^(http|https)/, 'ws'),

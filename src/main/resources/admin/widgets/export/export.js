@@ -20,7 +20,6 @@ exports.get = (req) => {
     }) : null;
     const view = resolve("export.html");
     const body = mustacheLib.render(view, {
-        adminRestUrl: portalLib.url({path: "/admin/rest"}),
         servicesUrl: portalLib.serviceUrl({service: ""}),
         assetsUrl: portalLib.assetUrl({path: ""}),
         cmsRepositoryShortName: repositoryName.substring('com.enonic.cms.'.length),

@@ -644,14 +644,18 @@ function retrieveTaskProgress(params) {
             onTaskRetrieved(task, params, intervalId);
         }
     }, 100) : setInterval(() => {
-        requestJson(config.adminRestUrl + '/tasks/' + params.taskId)
-            .then((task) => {
-                if ((task == null || task.state === 'WAITING') && attemptCounter < 1) {
-                    attemptCounter++;
-                } else {
-                    onTaskRetrieved(task, params, intervalId);
-                }
-            })
+        requestPostJson(config.servicesUrl + '/task-get', {
+            data: {
+                taskId: params.taskId
+            }
+        }).then((result) => {
+            const task = result.success;
+            if ((task == null || task.state === 'WAITING') && attemptCounter < 1) {
+                attemptCounter++;
+            } else {
+                onTaskRetrieved(task, params, intervalId);
+            }
+        })
             .catch((error) => {
                 clearInterval(intervalId);
                 handleRequestError(error);
@@ -681,9 +685,10 @@ function retrieveTasks(params) {
             const tasks = taskManager.getTasks(params.applicationKey);
             resolve(tasks);
         } else {
-            requestJson(config.adminRestUrl + '/tasks')
+            requestJson(config.servicesUrl + '/task-list')
                 .then((result) => {
-                    const filteredTasks = result.tasks.filter(task => !params.applicationKey || params.applicationKey === task.application);
+                    const filteredTasks = result.success.filter(
+                        task => !params.applicationKey || params.applicationKey === task.application);
                     resolve(filteredTasks);
                 })
                 .catch((error) => {

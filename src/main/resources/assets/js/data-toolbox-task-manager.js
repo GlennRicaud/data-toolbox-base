@@ -10,9 +10,9 @@ class TaskManager extends RcdObject {
     }
 
     init() {
-        requestJson(config.adminRestUrl + '/tasks')
+        requestJson(config.servicesUrl + '/task-list')
             .then((result) => {
-                result.tasks.forEach(task => this.addTask(task));
+                result.success.forEach(task => this.addTask(task));
                 this.eventManager.addEventListener((event) => this.onEvent(event));
                 if (this.resolve) {
                     this.resolve(this);
