@@ -37,50 +37,38 @@ public class RcdAuditScriptBean
 
     public String query( final int start, final int count )
     {
-        return runSafely( () -> ContextBuilder.from( ContextAccessor.current() ).
-            repositoryId( RepositoryId.from( "system.auditlog" ) ).
-            branch( Branch.from( "master" ) ).
-            build().
-            callWith( () -> this.doQuery( start, count ) ), "Error while retrieving audit log" );
+        return runSafely(
+            () -> ContextBuilder.from( ContextAccessor.current() ).repositoryId( RepositoryId.from( "system.auditlog" ) ).branch(
+                Branch.from( "master" ) ).build().callWith( () -> this.doQuery( start, count ) ), "Error while retrieving audit log" );
     }
 
     public RcdJsonValue doQuery( final int start, final int count )
     {
         final RcdJsonObject result = RcdJsonService.createJsonObject();
 
-        final NodeQuery nodeQuery = NodeQuery.create().
-            addQueryFilter( ValueFilter.create().
-                fieldName( NodeIndexPath.NODE_TYPE.toString() ).
-                addValue( ValueFactory.newString( "auditlog" ) ).
-                build() ).
-            addOrderBy( FieldOrderExpr.create( "time", OrderExpr.Direction.DESC ) ).
-            from( start ).
-            size( count ).
-            build();
-        final FindNodesByQueryResult findNodesByQueryResult = nodeServiceSupplier.get().
-            findByQuery( nodeQuery );
+        final NodeQuery nodeQuery = NodeQuery.create().addQueryFilter(
+            ValueFilter.create().fieldName( NodeIndexPath.NODE_TYPE.toString() ).addValue(
+                ValueFactory.newString( "auditlog" ) ).build() ).addOrderBy(
+            FieldOrderExpr.create( "time", OrderExpr.Direction.DESC ) ).from( start ).size( count ).build();
+        final FindNodesByQueryResult findNodesByQueryResult = nodeServiceSupplier.get().findByQuery( nodeQuery );
         result.put( "total", findNodesByQueryResult.getTotalHits() );
 
         final Map<String, String> userDisplayNameMap = new HashMap<>();
         final RcdJsonArray hitArray = result.createArray( "hits" );
-        findNodesByQueryResult.getNodeHits().
-            forEach( nodeHit -> {
-                final Node node = nodeServiceSupplier.get().
-                    getById( nodeHit.getNodeId() );
-                final PropertySet nodeData = node.data().
-                    getRoot();
+        findNodesByQueryResult.getNodeHits().forEach( nodeHit -> {
+            final Node node = nodeServiceSupplier.get().getById( nodeHit.getNodeId() );
+            final PropertySet nodeData = node.data().getRoot();
 
-                final String userKey = nodeData.getString( "user" );
-                final String userDisplayName = userDisplayNameMap.computeIfAbsent( userKey, this::getUserDisplayName );
-                final RcdJsonObject hitObject = hitArray.createObject();
-                hitObject.put( "id", node.id().toString() ).
-                    put( "user", userDisplayName == null ? userKey : userDisplayName ).
-                    put( "action", getAction( nodeData ) ).
-                    put( "target", getTarget( nodeData ) ).
-                    put( "time", nodeData.getInstant( "time" ).toEpochMilli() );
-                final RcdJsonArray objectArray = hitObject.createArray( "objects" );
-                nodeData.getStrings( "objects" ).forEach( objectArray::add );
-            } );
+            final String userKey = nodeData.getString( "user" );
+            final String userDisplayName = userDisplayNameMap.computeIfAbsent( userKey, this::getUserDisplayName );
+            final RcdJsonObject hitObject = hitArray.createObject();
+            hitObject.put( "id", node.id().toString() ).put( "user", userDisplayName == null ? userKey : userDisplayName ).put( "action",
+                                                                                                                                getAction(
+                                                                                                                                    nodeData ) ).put(
+                "target", getTarget( nodeData ) ).put( "time", nodeData.getInstant( "time" ).toEpochMilli() );
+            final RcdJsonArray objectArray = hitObject.createArray( "objects" );
+            nodeData.getStrings( "objects" ).forEach( objectArray::add );
+        } );
 
         return createSuccessResult( result );
     }
@@ -90,32 +78,42 @@ public class RcdAuditScriptBean
         final String recordType = record.getString( "type" );
         switch ( recordType )
         {
+            case "system.content.applyPermissions":
+                return "applied permissions for";
+            case "system.content.archive":
+                return "archived";
             case "system.content.create":
                 return "created";
-            case "system.content.update":
-                return "updated";
             case "system.content.delete":
                 return record.getSet( "data" ).getSet( "params" ).hasProperty( "contentPath" ) ? "deleted" : "undeleted";
-            case "system.content.publish":
-                return "published";
-            case "system.content.unpublishContent":
-                return "unpublished";
             case "system.content.duplicate":
                 return "duplicated";
             case "system.content.move":
                 return "moved";
+            case "system.content.publish":
+                return "published";
             case "system.content.rename":
                 return "renamed";
+            case "system.content.reorderChildren":
+                return "reordered children for";
+            case "system.content.reprocess":
+                return "reprocessed";
+            case "system.content.restore":
+                return "restored";
             case "system.content.setActiveContentVersion":
                 return "changed active version for";
             case "system.content.setChildOrder":
                 return "changed child order for";
-            case "system.content.reorderChildren":
-                return "reordered children for";
-            case "system.content.applyPermissions":
-                return "applied permissions for";
-            case "system.content.reprocess":
-                return "reprocessed";
+            case "system.content.update":
+                return "updated";
+            case "system.content.unpublishContent":
+                return "unpublished";
+            case "system.job.create":
+                return "created the job";
+            case "system.job.delete":
+                return "deleted the job";
+            case "system.job.update":
+                return "updated the job";
             default:
                 return "[" + recordType + "]";
         }
@@ -186,10 +184,8 @@ public class RcdAuditScriptBean
 
     private String getUserDisplayName( final String userKey )
     {
-        return securityServiceSupplier.get().
-            getUser( PrincipalKey.from( userKey ) ).
-            map( User::getDisplayName ).
-            orElse( userKey.toString() );
+        return securityServiceSupplier.get().getUser( PrincipalKey.from( userKey ) ).map( User::getDisplayName ).orElse(
+            userKey.toString() );
     }
 
     @Override
