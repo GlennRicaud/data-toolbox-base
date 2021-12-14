@@ -12,6 +12,8 @@ exports.post = function (req) {
     const parsedFilters = filters ? JSON.parse(filters) : null;
     const sort = body.sort ? decodeURIComponent(body.sort) : undefined;
     const reportName = body.reportName;
+    const format = body.format;
+    const fields = body.fields;
 
     const taskId = taskLib.submit({
         description: 'Report generation',
@@ -24,9 +26,13 @@ exports.post = function (req) {
                 total: queryResult.total
             });
             const createReportFileCallback = __.toScriptValue(
-                (createEntryConsumer) => {
-                    generateReportEntries(repositoryName, branchName, queryResult, createEntryConsumer);
-                    generateReportMeta({
+                (createEntryConsumer, setNextEntryConsumer, writeEntryConsumer) => {
+                    generateReportEntries(format, fields, repositoryName, branchName, queryResult, createEntryConsumer,
+                        setNextEntryConsumer,
+                        writeEntryConsumer);
+                    generateReportMeta(
+                        format,
+                        {
                             repository: repositoryName || undefined,
                             branch: branchName || undefined,
                             query: query,
@@ -67,19 +73,36 @@ function executeQuery(repositoryName, branchName, query, filters, sort) {
     });
 }
 
-function generateReportEntries(repositoryName, branchName, queryResult, createEntryConsumer) {
+function generateReportEntries(format, fields, repositoryName, branchName, queryResult, createEntryConsumer, setNextEntryConsumer,
+                               writeEntryConsumer) {
     const repoConnection = queryLib.createRepoConnection(repositoryName, branchName);
 
     let current = 0;
     const total = queryResult.total;
 
+    const fieldArray = fields.split(',')
+        .map(fieldName => fieldName.trim())
+        .filter(fieldName => fieldName !== '');
+    if (format === 'Node fields as CSV') {
+        setNextEntryConsumer('fields.json');
+        writeEntryConsumer(fieldArray.join(','));
+    }
     queryResult.hits.forEach(hit => {
         const node = (repositoryName && branchName) ? repoConnection.get(hit.id) : nodeLib.connect({
             repoId: hit.repoId,
             branch: hit.branch
         }).get(hit.id);
-        createEntryConsumer((repositoryName || hit.repoId) + '/' + (branchName || hit.branch) + node._path + '.json',
-            JSON.stringify(node, null, 2));
+
+        if (format === 'Node as JSON tree') {
+            createEntryConsumer((repositoryName || hit.repoId) + '/' + (branchName || hit.branch) + node._path + '.json',
+                JSON.stringify(node, null, 2));
+        } else if (format === 'Node fields as CSV') {
+            const row = fieldArray.map((fieldName, index) => {
+                const field = node[fieldName];
+                return field == null ? 'null' : JSON.stringify(node[fieldName], null, 0);
+            }).join(',');
+            writeEntryConsumer('\n' + row);
+        }
 
         current++;
         if (current % 10 === 0) {
@@ -92,10 +115,10 @@ function generateReportEntries(repositoryName, branchName, queryResult, createEn
     });
 }
 
-function generateReportMeta(queryParams, queryResult, createEntryConsumer) {
+function generateReportMeta(format, queryParams, queryResult, createEntryConsumer) {
     createEntryConsumer('report.json', JSON.stringify({
         version: "1",
-        format: 'Node as JSON',
+        format: format,
         params: queryParams,
         result: queryResult
     }, null, 2));

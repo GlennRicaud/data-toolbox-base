@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -71,9 +72,11 @@ public class RcdReportScriptBean
     {
         try (ZipOutputStream zipOutputStream = new ZipOutputStream( new BufferedOutputStream( new FileOutputStream( target.toFile() ) ) ))
         {
-            final BiConsumer<String, String> createReportConsumer =
-                ( String entryPath, String content ) -> generateEntry( entryPath, content, zipOutputStream );
-            entryGenerationFunction.call( createReportConsumer );
+            final BiConsumer<String, String> setNextEntryConsumer =
+                ( String entryPath, String content ) -> createEntry( entryPath, content, zipOutputStream );
+            final Consumer<String> openEntryConsumer = entryPath -> setNextEntry( entryPath, zipOutputStream );
+            final Consumer<String> writeEntryConsumer = content -> writeEntry( content, zipOutputStream );
+            entryGenerationFunction.call( setNextEntryConsumer, openEntryConsumer, writeEntryConsumer );
         }
         catch ( Exception e )
         {
@@ -81,7 +84,7 @@ public class RcdReportScriptBean
         }
     }
 
-    private void generateEntry( final String entryPath, final String entryContent, final ZipOutputStream zipOutputStream )
+    private void createEntry( final String entryPath, final String entryContent, final ZipOutputStream zipOutputStream )
     {
         try
         {
@@ -92,6 +95,31 @@ public class RcdReportScriptBean
         catch ( Exception e )
         {
             throw new RcdException( "Error while creating report entry", e );
+        }
+    }
+
+    private void setNextEntry( final String entryPath, final ZipOutputStream zipOutputStream )
+    {
+        try
+        {
+            final ZipEntry zipEntry = new ZipEntry( entryPath );
+            zipOutputStream.putNextEntry( zipEntry );
+        }
+        catch ( Exception e )
+        {
+            throw new RcdException( "Error while setting next report entry", e );
+        }
+    }
+
+    private void writeEntry( final String entryContent, final ZipOutputStream zipOutputStream )
+    {
+        try
+        {
+            zipOutputStream.write( entryContent.getBytes() );
+        }
+        catch ( Exception e )
+        {
+            throw new RcdException( "Error while writing report entry", e );
         }
     }
 }
