@@ -12,6 +12,8 @@ class NodesRoute extends DtbRoute {
     }
 
     createLayout() {
+        this.createChildIconArea = new RcdGoogleMaterialIconArea('add_circle', () => this.createChildNode()).init().setTooltip(
+            'Create child node');
         this.exportIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/export-icon.svg', () => this.exportNode()).init().setTooltip(
             'Export selected node');
         this.importIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/import-icon.svg', () => this.importNode()).init().setTooltip(
@@ -35,6 +37,7 @@ class NodesRoute extends DtbRoute {
         });
         this.tableCard.addColumn('', {icon: true})
             .addColumn('', {icon: true})
+            .addIconArea(this.createChildIconArea, {max: 0, predicate: () => !!getPathParameter()})
             .addIconArea(this.exportIconArea, {min: 1, max: 1})
             .addIconArea(this.importIconArea, {max: 0})
             .addIconArea(this.moveIconArea, {min: 1})
@@ -68,17 +71,21 @@ class NodesRoute extends DtbRoute {
         const infoDialog = showShortInfoDialog('Retrieving node list...');
         this.tableCard.deleteRows();
         const parentStateRef = getPathParameter() ?
-                               buildStateRef('nodes', {
-                                   repo: getRepoParameter(),
-                                   branch: getBranchParameter(),
-                                   path: getPathParameter() === '/' ? null : this.getParentPath(),
-                                   fields: getFieldsParameter()
-                               }) : buildStateRef('branches', {
+            buildStateRef('nodes', {
+                repo: getRepoParameter(),
+                branch: getBranchParameter(),
+                path: getPathParameter() === '/' ? null : this.getParentPath(),
+                fields: getFieldsParameter()
+            }) : buildStateRef('branches', {
                 repo: getRepoParameter()
             });
         const row = this.tableCard.createRow({selectable: false})
             .addCell('..', {href: parentStateRef});
-        getFields().slice(1).forEach(field => row.addCell('', {href: parentStateRef, reachable: false, classes: ['non-mobile-cell']}));
+        getFields().slice(1).forEach(field => row.addCell('', {
+            href: parentStateRef,
+            reachable: false,
+            classes: ['non-mobile-cell']
+        }));
         row.addCell(null, {icon: true})
             .addCell(null, {icon: true})
             .addClass('rcd-clickable')
@@ -182,6 +189,13 @@ class NodesRoute extends DtbRoute {
         });
     }
 
+    createChildNode() {
+        new CreateChildNodeDialog({
+            parentPath: getPathParameter(),
+            callback: () => this.retrieveNodes()
+        }).init().open();
+    }
+
     deleteNodes() {
         const nodeKeys = this.tableCard.getSelectedRows().map((row) => row.attributes['id']);
         return super.deleteNodes({nodeKeys: nodeKeys});
@@ -260,9 +274,9 @@ class NodesRoute extends DtbRoute {
     exportNode() {
         const nodePath = this.tableCard.getSelectedRows().map((row) => row.attributes['path'])[0];
         const baseExportName = getPathParameter()
-                               ? (this.tableCard.getSelectedRows().map((row) => row.attributes['name'])[0] || 'export') + '-' +
-                                 getBranchParameter()
-                               : getRepoParameter() + '-' + getBranchParameter();
+            ? (this.tableCard.getSelectedRows().map((row) => row.attributes['name'])[0] || 'export') + '-' +
+            getBranchParameter()
+            : getRepoParameter() + '-' + getBranchParameter();
         const defaultExportName = baseExportName + '-' + toLocalDateTimeFormat(new Date(), '-', '-');
         showInputDialog({
             title: "Export node",
@@ -352,7 +366,11 @@ class NodesRoute extends DtbRoute {
 
                     const currentPathBreadcrumb = new RcdMaterialBreadcrumb(subPathElement).init();
                     if (index < array.length - 1) {
-                        currentPathBreadcrumb.setStateRef('nodes', {repo: repositoryName, branch: branchName, path: constCurrentPath});
+                        currentPathBreadcrumb.setStateRef('nodes', {
+                            repo: repositoryName,
+                            branch: branchName,
+                            path: constCurrentPath
+                        });
                     }
                     this.breadcrumbsLayout.addBreadcrumb(currentPathBreadcrumb);
                 });
@@ -364,17 +382,21 @@ class NodesRoute extends DtbRoute {
 
     displayHelp() {
         const definition = 'A Node represents a single storable entity of data. ' +
-                           'It can be compared to a row in sql or a document in document oriented storage models.<br/>' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#nodes">Nodes</a> for more information. ';
+            'It can be compared to a row in sql or a document in document oriented storage models.<br/>' +
+            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#nodes">Nodes</a> for more information. ';
 
         const structureDefinition = 'This view represents nodes in a tree structure. ' +
-                                    'While this solution is adapted to repositories like com.enonic.cms.default or system-repo, ' +
-                                    'it may not be suitable for custom repositories or for nodes with too many children. ' +
-                                    'In these cases, we recommend to use the <a class="rcd-material-link" href="#search">Node Search</a> or the admin tool ' +
-                                    '<a class="rcd-material-link" href="https://market.enonic.com/vendors/runar-myklebust/repoxplorer">repoXPlorer</a>.';
+            'While this solution is adapted to repositories like com.enonic.cms.default or system-repo, ' +
+            'it may not be suitable for custom repositories or for nodes with too many children. ' +
+            'In these cases, we recommend to use the <a class="rcd-material-link" href="#search">Node Search</a> or the admin tool ' +
+            '<a class="rcd-material-link" href="https://market.enonic.com/vendors/runar-myklebust/repoxplorer">repoXPlorer</a>.';
 
         const viewDefinition = 'The view lists in a table all the direct children nodes of the current node (or the root node for a branch). Click on a row to display its children.';
         new HelpDialog('Node Tree', [definition, structureDefinition, viewDefinition]).init()
+            .addActionDefinition({
+                iconName: 'add_circle',
+                definition: 'Create child node.'
+            })
             .addActionDefinition({
                 iconSrc: config.assetsUrl + '/icons/export-icon.svg',
                 definition: 'Export the selected node into $XP_HOME/data/export/[export-name]. The display will switch to the Exports view.'
@@ -386,27 +408,30 @@ class NodesRoute extends DtbRoute {
             .addActionDefinition({
                 iconSrc: config.assetsUrl + '/icons/rename.svg',
                 definition: 'Move or rename node(s). If the value ends in slash \'/\', it specifies the parent path where to be moved. ' +
-                            'Otherwise, it means the new desired path or name for the node (renaming available only if one node is selected).'
+                    'Otherwise, it means the new desired path or name for the node (renaming available only if one node is selected).'
             })
             .addActionDefinition({
                 iconName: 'view_column', definition: 'Set the displayed fields in the Nodes table. ' +
-                                                     'Example: "_id,_ts,_name,_indexConfig.default.enabled"'
+                    'Example: "_id,_ts,_name,_indexConfig.default.enabled"'
             })
             .addActionDefinition({
                 iconName: 'filter_list', definition: 'Filter the nodes based on a query expression. ' +
-                                                     'Example: "_id = \'role:system.admin"\'. ' +
-                                                     'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query language</a> for more information.'
+                    'Example: "_id = \'role:system.admin"\'. ' +
+                    'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query language</a> for more information.'
             })
             .addActionDefinition({
                 iconName: 'sort',
                 definition: 'Sort the nodes based on an expression. ' +
-                            'The sorting expression is composed of a node property to sort on and the direction: ascending or descending.' +
-                            'Examples: "_ts DESC", "_name ASC"'
+                    'The sorting expression is composed of a node property to sort on and the direction: ascending or descending.' +
+                    'Examples: "_ts DESC", "_name ASC"'
             })
             .addActionDefinition({iconName: 'delete', definition: 'Delete the selected nodes.'})
             .addActionDefinition({
                 iconName: 'info',
                 definition: 'Display the node view containing more details and actions about this node.'
-            }).addActionDefinition({iconSrc: config.assetsUrl + '/icons/json.svg', definition: 'Display the node as JSON.'}).open();
+            }).addActionDefinition({
+            iconSrc: config.assetsUrl + '/icons/json.svg',
+            definition: 'Display the node as JSON.'
+        }).open();
     }
 }

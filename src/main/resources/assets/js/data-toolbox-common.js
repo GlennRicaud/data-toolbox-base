@@ -93,6 +93,57 @@ class ImportResultDialog extends RcdMaterialModalDialog {
     }
 }
 
+class CreateChildNodeDialog extends RcdMaterialModalDialog {
+    constructor(params) {
+        super('Create child node', undefined, true, true);
+        this.parentPath = params.parentPath;
+        this.callback = params.callback;
+        this.nameField = new RcdMaterialTextField('Name').init();
+    }
+
+    init() {
+        const closeCallback = () => this.close();
+        const createChildNodeCallback = () => this.createChildNode();
+
+        super.init()
+            .addItem(this.nameField)
+            .addAction('CLOSE', closeCallback)
+            .addAction('CREATE', createChildNodeCallback)
+            .addKeyDownListener('Escape', closeCallback);
+        return this;
+    }
+
+    open(parent) {
+        super.open(parent);
+        this.nameField.focus();
+        return this;
+    }
+
+    createChildNode() {
+        this.close();
+
+        const infoDialog = showShortInfoDialog("Creating child node...");
+        const name = this.nameField.getValue().trim();
+        return requestPostJson(config.servicesUrl + '/node-create', {
+            data: {
+                repositoryName: getRepoParameter(),
+                branchName: getBranchParameter(),
+                parentPath : this.parentPath,
+                name : name === '' ? undefined : name,
+            }
+        })
+            .then(() => {
+                displaySuccess('Child node created')
+                if (this.callback) {
+                    this.callback();
+                }
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+
+    }
+}
+
 class LoadExportDumpDialog extends RcdMaterialModalDialog {
     constructor(result) {
         super('Load result', undefined, true, true);
