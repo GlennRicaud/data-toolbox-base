@@ -4,22 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
     <title>Data Toolbox - Exports</title>
-    <script>
-        var config = {
-            servicesUrl: "{{servicesUrl}}",
-            assetsUrl: "{{assetsUrl}}",
-            cmsRepositoryShortName: "{{cmsRepositoryShortName}}",
-            branchName: "{{branchName}}",
-            contentPath: "{{contentPath}}",
-            contentName: "{{contentName}}"
-        };
-    </script>
 </head>
 
 <widget>
     <link rel="stylesheet" type="text/css" href="{{assetsUrl}}/style/main.css"/>
     <div class="rcd-body" id="exportWidgetContainer"></div>
-    <script src="{{assetsUrl}}/js/export.js" type="text/javascript"></script>
+    <script src="{{assetsUrl}}/js/export.js" type="text/javascript" config="{{config}}"></script>
 </widget>
 
 </html>

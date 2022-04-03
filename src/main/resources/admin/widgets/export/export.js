@@ -20,12 +20,15 @@ exports.get = (req) => {
     }) : null;
     const view = resolve("export.html");
     const body = mustacheLib.render(view, {
-        servicesUrl: portalLib.serviceUrl({service: ""}),
-        assetsUrl: portalLib.assetUrl({path: ""}),
-        cmsRepositoryShortName: repositoryName.substring('com.enonic.cms.'.length),
-        branchName: branchName,
-        contentPath: content ? content._path : '/',
-        contentName: content ? content._name : 'content'
+        assetsUrl : portalLib.assetUrl({path: ""}),
+        config: JSON.stringify({
+            servicesUrl: portalLib.serviceUrl({service: ""}),
+            assetsUrl: portalLib.assetUrl({path: ""}),
+            cmsRepositoryShortName: repositoryName.substring('com.enonic.cms.'.length),
+            branchName: branchName,
+            contentPath: content ? content._path : '/',
+            contentName: content ? content._name : 'content'
+        })
     });
     return {
         body: body,

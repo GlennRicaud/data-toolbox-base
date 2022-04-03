@@ -1,4 +1,5 @@
 (function () {
+    var config = JSON.parse(document.currentScript.getAttribute("config"));
     include('rcd-jsfwk-core.js');
     include('rcd-jsfwk-material.js');
     const taskManager = null;
