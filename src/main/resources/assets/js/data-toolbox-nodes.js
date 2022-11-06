@@ -64,6 +64,10 @@ class NodesRoute extends DtbRoute {
         if (separatorIndex !== -1) {
             return this.getFieldValue(node[field.substring(0, separatorIndex)], field.substring(separatorIndex + 1))
         }
+        const value = node[field];
+        if (value !== null && typeof value === 'object') {
+            return JSON.stringify(node[field]);
+        }
         return node[field];
     }
 

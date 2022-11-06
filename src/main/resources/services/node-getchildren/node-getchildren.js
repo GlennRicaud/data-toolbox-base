@@ -1,4 +1,5 @@
 const nodeLib = require('/lib/xp/node');
+const escapeLib = require('/lib/escape');
 const utilLib = require('/lib/util');
 
 exports.post = function (req) {
@@ -46,7 +47,8 @@ function getChildren(repositoryName, branchName, parentPath, start, count, filte
         return {
             success: {
                 hits: result.hits.map(function (resultHit) {
-                    return repoConnection.get(resultHit.id);
+                    const node = repoConnection.get(resultHit.id);
+                    return escapeLib.escapeHtml(node);
                 }),
                 count: result.count,
                 total: result.total
