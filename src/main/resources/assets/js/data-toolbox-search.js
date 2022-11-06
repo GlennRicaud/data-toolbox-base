@@ -368,6 +368,7 @@ class SearchRoute extends DtbRoute {
         const rowCountCallback = (rowCount) => setState('search', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
+            filters: getFiltersParameter(),
             query: getQueryParameter(),
             start: getStartParameter(),
             count: rowCount,
@@ -376,6 +377,7 @@ class SearchRoute extends DtbRoute {
         const previousCallback = () => setState('search', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
+            filters: getFiltersParameter(),
             query: getQueryParameter(),
             start: Math.max(0, startInt - countInt),
             count: getCountParameter(20),
@@ -384,6 +386,7 @@ class SearchRoute extends DtbRoute {
         const nextCallback = () => setState('search', {
             repo: getRepoParameter(),
             branch: getBranchParameter(),
+            filters: getFiltersParameter(),
             query: getQueryParameter(),
             start: startInt + countInt,
             count: getCountParameter(20),
