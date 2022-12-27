@@ -30,6 +30,7 @@ function createApp() {
         .addRoute(new GroupsRoute().init())
         .addRoute(new TasksRoute().init())
         .addRoute(new EventsRoute().init())
+        .addRoute(new HomeRoute().init())
         .addRoute(new AboutRoute().init());
 }
 
