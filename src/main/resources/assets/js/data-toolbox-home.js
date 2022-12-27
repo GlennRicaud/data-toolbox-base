@@ -42,21 +42,4 @@ class HomeRoute extends DtbRoute {
     displayHelp() {
         new HelpDialog('Home', ['Information about XP Home.']).init().open();
     }
-
-    getSpaceInfo(dirInfo) {
-        return 'Usable space: ' + this.getPrettifiedSize(dirInfo.usable) +' / ' + this.getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
-    }
-
-    getPrettifiedSize(byteSize) {
-        if (byteSize > 1024 * 1024 * 1024) {
-            return (byteSize / (1024 * 1024 * 1024)).toFixed(1) + 'GiB';
-        }
-        if (byteSize > 1024 * 1024) {
-            return (byteSize / (1024 * 1024)).toFixed(1) + 'MiB';
-        }
-        if (byteSize > 1024) {
-            return (byteSize / 1024).toFixed(1) + 'KiB';
-        }
-        return byteSize + 'B';
-    }
 }

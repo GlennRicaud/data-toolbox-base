@@ -229,3 +229,20 @@ function getTextParameter() {
     return RcdHistoryRouter.getParameters().text || '';
 }
 
+function getSpaceInfo(dirInfo) {
+    return 'Usable space: ' + getPrettifiedSize(dirInfo.usable) +' / ' + getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
+}
+
+function getPrettifiedSize(byteSize) {
+    if (byteSize > 1024 * 1024 * 1024) {
+        return (byteSize / (1024 * 1024 * 1024)).toFixed(1) + 'GiB';
+    }
+    if (byteSize > 1024 * 1024) {
+        return (byteSize / (1024 * 1024)).toFixed(1) + 'MiB';
+    }
+    if (byteSize > 1024) {
+        return (byteSize / 1024).toFixed(1) + 'KiB';
+    }
+    return byteSize + 'B';
+}
+

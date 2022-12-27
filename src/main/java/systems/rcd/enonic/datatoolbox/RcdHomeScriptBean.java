@@ -24,6 +24,8 @@ public class RcdHomeScriptBean
             addSpaceInfo(info, "work", "work");
             addSpaceInfo(info, "snapshots", "snapshots");
             addSpaceInfo(info, "data", "data");
+            addSpaceInfo(info, "dump", "data/dump");
+            addSpaceInfo(info, "export", "data/export");
             return createSuccessResult(info);
         }, "Error while retrieving home information");
     }

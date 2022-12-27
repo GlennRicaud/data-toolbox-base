@@ -47,12 +47,15 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
             .init()
             .setPattern('[0-9]*')
             .addInputListener(() => this.checkValidity());
+
+        this.spaceField = new RcdTextDivElement(getSpaceInfo(params.dirInfo)).init();
     }
 
     init() {
         return super.init()
             .addItem(this.includeVersionsField)
             .addItem(this.archiveField)
+            .addItem(this.spaceField)
     }
 
     checkValidity() {
@@ -158,11 +161,19 @@ class DumpsRoute extends DtbRoute {
     }
 
     createDump() {
-        const defaultDumpName = 'dump-' + toLocalDateTimeFormat(new Date(), '-', '-');
-        new DtbDumpInputDialog({
-            defaultValue: defaultDumpName,
-            callback: (value) => this.doCreateDump(value)
-        }).init().open();
+        const infoDialog = showShortInfoDialog('Retrieving home information...');
+        return requestJson(config.servicesUrl + '/home')
+            .then((result) => {
+                const defaultDumpName = 'dump-' + toLocalDateTimeFormat(new Date(), '-', '-');
+                new DtbDumpInputDialog({
+                    defaultValue: defaultDumpName,
+                    dirInfo: result.success.dump,
+                    callback: (value) => this.doCreateDump(value)
+                }).init().open();
+
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     doCreateDump(params) {
