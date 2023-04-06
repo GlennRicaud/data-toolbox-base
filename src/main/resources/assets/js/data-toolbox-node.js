@@ -5,7 +5,7 @@ class NodeDetailsCard extends RcdDivElement {
 
     init() {
         return super.init()
-            .addClass('dtb-node-details');
+            .addClass('dtb-details');
     }
 
     setMeta(meta) {

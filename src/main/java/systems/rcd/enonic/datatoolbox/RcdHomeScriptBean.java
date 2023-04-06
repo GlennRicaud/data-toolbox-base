@@ -19,13 +19,19 @@ public class RcdHomeScriptBean
     public String getInfo() {
         return runSafely(() -> {
             final RcdJsonObject info = RcdJsonService.createJsonObject();
+            info.put("path", HomeDir.get().toFile().getAbsolutePath());
             addSpaceInfo(info, "home", null);
-            addSpaceInfo(info, "repo", "repo");
-            addSpaceInfo(info, "work", "work");
-            addSpaceInfo(info, "snapshots", "snapshots");
+            addSpaceInfo(info, "config", "config");
             addSpaceInfo(info, "data", "data");
             addSpaceInfo(info, "dump", "data/dump");
             addSpaceInfo(info, "export", "data/export");
+            addSpaceInfo(info, "deploy", "deploy");
+            addSpaceInfo(info, "logs", "logs");
+            addSpaceInfo(info, "repo", "repo");
+            addSpaceInfo(info, "index", "repo/index");
+            addSpaceInfo(info, "blob", "repo/blob");
+            addSpaceInfo(info, "snapshots", "snapshots");
+            addSpaceInfo(info, "work", "work");
             return createSuccessResult(info);
         }, "Error while retrieving home information");
     }

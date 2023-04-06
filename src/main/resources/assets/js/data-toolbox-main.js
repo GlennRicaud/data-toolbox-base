@@ -230,7 +230,7 @@ function getTextParameter() {
 }
 
 function getSpaceInfo(dirInfo) {
-    return 'Usable space: ' + getPrettifiedSize(dirInfo.usable) +' / ' + getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
+    return getPrettifiedSize(dirInfo.usable) +' / ' + getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
 }
 
 function getPrettifiedSize(byteSize) {
