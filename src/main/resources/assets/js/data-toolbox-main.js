@@ -229,6 +229,13 @@ function getTextParameter() {
     return RcdHistoryRouter.getParameters().text || '';
 }
 
+function getTextualSpaceInfo(dirInfo) {
+    return 'Disk space<br/>'
+        + 'Used: \t\t' + getPrettifiedSize(dirInfo.total - dirInfo.usable) + '<br/>'
+        + 'Usable: \t\t' + getPrettifiedSize(dirInfo.usable) + '<br/>'
+        + 'Capacity: \t' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%';
+}
+
 function getSpaceInfo(dirInfo) {
     return getPrettifiedSize(dirInfo.usable) +' / ' + getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
 }

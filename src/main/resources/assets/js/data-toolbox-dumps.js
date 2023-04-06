@@ -48,7 +48,7 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
             .setPattern('[0-9]*')
             .addInputListener(() => this.checkValidity());
 
-        this.spaceField = new RcdTextDivElement(getSpaceInfo(params.dirInfo)).init();
+        this.spaceField = new RcdTextDivElement(getTextualSpaceInfo(params.dirInfo)).init().addClass('dtb-details-text');
     }
 
     init() {
