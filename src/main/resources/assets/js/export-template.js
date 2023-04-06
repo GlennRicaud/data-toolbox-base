@@ -45,14 +45,18 @@
 
     function createExport() {
         const defaultExportName = config.contentName + '-draft-' + toLocalDateTimeFormat(new Date(), '-', '-');
-        showInputDialog({
-            title: "Export content",
-            confirmationLabel: "CREATE",
-            label: "Export name",
-            placeholder: defaultExportName,
-            value: defaultExportName,
-            callback: (value) => doCreateExport(value || defaultExportName)
-        });
+        const infoDialog = showShortInfoDialog('Retrieving home information...');
+        return requestJson(config.servicesUrl + '/home')
+            .then((result) => {
+                new DtbExportInputDialog({
+                    defaultValue: defaultExportName,
+                    dirInfo: result.success.export,
+                    callback: (value) => doCreateExport(value || defaultExportName)
+                }).init().open();
+
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     function doCreateExport(exportName) {

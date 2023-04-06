@@ -370,6 +370,51 @@ class PushResultDialog extends RcdMaterialModalDialog {
     }
 }
 
+class DtbExportInputDialog extends RcdMaterialInputDialog {
+    constructor(params) {
+        super({
+            title: 'Export content',
+            label: 'Export name',
+            placeholder: params.defaultValue,
+            value: params.defaultValue,
+            confirmationLabel: 'CREATE',
+            callback: (value) => {
+                params.callback(value || params.defaultValue);
+            }
+        });
+        this.spaceField = new RcdTextDivElement(getTextualSpaceInfo(params.dirInfo)).init().addClass('dtb-details-text');
+    }
+
+    init() {
+        return super.init()
+            .addItem(this.spaceField)
+    }
+}
+
+function getTextualSpaceInfo(dirInfo) {
+    return 'Disk space<br/>'
+        + 'Used: \t\t' + getPrettifiedSize(dirInfo.total - dirInfo.usable) + '<br/>'
+        + 'Usable: \t\t' + getPrettifiedSize(dirInfo.usable) + '<br/>'
+        + 'Capacity: \t' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%';
+}
+
+function getSpaceInfo(dirInfo) {
+    return getPrettifiedSize(dirInfo.usable) +' / ' + getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
+}
+
+function getPrettifiedSize(byteSize) {
+    if (byteSize > 1024 * 1024 * 1024) {
+        return (byteSize / (1024 * 1024 * 1024)).toFixed(1) + 'GiB';
+    }
+    if (byteSize > 1024 * 1024) {
+        return (byteSize / (1024 * 1024)).toFixed(1) + 'MiB';
+    }
+    if (byteSize > 1024) {
+        return (byteSize / 1024).toFixed(1) + 'KiB';
+    }
+    return byteSize + 'B';
+}
+
 function nodePathToContentPath(nodePath) {
     if (!nodePath || !nodePath.startsWith('/content')) {
         return nodePath;
