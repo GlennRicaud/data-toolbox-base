@@ -373,11 +373,11 @@ class PushResultDialog extends RcdMaterialModalDialog {
 class DtbExportInputDialog extends RcdMaterialInputDialog {
     constructor(params) {
         super({
-            title: 'Export content',
+            title: 'Export ' + params.type,
             label: 'Export name',
             placeholder: params.defaultValue,
             value: params.defaultValue,
-            confirmationLabel: 'CREATE',
+            confirmationLabel: 'EXPORT',
             callback: (value) => {
                 params.callback(value || params.defaultValue);
             }

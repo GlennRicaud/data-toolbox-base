@@ -282,14 +282,20 @@ class NodesRoute extends DtbRoute {
             getBranchParameter()
             : getRepoParameter() + '-' + getBranchParameter();
         const defaultExportName = baseExportName + '-' + toLocalDateTimeFormat(new Date(), '-', '-');
-        showInputDialog({
-            title: "Export node",
-            confirmationLabel: "EXPORT",
-            label: "Export name",
-            placeholder: defaultExportName,
-            value: defaultExportName,
-            callback: (value) => this.doExportNode(nodePath, value || defaultExportName)
-        });
+
+        const infoDialog = showShortInfoDialog('Retrieving home information...');
+        return requestJson(config.servicesUrl + '/home')
+            .then((result) => {
+                new DtbExportInputDialog({
+                    type: 'node',
+                    defaultValue: defaultExportName,
+                    dirInfo: result.success.export,
+                    callback: (value) => this.doExportNode(nodePath, value || defaultExportName)
+                }).init().open();
+
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     importNode() {

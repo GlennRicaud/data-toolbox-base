@@ -49,6 +49,7 @@
         return requestJson(config.servicesUrl + '/home')
             .then((result) => {
                 new DtbExportInputDialog({
+                    type: 'content',
                     defaultValue: defaultExportName,
                     dirInfo: result.success.export,
                     callback: (value) => doCreateExport(value || defaultExportName)
