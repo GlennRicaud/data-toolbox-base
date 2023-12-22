@@ -12,7 +12,13 @@ exports.post = function (req) {
         description: 'Exports unarchiving',
         task: function () {
             taskLib.progress({info: 'Unarchiving exports...'});
-            taskLib.progress({info: bean.unarchive(archivePath)});
+            const listener = __.toScriptValue(
+                (count) => {
+                    if (count > 0) {
+                        taskLib.progress({info: 'Unarchiving exports... (' + count + ' files unarchived)'});
+                    }
+                });
+            taskLib.progress({info: bean.unarchive(archivePath, listener)});
         }
     });
 

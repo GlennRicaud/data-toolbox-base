@@ -8,7 +8,15 @@ exports.post = function (req) {
         description: 'Dump archiving',
         task: function () {
             taskLib.progress({info: 'Archiving dumps...'});
-            taskLib.progress({info: bean.archive(dumpNames)});
+
+            const listener = __.toScriptValue(
+                (count) => {
+                    if (count > 0) {
+                        taskLib.progress({info: 'Archiving dumps... (' + count + ' files archived)'});
+                    }
+                });
+
+            taskLib.progress({info: bean.archive(listener, dumpNames)});
         }
     });
 

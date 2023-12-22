@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 
+import com.enonic.xp.script.ScriptValue;
 import com.google.common.io.ByteSource;
 
 import systems.rcd.fwk.core.exc.RcdException;
@@ -19,7 +21,7 @@ import systems.rcd.fwk.core.util.zip.RcdZipService;
 public abstract class RcdDataScriptBean
     extends RcdScriptBean
 {
-    public String archive( final String... names )
+    public String archive( final ScriptValue listener, final String... names)
     {
         return runSafely( () -> {
             final java.nio.file.Path[] paths = Arrays.stream( names ).
@@ -38,7 +40,13 @@ public abstract class RcdDataScriptBean
             archivePath.toFile().deleteOnExit();
 
             LOGGER.debug( "Archiving folders " + Arrays.toString( names ) + " into [" + archivePath.toAbsolutePath() + "]..." );
-            RcdZipService.zip( archivePath, paths );
+            AtomicInteger count = new AtomicInteger();
+            RcdZipService.zip( archivePath, (src, filePath) -> {
+                if ((count.get() % 1_000) == 0) {
+                    listener.call(count.get());
+                }
+                count.getAndIncrement();
+            }, paths );
             LOGGER.debug( "Folders " + Arrays.toString( names ) + " archived" );
 
             final RcdJsonString result = RcdJsonService.createJsonValue( archivePath.getFileName().toString() );
@@ -66,14 +74,20 @@ public abstract class RcdDataScriptBean
         return archivePath.getFileName().toString();
     }
 
-    public String unarchive( final String archiveName )
+    public String unarchive( final String archiveName, final ScriptValue listener)
         throws IOException
     {
         final File archiveFile = new File( getArchiveDirectoryPath().toFile(), archiveName );
         return runSafely( () -> {
             LOGGER.debug( "Unarchiving [" + archiveFile.getAbsolutePath() + "] into [" + getDirectoryPath() + "]..." );
             Predicate<ZipEntry> filter = zipEntry -> !zipEntry.getName().startsWith( "__MACOSX/" );
-            RcdZipService.unzip( archiveFile.toPath(), getDirectoryPath(), filter );
+            AtomicInteger count = new AtomicInteger();
+            RcdZipService.unzip( archiveFile.toPath(), getDirectoryPath(), filter, (filePath) -> {
+                if ((count.get() % 1_000) == 0) {
+                    listener.call(count.get());
+                }
+                count.getAndIncrement();
+            });
             LOGGER.debug( getCamelType() + "s unarchived!" );
             return createSuccessResult();
         }, "Error while unarchiving " + getType() + "s", () -> {
