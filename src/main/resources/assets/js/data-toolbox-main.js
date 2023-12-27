@@ -83,33 +83,6 @@ function handleRequestError(error) {
     displayError(error);
 }
 
-function requestPostXMLHttp(url, data, params) {
-    const xhr = new XMLHttpRequest();
-    if (params.uploadProgress) {
-        xhr.upload.onprogress = params.uploadProgress;
-    }
-    if (params.onloadend) {
-        xhr.onloadend = params.onloadend;
-    }
-    xhr.onerror = () => displayError('Request error');
-    xhr.onload = () => {
-        if (xhr.status === 200) {
-            const result = JSON.parse(xhr.responseText);
-            if (result.error) {
-                displayError(result.error);
-            } else {
-                if (params.callback) {
-                    params.callback(result);
-                }
-            }
-        } else {
-            displayError('Error ' + xhr.status + ': ' + xhr.statusText);
-        }
-    };
-    xhr.open('POST', url, true);
-    xhr.send(data);
-}
-
 function showLongInfoDialog(text) {
     return new RcdMaterialInfoDialog({text: text, overlay: true})
         .init()
