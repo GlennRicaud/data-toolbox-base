@@ -18,7 +18,7 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
                 });
             }
         });
-        
+
         this.includeVersionsField = new DtbCheckboxField({
             label: 'Include version history',
             callback: () => {
@@ -29,7 +29,7 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
                 this.checkValidity();
             }
         }).init();
-        
+
         this.archiveField = new DtbCheckboxField({
             label: 'Archive system dump',
             callback: () => {
@@ -342,18 +342,17 @@ class DumpsRoute extends DtbRoute {
     }
 
     doUploadDump() {
-        const infoDialog = showLongInfoDialog("Uploading dump...");
+        const progressIndicator = new RcdLinearProgressIndicator({width: 240, height: 8}).init();
+        const infoDialog = showLongInfoDialog("Uploading dump...").addClass('dt-progress-info-dialog').addItem(progressIndicator);
         const formData = new FormData(this.uploadForm.domElement);
-        requestJson(config.servicesUrl + '/dump-directupload', {
-            method: 'POST',
-            body: formData
-        })
-            .then((result) => displaySuccess('Dump uploaded'))
-            .catch(handleRequestError)
-            .finally(() => {
+        requestPostXMLHttp(config.servicesUrl + '/dump-directupload', formData, {
+            uploadProgress: (event) => progressIndicator.setProgress(event.loaded / event.total),
+            callback: () => displaySuccess('Dump uploaded'),
+            onloadend: () => {
                 this.retrieveDumps();
-                infoDialog.close()
-            });
+                infoDialog.close();
+            },
+        });
     }
 
     displayHelp() {
