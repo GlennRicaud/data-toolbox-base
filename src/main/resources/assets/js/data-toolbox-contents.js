@@ -12,12 +12,12 @@ class ContentsRoute extends DtbRoute {
     createBreadcrumbsLayout() {
         return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
             new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
-            new RcdMaterialBreadcrumb('Content Tree').init()).addChild(
-            new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+            new RcdMaterialBreadcrumb('Content Tree').init());
+            //.addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Contents').init()
+        this.tableCard = new RcdMaterialTableCard('Contents',{selectable: false}).init()
             .addColumn('Name')
             .addColumn('Display Name')
             //.addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createContent()).setTooltip('Create a content', RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
@@ -45,11 +45,11 @@ class ContentsRoute extends DtbRoute {
             .then((result) => {
                 result.success.hits.sort((content1, content2) => content1.name - content2.name).forEach((content) => {
                     const rowStateRef = buildStateRef('contents', {project: getProjectParameter(), path: content._path});
-                    const row = this.tableCard.createRow()
+                    const row = this.tableCard.createRow({selectable: false})
                         .addCell(content._name, {href: rowStateRef})
                         .addCell(content.displayName || '', {href: rowStateRef})
                         .setAttribute('content', content._id);
-                    row.checkbox.addClickListener((event) => event.stopPropagation());
+                    //row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
             })
             .catch(handleRequestError)

@@ -13,6 +13,7 @@ function createApp() {
         .setDefaultRoute(createPresentationRoute())
         .addRoute(new RepositoriesRoute().init())
         .addRoute(new ContentsRoute().init())
+        .addRoute(new ArchivesRoute().init())
         .addRoute(new ProjectsRoute().init())
         .addRoute(new BranchesRoute().init())
         .addRoute(new NodesRoute().init())

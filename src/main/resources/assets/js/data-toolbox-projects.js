@@ -14,12 +14,12 @@ class ProjectsRoute extends DtbRoute {
     createBreadcrumbsLayout() {
         return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
             new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
-            new RcdMaterialBreadcrumb('Content Tree').init()).addChild(
-            new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+            new RcdMaterialBreadcrumb('Content Tree').init());
+            //.addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Projects').init()
+        this.tableCard = new RcdMaterialTableCard('Projects',{selectable: false}).init()
             .addColumn('ID')
             .addColumn('Name')
             .addColumn('Description')
@@ -40,13 +40,13 @@ class ProjectsRoute extends DtbRoute {
                         setState('archives', {project: project.id})
                         event.stopPropagation()
                     }).setTooltip('Display archives').init();
-                    const row = this.tableCard.createRow()
+                    const row = this.tableCard.createRow({selectable: false})
                         .addCell(project.id, {href: rowStateRef})
                         .addCell(project.displayName, {href: rowStateRef})
                         .addCell(project.description || '', {href: rowStateRef})
                         .addCell(displayArchivesIconArea, {icon: true})
                         .setAttribute('project', project.id);
-                    row.checkbox.addClickListener((event) => event.stopPropagation());
+                    //row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
             })
             .catch(handleRequestError)
