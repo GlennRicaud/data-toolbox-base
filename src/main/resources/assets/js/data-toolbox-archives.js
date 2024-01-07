@@ -6,6 +6,7 @@ class ArchivesRoute extends DtbRoute {
     }
 
     onDisplay() {
+        app.setTitle('Content archives');
         this.retrieveArchives();
     }
 

@@ -6,6 +6,7 @@ class ContentsRoute extends DtbRoute {
     }
 
     onDisplay() {
+        app.setTitle('Content Tree (Beta)');
         this.retrieveContents();
     }
 
