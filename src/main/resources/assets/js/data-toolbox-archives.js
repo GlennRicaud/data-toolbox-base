@@ -18,7 +18,7 @@ class ArchivesRoute extends DtbRoute {
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Archives', {selectable: false}).init()
+        this.tableCard = new RcdMaterialTableCard('Archived contents', {selectable: false}).init()
             .addColumn('Name')
             .addColumn('Display Name')
             .addColumn('', {icon: true})
@@ -41,7 +41,7 @@ class ArchivesRoute extends DtbRoute {
         }).then((result) => {
             result.success.hits.forEach((archive) => {
                 const unarchiveIconArea = new RcdGoogleMaterialIconArea('unarchive.svg', (source, event) => {
-                    this.restore(archive.id);
+                    this.restore(archive._id);
                     event.stopPropagation()
                 }).setTooltip('Display archives').init();
                 const row = this.tableCard.createRow({selectable: false})
@@ -57,13 +57,16 @@ class ArchivesRoute extends DtbRoute {
     }
 
     restore(id) {
-        showConfirmationDialog("Restore selected archive?", 'RESTORE', () => this.doRestore(id));
+        showConfirmationDialog("Restore content?", 'RESTORE', () => this.doRestore(id));
     }
 
     doRestore(id) {
-        const infoDialog = showLongInfoDialog("Restoring archive...");
+        const infoDialog = showLongInfoDialog("Restoring content...");
         requestPostJson(config.servicesUrl + '/content-restore', {
-            data: {id: id}
+            data: {
+                projectId: getProjectParameter(),
+                id: id
+            }
         })
             .then((result) => displaySuccess('Content restored'))
             .catch(handleRequestError)
