@@ -151,6 +151,10 @@ function getProjectParameter() {
     return RcdHistoryRouter.getParameters().project;
 }
 
+function getContentParameter() {
+    return RcdHistoryRouter.getParameters().content;
+}
+
 function getBranchParameter() {
     return RcdHistoryRouter.getParameters().branch;
 }

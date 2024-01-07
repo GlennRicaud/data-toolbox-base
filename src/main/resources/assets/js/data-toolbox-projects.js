@@ -34,7 +34,7 @@ class ProjectsRoute extends DtbRoute {
         return requestJson(config.servicesUrl + '/project-list')
             .then((result) => {
                 result.success.sort((project1, project2) => project1.name - project2.name).forEach((project) => {
-                    const rowStateRef = buildStateRef('contents', {project: project.id});
+                    const rowStateRef = buildStateRef('contents', {project: project.id, path: '/'});
                     const row = this.tableCard.createRow()
                         .addCell(project.id, {href: rowStateRef})
                         .addCell(project.displayName, {href: rowStateRef})

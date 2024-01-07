@@ -7,7 +7,7 @@ exports.post = function (req) {
     const body = JSON.parse(req.body);
     const projectId = body.projectId;
     const branchName = body.branchName || 'draft';
-    const parentPath = body.parentPath || '';
+    const parentPath = body.parentPath;
     const start = body.start || 0;
     const count = body.count || 50;
     const filter = body.filter ? decodeURIComponent(body.filter) : undefined;
@@ -29,14 +29,14 @@ function getChildren(projectId, branchName, parentPath, start, count, filter, so
 
         if (filter) {
             return contentLib.query({
-                query: '_parentPath = \'/content' + parentPath + '\' AND ' + filter,
+                query: '_parentPath = \'/content' + (parentPath == '/' ? '' : parentPath) + '\' AND ' + filter,
                 start: start,
                 count: count,
                 sort: sort
             });
         } else {
             return contentLib.getChildren({
-                key: parentPath || '/',
+                key: parentPath,
                 start: start,
                 count: count,
                 sort: sort

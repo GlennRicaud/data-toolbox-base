@@ -28,16 +28,27 @@ class ContentsRoute extends DtbRoute {
     retrieveContents() {
         const infoDialog = showShortInfoDialog('Retrieving content list...');
         this.tableCard.deleteRows();
+        const parentStateRef = this.getParentPath()?
+            buildStateRef('contents', {
+                project: getProjectParameter(),
+                path: this.getParentPath(),
+            }) : buildStateRef('projects');
+        this.tableCard.createRow({selectable: false})
+            .addCell('..', {href: parentStateRef})
+            .addCell('', {href: parentStateRef});
         return requestPostJson(config.servicesUrl + '/content-getchildren', {
-            data: {projectId: getProjectParameter()}
+            data: {
+                projectId: getProjectParameter(),
+                parentPath: getPathParameter()
+            }
         })
             .then((result) => {
                 result.success.hits.sort((content1, content2) => content1.name - content2.name).forEach((content) => {
-                    const rowStateRef = buildStateRef('contents', {content: content.id});
+                    const rowStateRef = buildStateRef('contents', {project: getProjectParameter(), path: content._path});
                     const row = this.tableCard.createRow()
                         .addCell(content._name, {href: rowStateRef})
                         .addCell(content.displayName || '', {href: rowStateRef})
-                        //.setAttribute('content', content.id);
+                        .setAttribute('content', content._id);
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
             })
