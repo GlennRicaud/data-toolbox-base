@@ -13,7 +13,7 @@ class ArchivesRoute extends DtbRoute {
         return new RcdMaterialBreadcrumbsLayout().init()
             .addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''))
             .addBreadcrumb(new RcdMaterialBreadcrumb('Content Tree').init().setStateRef('projects'))
-            .addBreadcrumb(new RcdMaterialBreadcrumb('Archives').init());
+            .addBreadcrumb(new RcdMaterialBreadcrumb(getProjectParameter() + '!archives').init());
         //.addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
 
@@ -43,7 +43,7 @@ class ArchivesRoute extends DtbRoute {
                 const unarchiveIconArea = new RcdGoogleMaterialIconArea('unarchive.svg', (source, event) => {
                     this.restore(archive._id);
                     event.stopPropagation()
-                }).setTooltip('Display archives').init();
+                }).setTooltip('Restore').init();
                 const row = this.tableCard.createRow({selectable: false})
                     .addCell(archive._name)
                     .addCell(archive.displayName)
