@@ -25,9 +25,15 @@ function createPresentationRoute() {
 
     const repositoriesViewSummary = new ViewSummary({
         state: 'repositories',
-        name: 'Data Tree',
+        name: 'Node Tree',
         iconFileName: 'datatree.svg',
         text: 'Browse and manage your repositories, branches and nodes.'
+    }).init();
+    const projectViewSummary = new ViewSummary({
+        state: 'projects',
+        name: 'Content Tree',
+        iconFileName: 'contenttree.svg',
+        text: 'Browse and manage your projects and contents.'
     }).init();
     const snapshotsViewSummary = new ViewSummary({
         state: 'snapshots',
@@ -87,6 +93,7 @@ function createPresentationRoute() {
         .init()
         .addClass('view-summaries')
         .addChild(repositoriesViewSummary)
+        .addChild(projectViewSummary)
         .addChild(snapshotsViewSummary)
         .addChild(exportsViewSummary)
         .addChild(dumpsViewSummary)

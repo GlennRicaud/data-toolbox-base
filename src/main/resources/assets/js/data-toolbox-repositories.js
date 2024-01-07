@@ -2,7 +2,7 @@ class RepositoriesRoute extends DtbRoute {
     constructor() {
         super({
             state: 'repositories',
-            name: 'Data Tree ',
+            name: 'Node Tree ',
             iconArea: new RcdImageIconArea(config.assetsUrl + '/icons/datatree.svg').init()
         });
     }
@@ -14,7 +14,7 @@ class RepositoriesRoute extends DtbRoute {
     createBreadcrumbsLayout() {
         return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
             new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
-            new RcdMaterialBreadcrumb('Data Tree').init()).addChild(
+            new RcdMaterialBreadcrumb('Node Tree').init()).addChild(
             new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
     }
 

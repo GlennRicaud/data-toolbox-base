@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>3.0.19</version>
+  <version>3.0.20-SNAPSHOT</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
@@ -48,6 +48,11 @@
     <dependency>
       <groupId>com.enonic.xp</groupId>
       <artifactId>lib-task</artifactId>
+      <version>${xpVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.enonic.xp</groupId>
+      <artifactId>lib-project</artifactId>
       <version>${xpVersion}</version>
     </dependency>
     <dependency>

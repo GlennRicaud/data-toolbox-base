@@ -12,6 +12,8 @@ function createApp() {
         .init()
         .setDefaultRoute(createPresentationRoute())
         .addRoute(new RepositoriesRoute().init())
+        .addRoute(new ContentsRoute().init())
+        .addRoute(new ProjectsRoute().init())
         .addRoute(new BranchesRoute().init())
         .addRoute(new NodesRoute().init())
         .addRoute(new NodeRoute().init())
@@ -143,6 +145,10 @@ function buildState(state, params) {
 
 function getRepoParameter() {
     return RcdHistoryRouter.getParameters().repo;
+}
+
+function getProjectParameter() {
+    return RcdHistoryRouter.getParameters().project;
 }
 
 function getBranchParameter() {

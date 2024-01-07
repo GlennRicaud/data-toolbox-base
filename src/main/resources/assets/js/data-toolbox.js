@@ -6,6 +6,8 @@ include('data-toolbox-dumps.js');
 include('data-toolbox-exports.js');
 include('data-toolbox-snapshots.js');
 include('data-toolbox-repositories.js');
+include('data-toolbox-contents.js');
+include('data-toolbox-projects.js');
 include('data-toolbox-branches.js');
 include('data-toolbox-nodes.js');
 include('data-toolbox-node.js');
