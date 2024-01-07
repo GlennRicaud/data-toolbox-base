@@ -23,7 +23,8 @@ class ProjectsRoute extends DtbRoute {
             .addColumn('ID')
             .addColumn('Name')
             .addColumn('Description')
-            //.addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createProject()).setTooltip('Create a project', RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
+            .addColumn('', {icon:true})
+            //.addIconArea(new RcdImageIconArea(config.assetsUrl + '/icons/inventory_2.svg',  () => this.displayArchives()).setTooltip('Display archvies', RcdMaterialTooltipAlignment.RIGHT).init(), {min: 1,max:1})
             //.addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteProjects()).init().setTooltip('Delete selected projects', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
         return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
@@ -33,12 +34,17 @@ class ProjectsRoute extends DtbRoute {
         this.tableCard.deleteRows();
         return requestJson(config.servicesUrl + '/project-list')
             .then((result) => {
-                result.success.sort((project1, project2) => project1.name - project2.name).forEach((project) => {
+                result.success.sort((project1, project2) => project1.id.localeCompare(project2.id)).forEach((project) => {
                     const rowStateRef = buildStateRef('contents', {project: project.id, path: '/'});
+                    const displayArchivesIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/inventory_2.svg', (source, event) => {
+                        setState('archives', {project: project.id})
+                        event.stopPropagation()
+                    }).setTooltip('Display archives').init();
                     const row = this.tableCard.createRow()
                         .addCell(project.id, {href: rowStateRef})
                         .addCell(project.displayName, {href: rowStateRef})
                         .addCell(project.description || '', {href: rowStateRef})
+                        .addCell(displayArchivesIconArea, {icon: true})
                         .setAttribute('project', project.id);
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
