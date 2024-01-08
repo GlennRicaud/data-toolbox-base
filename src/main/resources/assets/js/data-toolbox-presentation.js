@@ -32,7 +32,7 @@ function createPresentationRoute() {
     const projectViewSummary = new ViewSummary({
         state: 'projects',
         name: 'Content Tree (Beta)',
-        iconFileName: 'contenttree.svg',
+        iconFileName: 'datatree.svg',
         text: 'Browse and manage your projects and contents.'
     }).init();
     const snapshotsViewSummary = new ViewSummary({

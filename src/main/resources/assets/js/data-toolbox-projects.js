@@ -3,7 +3,7 @@ class ProjectsRoute extends DtbRoute {
         super({
             state: 'projects',
             name: 'Content Tree (Beta)',
-            iconArea: new RcdImageIconArea(config.assetsUrl + '/icons/contenttree.svg').init()
+            iconArea: new RcdImageIconArea(config.assetsUrl + '/icons/datatree.svg').init()
         });
     }
 

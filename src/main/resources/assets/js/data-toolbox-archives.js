@@ -7,15 +7,14 @@ class ArchivesRoute extends DtbRoute {
 
     onDisplay() {
         app.setTitle('Content archives');
+        this.refreshBreadcrumbs();
         this.retrieveArchives();
     }
 
     createBreadcrumbsLayout() {
-        return new RcdMaterialBreadcrumbsLayout().init()
-            .addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''))
-            .addBreadcrumb(new RcdMaterialBreadcrumb('Content Tree').init().setStateRef('projects'))
-            .addBreadcrumb(new RcdMaterialBreadcrumb(getProjectParameter() + '!archives').init());
-        //.addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+        //const helpIconArea = new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help');
+        this.breadcrumbsLayout = new RcdMaterialBreadcrumbsLayout().init();//.addChild(helpIconArea);
+        return this.breadcrumbsLayout;
     }
 
     createLayout() {
@@ -75,6 +74,14 @@ class ArchivesRoute extends DtbRoute {
                 infoDialog.close();
                 this.retrieveArchives();
             });
+    }
+
+    refreshBreadcrumbs() {
+        this.breadcrumbsLayout.setBreadcrumbs([
+            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''),
+            new RcdMaterialBreadcrumb('Content Tree').init().setStateRef('projects'),
+            new RcdMaterialBreadcrumb(getProjectParameter() + '!archives').init()]);
+
     }
 
     displayHelp() {
