@@ -6,15 +6,14 @@ class ContentsRoute extends DtbRoute {
     }
 
     onDisplay() {
-        app.setTitle('Content Tree (Beta)');
+        this.refreshBreadcrumbs();
         this.retrieveContents();
     }
 
     createBreadcrumbsLayout() {
-        return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
-            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
-            new RcdMaterialBreadcrumb('Content Tree').init());
-            //.addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+        //const helpIconArea = new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help');
+        this.breadcrumbsLayout = new RcdMaterialBreadcrumbsLayout().init();//.addChild(helpIconArea);
+        return this.breadcrumbsLayout;
     }
 
     createLayout() {
@@ -100,6 +99,40 @@ class ContentsRoute extends DtbRoute {
                 infoDialog.close();
                 this.retrieveContents();
             });
+    }
+
+    refreshBreadcrumbs() {
+        this.breadcrumbsLayout.setBreadcrumbs([
+            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''),
+            new RcdMaterialBreadcrumb('Content Tree').init().setStateRef('projects')]);
+
+        const projectId = getProjectParameter();
+        const path = getPathParameter();
+        if (path === '/') {
+            app.setTitle(projectId);
+            this.breadcrumbsLayout.addBreadcrumb(new RcdMaterialBreadcrumb(projectId).init())
+            return
+        }
+
+        this.breadcrumbsLayout.addBreadcrumb(new RcdMaterialBreadcrumb(projectId).init().setStateRef('contents', {project: projectId, path: '/'}))
+
+        const pathElements = path.substring(1).split('/')
+        app.setTitle(pathElements[pathElements.length - 1]);
+
+        let currentPath = '';
+        pathElements.forEach((subPathElement, index, array) => {
+            currentPath += '/' + subPathElement;
+            const constCurrentPath = currentPath;
+
+            const currentPathBreadcrumb = new RcdMaterialBreadcrumb(subPathElement).init();
+            if (index < array.length - 1) {
+                currentPathBreadcrumb.setStateRef('contents', {
+                    project: projectId,
+                    path: constCurrentPath
+                });
+            }
+            this.breadcrumbsLayout.addBreadcrumb(currentPathBreadcrumb);
+        });
     }
 
     displayHelp() {
