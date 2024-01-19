@@ -51,8 +51,8 @@ class ReportDialog extends RcdMaterialModalDialog {
         this.defaultReportName = 'query-report-' + toLocalDateTimeFormat(new Date(), '-', '-');
         this.reportNameTextField =
             new RcdMaterialTextField('Report name', this.defaultReportName).init().setValue(this.defaultReportName || '');
-        this.formatDropdownField = new RcdMaterialDropdown('Format', ['Node fields as CSV', 'Node as JSON tree']).init()
-            .addChangeListener(() => this.fieldsField.show('Node fields as CSV' === this.formatDropdownField.getSelectedValue()));
+        this.formatDropdownField = new RcdMaterialDropdown('Format', ['Node fields as TSV', 'Node as JSON tree']).init()
+            .addChangeListener(() => this.fieldsField.show('Node fields as TSV' === this.formatDropdownField.getSelectedValue()));
         this.fieldsField = new RcdMaterialTextField('Fields', 'Example: _id,_path').init().setValue('_id,_path');
         this.nodeCountField = new RcdTextElement('Number of exported nodes: ' + nodeCount).init();
     }
@@ -412,7 +412,7 @@ class SearchRoute extends DtbRoute {
         const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query Language</a> or <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/filters">Filters</a>.';
         const reportDescription = 'Report: Generate a report of the query result.' +
                                   '<br/>Format "Node as JSON tree": Generate the matching nodes as JSON in a tree structure' +
-                                  '<br/>Format "Node fields as CSV": Generate the fields of the matching nodes in a CSV file';
+                                  '<br/>Format "Node fields as TSV": Generate the fields of the matching nodes in a TSV (Tab-Separated Values) file';
         new HelpDialog('Search', [viewDefinition, reportDescription]).init().open();
     }
 }

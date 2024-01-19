@@ -83,9 +83,9 @@ function generateReportEntries(format, fields, repositoryName, branchName, query
     const fieldArray = fields.split(',')
         .map(fieldName => fieldName.trim())
         .filter(fieldName => fieldName !== '');
-    if (format === 'Node fields as CSV') {
-        setNextEntryConsumer('fields.json');
-        writeEntryConsumer(fieldArray.join(','));
+    if (format === 'Node fields as TSV') {
+        setNextEntryConsumer('fields.tsv');
+        writeEntryConsumer(fieldArray.join('\t'));
     }
     queryResult.hits.forEach(hit => {
         const node = (repositoryName && branchName) ? repoConnection.get(hit.id) : nodeLib.connect({
@@ -96,11 +96,18 @@ function generateReportEntries(format, fields, repositoryName, branchName, query
         if (format === 'Node as JSON tree') {
             createEntryConsumer((repositoryName || hit.repoId) + '/' + (branchName || hit.branch) + node._path + '.json',
                 JSON.stringify(node, null, 2));
-        } else if (format === 'Node fields as CSV') {
+        } else if (format === 'Node fields as TSV') {
             const row = fieldArray.map((fieldName, index) => {
-                const field = node[fieldName];
-                return field == null ? 'null' : JSON.stringify(node[fieldName], null, 0);
-            }).join(',');
+
+                const fieldNameSubParts =fieldName.split('.')
+                let field = node;
+                for (const fieldNameSubPart of fieldNameSubParts) {
+                    if (field != null) {
+                        field = field[fieldNameSubPart];
+                    }
+                }
+                return field == null ? '' : JSON.stringify(field, null, 0);
+            }).join('\t');
             writeEntryConsumer('\n' + row);
         }
 
