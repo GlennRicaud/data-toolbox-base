@@ -17,11 +17,11 @@ class ContentsRoute extends DtbRoute {
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Contents',{selectable: false}).init()
+        this.tableCard = new RcdMaterialTableCard('Contents',).init()
             .addColumn('Name')
             .addColumn('Display Name')
             //.addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createContent()).setTooltip('Create a content', RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
-            //.addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteContents()).init().setTooltip('Delete selected contents', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
+            .addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteContents()).init().setTooltip('Delete selected contents', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
         return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
 
@@ -33,7 +33,7 @@ class ContentsRoute extends DtbRoute {
                 project: getProjectParameter(),
                 path: this.getParentPath(),
             }) : buildStateRef('projects');
-        this.tableCard.createRow({selectable: false})
+        this.tableCard.createRow({selectable:false})
             .addCell('..', {href: parentStateRef})
             .addCell('', {href: parentStateRef});
         return requestPostJson(config.servicesUrl + '/content-getchildren', {
@@ -45,11 +45,11 @@ class ContentsRoute extends DtbRoute {
             .then((result) => {
                 result.success.hits.sort((content1, content2) => content1.name - content2.name).forEach((content) => {
                     const rowStateRef = buildStateRef('contents', {project: getProjectParameter(), path: content._path});
-                    const row = this.tableCard.createRow({selectable: false})
+                    const row = this.tableCard.createRow()
                         .addCell(content._name, {href: rowStateRef})
                         .addCell(content.displayName || '', {href: rowStateRef})
                         .setAttribute('content', content._id);
-                    //row.checkbox.addClickListener((event) => event.stopPropagation());
+                    row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
             })
             .catch(handleRequestError)
@@ -89,16 +89,21 @@ class ContentsRoute extends DtbRoute {
 
     doDeleteContents() {
         const infoDialog = showLongInfoDialog("Deleting contents...");
-        const contentNames = this.tableCard.getSelectedRows().map((row) => row.attributes['content']);
+        const keys = this.tableCard.getSelectedRows().map((row) => row.attributes['content']);
         requestPostJson(config.servicesUrl + '/content-delete', {
-            data: {contentNames: contentNames}
+            data: {
+                projectId: getProjectParameter(),
+                keys: keys
+            }
         })
-            .then((result) => displaySuccess('Repositor' + (contentNames.length > 1 ? 'ies' : 'y') + ' deleted'))
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Deleting contents...',
+                doneCallback: () => displaySuccess('Content' + (keys.length > 1 ? 's' : '') + ' deleted'),
+                alwaysCallback: () => this.retrieveContents()
+            }))
             .catch(handleRequestError)
-            .finally(() => {
-                infoDialog.close();
-                this.retrieveContents();
-            });
+            .finally(() => infoDialog.close());
     }
 
     refreshBreadcrumbs() {
