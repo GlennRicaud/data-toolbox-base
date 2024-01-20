@@ -11,8 +11,8 @@ class ContentsRoute extends DtbRoute {
     }
 
     createBreadcrumbsLayout() {
-        //const helpIconArea = new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help');
-        this.breadcrumbsLayout = new RcdMaterialBreadcrumbsLayout().init();//.addChild(helpIconArea);
+        const helpIconArea = new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help');
+        this.breadcrumbsLayout = new RcdMaterialBreadcrumbsLayout().init().addChild(helpIconArea);
         return this.breadcrumbsLayout;
     }
 
@@ -141,16 +141,13 @@ class ContentsRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Enonic XP data is split into contents, silos where nodes can be stored.<br/>' +
-            'By default 2 contents are present: ' +
-            '<b>system-repo</b>, the core content, containing the IAM data, installed applications, content settings, ...' +
-            'and <b>com.enonic.cms.default</b>, the CMS content for the default content.<br/>' +
-            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#contents">Contents</a> for more information.';
+        const definition = 'Enonic XP data is shipped with an embedded hybrid CMS.<br/>' +
+            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/cms">CMS</a> for more information.';
 
-        const viewDefinition = 'This view lists in a table all the contents. Click on a row to display its branches.';
+        const viewDefinition = 'This view lists in a table all the contents. Click on a row to display its children.';
 
         new HelpDialog('Contents', [definition, viewDefinition]).init()
-            .addActionDefinition({iconName: 'add_circle', definition: 'Create a content with default settings'})
+            //.addActionDefinition({iconName: 'add_circle', definition: 'Create a content with default settings'})
             .addActionDefinition({iconName: 'delete', definition: 'Delete the selected contents.'})
             .open();
     }

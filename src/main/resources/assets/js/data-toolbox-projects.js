@@ -12,10 +12,11 @@ class ProjectsRoute extends DtbRoute {
     }
 
     createBreadcrumbsLayout() {
-        return new RcdMaterialBreadcrumbsLayout().init().addBreadcrumb(
-            new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef('')).addBreadcrumb(
-            new RcdMaterialBreadcrumb('Content Tree').init());
-            //.addChild(new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help'));
+        const helpIconArea = new RcdGoogleMaterialIconArea('help', () => this.displayHelp()).init().setTooltip('Help');
+        return new RcdMaterialBreadcrumbsLayout().init()
+            .addBreadcrumb(new RcdMaterialBreadcrumb('Data Toolbox').init().setStateRef(''))
+            .addBreadcrumb(new RcdMaterialBreadcrumb('Content Tree').init())
+            .addChild(helpIconArea);
     }
 
     createLayout() {
@@ -99,17 +100,15 @@ class ProjectsRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Enonic XP data is split into projects, silos where nodes can be stored.<br/>' +
-            'By default 2 projects are present: ' +
-            '<b>system-repo</b>, the core project, containing the IAM data, installed applications, project settings, ...' +
-            'and <b>com.enonic.cms.default</b>, the CMS project for the default project.<br/>' +
-            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#projects">Projects</a> for more information.';
+        const definition = 'Enonic XP data is shipped with an embedded hybrid CMS.<br/>' +
+            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/cms">CMS</a> for more information.';
 
-        const viewDefinition = 'This view lists in a table all the projects. Click on a row to display its branches.';
+        const viewDefinition = 'This view lists in a table all the projects. Click on a row to display its contents.';
 
         new HelpDialog('Projects', [definition, viewDefinition]).init()
-            .addActionDefinition({iconName: 'add_circle', definition: 'Create a project with default settings'})
-            .addActionDefinition({iconName: 'delete', definition: 'Delete the selected projects.'})
+            .addActionDefinition({iconSrc: config.assetsUrl + '/icons/inventory_2.svg', definition: 'Display the content archives for this project'})
+            //.addActionDefinition({iconName: 'add_circle', definition: 'Create a content with default settings'})
+            //.addActionDefinition({iconName: 'delete', definition: 'Delete the selected contents.'})
             .open();
     }
 }
