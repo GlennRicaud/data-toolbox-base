@@ -20,6 +20,7 @@ class ContentsRoute extends DtbRoute {
         this.tableCard = new RcdMaterialTableCard('Contents',).init()
             .addColumn('Name')
             .addColumn('Display Name')
+            .addColumn('', {icon: true})
             //.addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createContent()).setTooltip('Create a content', RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
             .addIconArea(new RcdGoogleMaterialIconArea('delete', () => this.deleteContents()).init().setTooltip('Delete selected contents', RcdMaterialTooltipAlignment.RIGHT), {min: 1});
         return new RcdMaterialLayout().init().addChild(this.tableCard);
@@ -35,7 +36,8 @@ class ContentsRoute extends DtbRoute {
             }) : buildStateRef('projects');
         this.tableCard.createRow({selectable:false})
             .addCell('..', {href: parentStateRef})
-            .addCell('', {href: parentStateRef});
+            .addCell('', {href: parentStateRef})
+            .addCell(null, {icon: true});
         return requestPostJson(config.servicesUrl + '/content-getchildren', {
             data: {
                 projectId: getProjectParameter(),
@@ -45,9 +47,15 @@ class ContentsRoute extends DtbRoute {
             .then((result) => {
                 result.success.hits.sort((content1, content2) => content1.name - content2.name).forEach((content) => {
                     const rowStateRef = buildStateRef('contents', {project: getProjectParameter(), path: content._path});
+                    const displayJsonCallback = () => this.displayContentAsJson(content._id, content._name);
+                    const displayJsonIconArea = new RcdImageIconArea(config.assetsUrl + '/icons/json.svg', (source, event) => {
+                        displayJsonCallback();
+                        event.stopPropagation();
+                    }).init().setTooltip('Display as JSON');
                     const row = this.tableCard.createRow()
                         .addCell(content._name, {href: rowStateRef})
                         .addCell(content.displayName || '', {href: rowStateRef})
+                        .addCell(displayJsonIconArea, {icon: true})
                         .setAttribute('content', content._id);
                     row.checkbox.addClickListener((event) => event.stopPropagation());
                 });
@@ -81,6 +89,22 @@ class ContentsRoute extends DtbRoute {
                 infoDialog.close();
                 this.retrieveContents();
             });
+    }
+
+    displayContentAsJson(key, name) {
+        const infoDialog = showShortInfoDialog("Retrieving content info...");
+        return requestPostJson(config.servicesUrl + '/content-get', {
+            data: {
+                projectId: getProjectParameter(),
+                key: key
+            }
+        })
+            .then((result) => {
+                const formattedJson = this.formatJson(result.success);
+                showDetailsDialog('Content [' + name + ']', formattedJson).addClass('node-details-dialog');
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
     }
 
     deleteContents() {
