@@ -98,20 +98,4 @@ public class RcdVersionScriptBean
             return createSuccessResult( result );
         }, "Error while retrieving versions" );
     }
-
-    public String setActive( final String repositoryName, final String branchName, final String nodeIdString,
-                             final String nodeVersionIdString )
-    {
-        return runSafely( () -> {
-            final RepositoryId repositoryId = RepositoryId.from( repositoryName );
-            final Branch branch = Branch.from( branchName );
-            final NodeId nodeId = NodeId.from( nodeIdString );
-            final NodeVersionId nodeVersionId = NodeVersionId.from( nodeVersionIdString );
-            createContext( repositoryId, branch ).
-                runWith( () -> nodeServiceSupplier.get().
-                    setActiveVersion( nodeId, nodeVersionId ) );
-
-            return createSuccessResult();
-        }, "Error while setting active version" );
-    }
 }
