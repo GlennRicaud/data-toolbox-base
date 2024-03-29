@@ -52,9 +52,10 @@ class ContentsRoute extends DtbRoute {
                         displayJsonCallback();
                         event.stopPropagation();
                     }).init().setTooltip('Display as JSON');
+                    const classes = content._state === 'PENDING_DELETE' ? ['pending_delete'] : [];
                     const row = this.tableCard.createRow()
-                        .addCell(content._name, {href: rowStateRef})
-                        .addCell(content.displayName || '', {href: rowStateRef})
+                        .addCell(content._name, {href: rowStateRef, classes: classes})
+                        .addCell(content.displayName || '', {href: rowStateRef, classes: classes})
                         .addCell(displayJsonIconArea, {icon: true})
                         .setAttribute('content', content._id);
                     row.checkbox.addClickListener((event) => event.stopPropagation());

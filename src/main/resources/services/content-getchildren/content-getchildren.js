@@ -1,5 +1,6 @@
 const contentLib = require('/lib/xp/content');
 const contextLib = require('/lib/xp/context');
+const nodeLib = require('/lib/xp/node');
 const escapeLib = require('/lib/escape');
 const utilLib = require('/lib/util');
 
@@ -44,11 +45,19 @@ function getChildren(projectId, branchName, parentPath, start, count, filter, so
         }
     })
 
+    //Retrieves the state from the node.
+    const repoConnection = nodeLib.connect({
+        repoId: 'com.enonic.cms.' + projectId,
+        branch: branchName
+    });
+    const contents = result.hits.map(function (content) {
+        content._state = repoConnection.get(content._id)._state;
+        return escapeLib.escapeHtml(content);
+    })
+
     return {
         success: {
-            hits: result.hits.map(function (content) {
-                return escapeLib.escapeHtml(content);
-            }),
+            hits: contents,
             count: result.count,
             total: result.total
         }
