@@ -1,5 +1,6 @@
 <widget>
   <display-name>Data Toolbox - Exports</display-name>
+  <description>Manage your content exports</description>
   <interfaces>
     <interface>contentstudio.contextpanel</interface>
   </interfaces>
