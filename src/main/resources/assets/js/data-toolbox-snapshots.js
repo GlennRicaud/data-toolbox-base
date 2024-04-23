@@ -94,13 +94,25 @@ class SnapshotsRoute extends DtbRoute {
     }
 
     restoreSnapshot() {
+        new RcdMaterialConfirmationDialog({
+            text: "Before proceeding with the restoration of a snapshot, please carefully consider the following points:\n\n" +
+                "<li><ul>Restoring the snapshot will reset all XP data to the state it was in at the time the snapshot was taken. Any changes made after that point will be lost.</ul>" +
+                "<ul>We highly recommend running a snapshot before proceeding with the restoration. This ensures that you have a recent backup in case the restoration does not produce the desired results.</ul>" +
+                "<ul>After the restoration process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.</ul></li>",
+            confirmationLabel: 'RESTORE',
+            callback: () => this.doRestoreSnapshot()
+        }).init()
+            .addClass('snapshot-restore-warning')
+            .open();
+    }
+
+    doRestoreSnapshot() {
         const infoDialog = showLongInfoDialog("Restoring snapshot...");
         const snapshotName = this.tableCard.getSelectedRows().map((row) => row.attributes['snapshot'])[0];
         requestPostJson(config.servicesUrl + '/snapshot-restore', {
             data: {snapshotName: snapshotName}
         })
-            .then(() => {
-            })
+            .then(() => displaySuccess('Snapshot restored. Please restart XP'))
             .catch(handleRequestError)
             .finally(() => infoDialog.close());
     }
