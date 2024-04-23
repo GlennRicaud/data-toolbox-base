@@ -102,7 +102,7 @@ class SnapshotsRoute extends DtbRoute {
             confirmationLabel: 'RESTORE',
             callback: () => this.doRestoreSnapshot()
         }).init()
-            .addClass('snapshot-restore-warning')
+            .addClass('restore-warning')
             .open();
     }
 
