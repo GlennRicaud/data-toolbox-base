@@ -37,6 +37,9 @@ function doQuery(repositoryName, branchName, query, filters, start, count, sort)
     if (repositoryName && branchName) {
         hits = result.hits.map(hit => {
             const node = repoConnection.get(hit.id);
+            if (!node) { //Should not happen but does happen randomly
+                throw "Failed to load [" + hit.id + "]";
+            }
             return {
                 repositoryName: repositoryName,
                 branchName: branchName,
@@ -52,6 +55,9 @@ function doQuery(repositoryName, branchName, query, filters, start, count, sort)
                 repoId: hit.repoId,
                 branch: hit.branch
             }).get(hit.id);
+            if (!node) { //Should not happen but does happen randomly
+                throw "Failed to load [" + hit.id + "]";
+            }
             return {
                 repositoryName: hit.repoId,
                 branchName: hit.branch,
