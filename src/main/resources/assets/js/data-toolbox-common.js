@@ -74,7 +74,7 @@ class ImportResultDialog extends RcdMaterialModalDialog {
         let text = '';
         for (let i = 0; i < this.exportNames.length; i++) {
             if (this.exportNames.length > 1) {
-                text += '<b>' + this.exportNames[i] + '</b>\n';
+                text += '' + this.exportNames[i] + '\n';
             }
             const result = this.result[this.exportNames[i]];
             const addedNodes = this.type === 'content' ? result.addedNodes.map(nodePathToContentPath) : result.addedNodes;
@@ -163,7 +163,7 @@ class LoadExportDumpDialog extends RcdMaterialModalDialog {
         for (let repositoryName in this.result) {
             const repositoryDumpResult = this.result[repositoryName];
             for (let branchName in repositoryDumpResult) {
-                summary += '<b>Branch [' + repositoryName + '/' + branchName + ']</b>\n';
+                summary += 'Branch [' + repositoryName + '/' + branchName + ']\n';
                 const branchDumpResult = repositoryDumpResult[branchName];
 
                 summary += 'Added nodes: ' + branchDumpResult.addedNodeCount + '\n' +
@@ -200,7 +200,7 @@ class LoadExportDumpDialog extends RcdMaterialModalDialog {
         for (let repositoryName in this.result) {
             const repositoryDumpResult = this.result[repositoryName];
             for (let branchName in repositoryDumpResult) {
-                text += '<b>Branch [' + repositoryName + '/' + branchName + ']</b>\n';
+                text += 'Branch [' + repositoryName + '/' + branchName + ']\n';
                 const branchDumpResult = repositoryDumpResult[branchName];
                 text += '# added nodes: ' + branchDumpResult.addedNodeCount + '\n' +
                         '# updated nodes: ' + branchDumpResult.updatedNodeCount + '\n' +
@@ -278,7 +278,7 @@ class DumpResultDialog extends RcdMaterialModalDialog {
         let errorCount = 0;
         for (let repositoryName in this.result) {
             const repositoryDumpResult = this.result[repositoryName];
-            summary += '<b>Repository [' + repositoryName + ']</b>\n';
+            summary += 'Repository [' + repositoryName + ']\n';
             for (let branchName in repositoryDumpResult) {
                 const branchDumpResult = repositoryDumpResult[branchName];
                 summary += 'Branch [' + branchName + ']: ' + branchDumpResult.successful +
@@ -323,7 +323,7 @@ class DumpResultDialog extends RcdMaterialModalDialog {
                     });
                 }
                 if (branchText) {
-                    text += '<b>Repository/Branch [' + repositoryName + '/' + branchName + ']</b>\n' + branchText;
+                    text += 'Repository/Branch [' + repositoryName + '/' + branchName + ']\n' + branchText;
                 }
             }
         }
