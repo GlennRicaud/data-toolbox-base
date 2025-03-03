@@ -188,7 +188,7 @@
         const definition = 'A content export is a serialization of a given content and its children. ' +
                            'This makes content exports well suited for transferring a specific content to another installation. ' +
                            'Warning: The export mechanism does not export old versions of your data. You will loose the version history of your contents. ' +
-                           'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.11/operations/export.html">Export and Import</a> for more information.';
+                           'See https://xp.readthedocs.io/en/6.11/operations/export.html for more information.';
 
         const viewDefinition = 'This widget lists in a table all the exports located in $XP_HOME/data/export. ' +
                                'You can export the current content or upload previously archived exports. ' +

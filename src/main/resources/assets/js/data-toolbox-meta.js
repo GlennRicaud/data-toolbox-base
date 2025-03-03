@@ -84,8 +84,8 @@ class MetaRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'The view lists in a table all the system properties of the current node\' +\n' +
-                               '                               \'See <a class="rcd-material-link" href="http://xp.readthedocs.io/en/6.10/developer/node-domain/system-properties.html">System properties</a> for more information. ';
+        const viewDefinition = 'The view lists in a table all the system properties of the current node. \n' +
+                               'See https://xp.readthedocs.io/en/6.10/developer/node-domain/system-properties.html for more information. ';
         new HelpDialog('System properties', [viewDefinition]).init().open();
     }
 }

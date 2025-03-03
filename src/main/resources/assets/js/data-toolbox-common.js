@@ -517,15 +517,15 @@ class DtbRoute extends RcdMaterialRoute {
 
     formatJson(value, tab = '') {
         if (value === null) {
-            return '<a class=json-null>null</a>';
+            return 'null';
         } else if (value === undefined) {
-            return '<a class=json-undefined>undefined</a>';
+            return 'undefined';
         } else if (typeof value === 'string') {
-            return '<a class=json-string>"' + value + '"</a>';
+            return '"' + value + '"';
         } else if (typeof value === "number") {
-            return '<a class=json-number>' + value + '</a>';
+            return '' + value ;
         } else if (typeof value === "boolean") {
-            return '<a class=json-boolean>' + value + '</a>';
+            return '' + value;
         } else if (Array.isArray(value)) {
             let formattedArray = '[\n';
             for (let i = 0; i < value.length; i++) {

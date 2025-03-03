@@ -121,7 +121,7 @@ class SnapshotsRoute extends DtbRoute {
         const definition = 'A snapshot is a record of your Enonic XP indexes at a particular point in time. ' +
                            'Your first snapshot will be a complete copy of your indexes, but all subsequent snapshots will save the delta between the existing snapshots and the current state.' +
                            'This makes snapshots optimized for repetitive saves and allow to quickly rollback to a previous state in one click. It is also used, in addition to blobs backup (not covered by this tool), for backing up your data. ' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/deployment/data#snapshot_and_restore">Snapshot & restore</a> for more information.';
+                           'See https://developer.enonic.com/docs/xp/stable/deployment/data#snapshot_and_restore for more information.';
 
         const viewDefinition = 'This view lists in a table all the snapshots taken.';
 

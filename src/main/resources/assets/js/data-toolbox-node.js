@@ -319,8 +319,7 @@ class NodeRoute extends DtbRoute {
                            'It can be compared to a row in sql or a document in document oriented storage models.\n' +
                            'See https://developer.enonic.com/docs/xp/stable/storage#nodes for more information. ';
 
-        const viewDefinition = 'This view gathers the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/system-properties">System properties</a>' +
-                               ' and a list of actions to manage the node or retrieve more information about it.';
+        const viewDefinition = 'This view gathers the System properties and a list of actions to manage the node or retrieve more information about it.';
         new HelpDialog('Node', [definition, viewDefinition]).init().open();
     }
 }

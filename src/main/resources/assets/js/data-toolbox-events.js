@@ -150,7 +150,7 @@ class EventsRoute extends DtbRoute {
 
     displayHelp() {
         const viewDefinition = 'The view allows to listen to and display events. ' +
-                               'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/events ">Events</a> for more information. ' +
+                               'See https://developer.enonic.com/docs/xp/stable/framework/events for more information. ' +
                                'A filtering by type can be applied using a regular expression. ' +
                                'When the maximum number of events displayed is reached, the oldest events will be discarded';
         new HelpDialog('Events', [viewDefinition])

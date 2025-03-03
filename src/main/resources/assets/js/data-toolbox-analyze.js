@@ -167,7 +167,7 @@ class AnalyzeRoute extends DtbRoute {
     displayHelp() {
         const viewDefinition = 'Text analysis is the process of converting unstructured text, like the body of an email or a product description, into a structured format that’s optimized for search. ' +
                                'Elasticsearch performs text analysis when indexing or searching text fields.' +
-                               'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/indexing">Indexing</a> for more information.';
+                               'See https://developer.enonic.com/docs/xp/stable/storage/indexing for more information.';
         new HelpDialog('Analyze', [viewDefinition]).init().open();
     }
 }

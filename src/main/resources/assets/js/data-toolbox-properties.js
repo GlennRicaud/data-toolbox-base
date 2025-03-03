@@ -632,7 +632,7 @@ class PropertiesRoute extends DtbRoute {
 
     displayHelp() {
         const definition = 'Properties inside a node hold the actual data values. Properties use a key-value format. ' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#properties">Properties</a> for more information.';
+                           'See https://developer.enonic.com/docs/xp/stable/storage#properties for more information.';
         const viewDefinition = 'This view represents node properties in a tree structure. Click on a row to display its children properties';
         new HelpDialog('Properties', [definition, viewDefinition]).init()
             .addActionDefinition({

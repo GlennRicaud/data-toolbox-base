@@ -75,6 +75,6 @@ class HomeRoute extends DtbRoute {
     }
 
     displayHelp() {
-        new HelpDialog('XP Home', ['Information about XP Home, the folder containing the stateful data of Enonic XP.', 'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/deployment/distro#xp_home">XP Home</a> for more information.']).init().open();
+        new HelpDialog('XP Home', ['Information about XP Home, the folder containing the stateful data of Enonic XP.', 'See https://developer.enonic.com/docs/xp/stable/deployment/distro#xp_home for more information.']).init().open();
     }
 }
