@@ -10,13 +10,13 @@ class NodeDetailsCard extends RcdDivElement {
 
     setMeta(meta) {
         const primaryElement = new RcdTextElement('System properties').init();
-        const detailsText = 'ID: ' + meta._id + '<br/>' +
-                            'Path: ' + meta._path + '<br/>' +
-                            'Version key: ' + meta._versionKey + '<br/>' +
-                            'Type: ' + meta._nodeType + '<br/>' +
-                            'Timestamp: ' + meta._ts + '<br/>' +
-                            'State: ' + meta._state + '<br/>' +
-                            'Child order: ' + meta._childOrder + '<br/>' +
+        const detailsText = 'ID: ' + meta._id + '\n' +
+                            'Path: ' + meta._path + '\n' +
+                            'Version key: ' + meta._versionKey + '\n' +
+                            'Type: ' + meta._nodeType + '\n' +
+                            'Timestamp: ' + meta._ts + '\n' +
+                            'State: ' + meta._state + '\n' +
+                            'Child order: ' + meta._childOrder + '\n' +
                             'Manual order value: ' + (meta._manualOrderValue || '');
         const detailsElement = new RcdTextElement(detailsText).init();
         this.addChild(primaryElement).addChild(detailsElement);
@@ -316,8 +316,8 @@ class NodeRoute extends DtbRoute {
 
     displayHelp() {
         const definition = 'A Node represents a single storable entity of data. ' +
-                           'It can be compared to a row in sql or a document in document oriented storage models.<br/>' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#nodes">Nodes</a> for more information. ';
+                           'It can be compared to a row in sql or a document in document oriented storage models.\n' +
+                           'See https://developer.enonic.com/docs/xp/stable/storage#nodes for more information. ';
 
         const viewDefinition = 'This view gathers the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/system-properties">System properties</a>' +
                                ' and a list of actions to manage the node or retrieve more information about it.';

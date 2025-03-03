@@ -13,7 +13,7 @@ class VersionsRoute extends DtbRoute {
     createLayout() {
         this.tableCard = new RcdMaterialTableCard('Versions', {selectable: false}).init()
             .addClass('dtb-table-card-versions')
-            .addColumn('Version ID<br/>Path')
+            .addColumn('Version ID\nPath')
             .addColumn('Info', {classes: ['non-mobile-cell']})
             .addColumn('Timestamp')
             .addColumn('', {icon: true});
@@ -72,8 +72,8 @@ class VersionsRoute extends DtbRoute {
                 .setTooltip('Display...');
 
             this.tableCard.createRow()
-                .addCell(version.versionId + '<br/>' + version.nodePath)
-                .addCell((version.branches ? 'Active in: ' + version.branches : '') + '<br/>' +
+                .addCell(version.versionId + '\n' + version.nodePath)
+                .addCell((version.branches ? 'Active in: ' + version.branches : '') + '\n' +
                          (version.nodeCommitId ? 'Committed' : ''),
                     {classes: ['non-mobile-cell']})
                 .addCell(version.timestamp)
@@ -173,7 +173,7 @@ class VersionsRoute extends DtbRoute {
 
     displayHelp() {
         const viewDefinition = 'Node versions. ' +
-                               'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/branches">Repo branches</a> for more information';
+                               'See https://developer.enonic.com/docs/xp/stable/storage/branches for more information';
         new HelpDialog('Versions', [viewDefinition]).init()
             .open();
     }

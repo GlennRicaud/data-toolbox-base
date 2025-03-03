@@ -269,8 +269,8 @@ class PermissionsRoute extends DtbRoute {
             .addColumn('Modify', {classes: ['non-mobile-cell']})
             .addColumn('Delete', {classes: ['non-mobile-cell']})
             .addColumn('Publish', {classes: ['non-mobile-cell']})
-            .addColumn('Read<br/>Perm.', {classes: ['non-mobile-cell']})
-            .addColumn('Write<br/>Perm.', {classes: ['non-mobile-cell']});
+            .addColumn('Read\nPerm.', {classes: ['non-mobile-cell']})
+            .addColumn('Write\nPerm.', {classes: ['non-mobile-cell']});
 
         return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
@@ -447,7 +447,7 @@ class PermissionsRoute extends DtbRoute {
 
     displayHelp() {
         const definition = 'Permissions are granted to principals (users, groups and roles) on a per-node basis. This means that changing a principal’s permissions for one node does not affect that principal’s permissions for other node.' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/content-studio/stable/permissions">Permissions</a> for more information. ';
+                           'See https://developer.enonic.com/docs/content-studio/stable/permissions for more information. ';
 
         const viewDefinition = 'The view lists in a table all the permissions of the current node. Creation, modification and deletion of permissions will be provided in an ulterior version.';
         new HelpDialog('Permissions', [definition, viewDefinition]).init().open();

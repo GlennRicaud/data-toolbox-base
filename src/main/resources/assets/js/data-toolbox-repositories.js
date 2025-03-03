@@ -90,11 +90,11 @@ class RepositoriesRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Enonic XP data is split into repositories, silos where nodes can be stored.<br/>' +
+        const definition = 'Enonic XP data is split into repositories, silos where nodes can be stored.\n' +
                            'By default 2 repositories are present: ' +
-                           '<b>system-repo</b>, the core repository, containing the IAM data, installed applications, repository settings, ...' +
-                           'and <b>com.enonic.cms.default</b>, the CMS repository for the default project.<br/>' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#repositories">Repositories</a> for more information.';
+                           'system-repo, the core repository, containing the IAM data, installed applications, repository settings, ...' +
+                           'and com.enonic.cms.default, the CMS repository for the default project.\n' +
+                           'See https://developer.enonic.com/docs/xp/stable/storage#repositories for more information.';
 
         const viewDefinition = 'This view lists in a table all the repositories. Click on a row to display its branches.';
 

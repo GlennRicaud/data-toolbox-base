@@ -99,9 +99,9 @@ class BranchesRoute extends DtbRoute {
         const definition = 'A branch is a set of data in a repository.  All repositories have a default branch called master. ' +
                            'Any number of branches can be added to facilitate your data. ' +
                            'For example, the com.enonic.cms.default repository contains two branches: ' +
-                           '<b>draft</b> containing the content as seen in the Content Studio and ' +
-                           '<b>master</b> containing the published content served by the portal.<br/>' +
-                           'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#branches">Branches</a> for more information.';
+                           'draft containing the content as seen in the Content Studio and ' +
+                           'master containing the published content served by the portal.\n' +
+                           'See https://developer.enonic.com/docs/xp/stable/storage#branches for more information.';
 
         const viewDefinition = 'This view lists in a table all the branches of the current repository. Click on a row to display its root node.';
 

@@ -353,7 +353,7 @@ class SearchRoute extends DtbRoute {
             result.success.hits.forEach(node => {
                 const primary = node._name;
                 const secondary = node.repositoryName + ':' + node.branchName + ':' + node._path +
-                                  (node._score ? ('<br/>Score: ' + node._score.toFixed(5)) : '');
+                                  (node._score ? ('\nScore: ' + node._score.toFixed(5)) : '');
                 this.resultCard.addRow(primary, secondary, {
                     callback: () => setState('node', {repo: node.repositoryName, branch: node.branchName, id: node._id})
                 });
@@ -409,10 +409,10 @@ class SearchRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query Language</a> or <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/filters">Filters</a>.';
+        const viewDefinition = 'Query nodes, from all your repositories or a specific context, using the https://developer.enonic.com/docs/xp/stable/storage/noql or https://developer.enonic.com/docs/xp/stable/storage/filters.';
         const reportDescription = 'Report: Generate a report of the query result.' +
-                                  '<br/>Format "Node as JSON tree": Generate the matching nodes as JSON in a tree structure' +
-                                  '<br/>Format "Node fields as TSV": Generate the fields of the matching nodes in a TSV (Tab-Separated Values) file';
+                                  '\nFormat "Node as JSON tree": Generate the matching nodes as JSON in a tree structure' +
+                                  '\nFormat "Node fields as TSV": Generate the fields of the matching nodes in a TSV (Tab-Separated Values) file';
         new HelpDialog('Search', [viewDefinition, reportDescription]).init().open();
     }
 }

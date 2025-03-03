@@ -26,7 +26,7 @@ class TasksRoute extends DtbRoute {
     createLayout() {
         this.tableCard = new RcdMaterialTableCard('Tasks', {selectable: false})
             .init()
-            .addColumn('Name<br/>Description')
+            .addColumn('Name\nDescription')
             .addColumn('Application', {classes: ['non-mobile-cell']})
             .addColumn('Progress', {classes: ['state-cell']});
         return new RcdMaterialLayout().init()
@@ -49,7 +49,7 @@ class TasksRoute extends DtbRoute {
         this.tableCard.deleteRows();
         tasks.forEach(task => {
             const row = this.tableCard.createRow({selectable: false})
-                .addCell(task.name + '<br/>' + task.description)
+                .addCell(task.name + '\n' + task.description)
                 .addCell(task.application, {classes: ['non-mobile-cell']})
                 .addCell(task.state === 'RUNNING'
                          ? task.progress.info
@@ -70,7 +70,7 @@ class TasksRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Tasks allow the asynchronous execution of jobs. See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/framework/tasks">Tasks</a> for more information.';
+        const definition = 'Tasks allow the asynchronous execution of jobs. See https://developer.enonic.com/docs/xp/stable/framework/tasks for more information.';
         const viewDefinition = 'The view lists in a table all the tasks and their progress';
         new HelpDialog('Tasks', [definition, viewDefinition])
             .init()

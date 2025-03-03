@@ -166,8 +166,8 @@ class ContentsRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Enonic XP data is shipped with an embedded hybrid CMS.<br/>' +
-            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/cms">CMS</a> for more information.';
+        const definition = 'Enonic XP data is shipped with an embedded hybrid CMS.\n' +
+            'See https://developer.enonic.com/docs/xp/stable/cms for more information.';
 
         const viewDefinition = 'This view lists in a table all the contents. Click on a row to display its children.';
 

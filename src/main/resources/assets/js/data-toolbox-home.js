@@ -56,19 +56,19 @@ class HomeRoute extends DtbRoute {
             .then((result) => {
                 this.pathCard.setDetails(result.success.path);
                 this.spaceCard.setDetails(
-                    'Home: \t\t\t' + getSpaceInfo(result.success.home) + '<br/>' +
-                    '|- Config: \t\t' + getSpaceInfo(result.success.config) + '<br/>' +
-                    '|- Data: \t\t\t' + getSpaceInfo(result.success.data) + '<br/>' +
-                    '\t|- Dump: \t' + getSpaceInfo(result.success.dump) + '<br/>' +
-                    '\t|- Export: \t' + getSpaceInfo(result.success.export) + '<br/>' +
-                    '|- Deploy: \t\t' + getSpaceInfo(result.success.deploy) + '<br/>' +
-                    '|- Logs: \t\t\t' + getSpaceInfo(result.success.logs) + '<br/>' +
-                    '|- Repo: \t\t\t' + getSpaceInfo(result.success.repo) + '<br/>' +
-                    '\t|- Index: \t\t' + getSpaceInfo(result.success.index) + '<br/>' +
-                    '\t|- Blob: \t\t' + getSpaceInfo(result.success.blob) + '<br/>' +
-                    '|- Repo: \t\t\t' + getSpaceInfo(result.success.repo) + '<br/>' +
-                    '|- Snapshots: \t' + getSpaceInfo(result.success.snapshots) + '<br/>' +
-                    '|- Work: \t\t\t' + getSpaceInfo(result.success.work) + '<br/>');
+                    'Home: \t\t\t' + getSpaceInfo(result.success.home) + '\n' +
+                    '|- Config: \t\t' + getSpaceInfo(result.success.config) + '\n' +
+                    '|- Data: \t\t\t' + getSpaceInfo(result.success.data) + '\n' +
+                    '\t|- Dump: \t' + getSpaceInfo(result.success.dump) + '\n' +
+                    '\t|- Export: \t' + getSpaceInfo(result.success.export) + '\n' +
+                    '|- Deploy: \t\t' + getSpaceInfo(result.success.deploy) + '\n' +
+                    '|- Logs: \t\t\t' + getSpaceInfo(result.success.logs) + '\n' +
+                    '|- Repo: \t\t\t' + getSpaceInfo(result.success.repo) + '\n' +
+                    '\t|- Index: \t\t' + getSpaceInfo(result.success.index) + '\n' +
+                    '\t|- Blob: \t\t' + getSpaceInfo(result.success.blob) + '\n' +
+                    '|- Repo: \t\t\t' + getSpaceInfo(result.success.repo) + '\n' +
+                    '|- Snapshots: \t' + getSpaceInfo(result.success.snapshots) + '\n' +
+                    '|- Work: \t\t\t' + getSpaceInfo(result.success.work) + '\n');
             })
             .catch(handleRequestError)
             .finally(() => infoDialog.close());

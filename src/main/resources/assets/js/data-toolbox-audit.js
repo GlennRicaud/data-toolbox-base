@@ -56,9 +56,8 @@ class AuditRoute extends DtbRoute {
             .forEach((record) => {
                 this.tableCard.createRow()
                     .addCell(
-                        record.user + ' <b>' + record.action + '</b> ' + record.target + '<br/><a class="">' +
-                        new Date(record.time).toISOString() +
-                        '</a>')
+                        record.user + ' ' + record.action + ' ' + record.target + '\n' +
+                        new Date(record.time).toISOString())
                     .setAttribute('id', record.id);
             });
 

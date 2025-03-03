@@ -291,7 +291,7 @@ public class RcdDumpScriptBean
             public void dumpingBranch( final RepositoryId repositoryId, final Branch branch, final long total )
             {
                 repository = repositoryId.toString();
-                action = "Repository: " + repository + "<br/>" + "Branch: " + branch.toString() + "</br>" + "Dumping nodes";
+                action = "Repository: " + repository + "\n" + "Branch: " + branch.toString() + "</br>" + "Dumping nodes";
                 currentProgress = 0;
                 totalProgress = (int) total;
                 reportProgress( action, currentProgress, totalProgress );
@@ -303,7 +303,7 @@ public class RcdDumpScriptBean
                 currentProgress++;
                 if ( currentProgress == totalProgress )
                 {
-                    action = "Repository: " + repository + "<br/>" + "Dumping versions";
+                    action = "Repository: " + repository + "\n" + "Dumping versions";
                     currentProgress = 0;
                     totalProgress = 0;
                     reportProgress( action, currentProgress, totalProgress );
@@ -341,7 +341,7 @@ public class RcdDumpScriptBean
             public void loadingBranch( final RepositoryId repositoryId, final Branch branch, final Long total )
             {
                 repository = repositoryId.toString();
-                action = "Repository: " + repository + "<br/>" + "Branch: " + branch.toString() + "</br>" + "Loading nodes";
+                action = "Repository: " + repository + "\n" + "Branch: " + branch.toString() + "</br>" + "Loading nodes";
                 currentProgress = 0;
                 totalProgress = total.intValue();
                 reportProgress( action, currentProgress, totalProgress );
@@ -350,7 +350,7 @@ public class RcdDumpScriptBean
             @Override
             public void loadingVersions( final RepositoryId repositoryId )
             {
-                action = "Repository: " + repositoryId.toString() + "<br/>" + "Loading versions";
+                action = "Repository: " + repositoryId.toString() + "\n" + "Loading versions";
                 currentProgress = 0;
                 totalProgress = 0;
                 reportProgress( action, currentProgress, totalProgress );
@@ -359,7 +359,7 @@ public class RcdDumpScriptBean
             @Override
             public void loadingCommits( final RepositoryId repositoryId )
             {
-                action = "Repository: " + repositoryId.toString() + "<br/>" + "Loading commits";
+                action = "Repository: " + repositoryId.toString() + "\n" + "Loading commits";
                 currentProgress = 0;
                 totalProgress = 0;
                 reportProgress( action, currentProgress, totalProgress );

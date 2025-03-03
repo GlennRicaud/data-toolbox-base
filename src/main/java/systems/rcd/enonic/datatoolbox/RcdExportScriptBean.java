@@ -162,7 +162,7 @@ public class RcdExportScriptBean
                 for ( String exportName : exportNames )
                 {
                     final NodeImportListener nodeImportListener =
-                        createNodeImportListener( ( exportNames.length > 1 ? "Export: " + exportName + "<br/>" : "" ) + "Importing nodes" );
+                        createNodeImportListener( ( exportNames.length > 1 ? "Export: " + exportName + "\n" : "" ) + "Importing nodes" );
                     final NodeImportResult nodeImportResult = load( nodePath, exportName, nodeImportListener );
                     final RcdJsonValue result = convertNodeImportResultToJson( nodeImportResult );
                     results.put( exportName, result );

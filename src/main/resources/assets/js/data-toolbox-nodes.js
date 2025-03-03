@@ -392,14 +392,13 @@ class NodesRoute extends DtbRoute {
 
     displayHelp() {
         const definition = 'A Node represents a single storable entity of data. ' +
-            'It can be compared to a row in sql or a document in document oriented storage models.<br/>' +
-            'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#nodes">Nodes</a> for more information. ';
+            'It can be compared to a row in sql or a document in document oriented storage models.\n' +
+            'See https://developer.enonic.com/docs/xp/stable/storage#nodes for more information. ';
 
         const structureDefinition = 'This view represents nodes in a tree structure. ' +
             'While this solution is adapted to repositories like com.enonic.cms.default or system-repo, ' +
             'it may not be suitable for custom repositories or for nodes with too many children. ' +
-            'In these cases, we recommend to use the <a class="rcd-material-link" href="#search">Node Search</a> or the admin tool ' +
-            '<a class="rcd-material-link" href="https://market.enonic.com/vendors/runar-myklebust/repoxplorer">repoXPlorer</a>.';
+            'In these cases, we recommend to use the Node Search or the admin tool repoXPlorer.';
 
         const viewDefinition = 'The view lists in a table all the direct children nodes of the current node (or the root node for a branch). Click on a row to display its children.';
         new HelpDialog('Node Tree', [definition, structureDefinition, viewDefinition]).init()
@@ -427,7 +426,7 @@ class NodesRoute extends DtbRoute {
             .addActionDefinition({
                 iconName: 'filter_list', definition: 'Filter the nodes based on a query expression. ' +
                     'Example: "_id = \'role:system.admin"\'. ' +
-                    'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage/noql">Node Query language</a> for more information.'
+                    'See https://developer.enonic.com/docs/xp/stable/storage/noql for more information.'
             })
             .addActionDefinition({
                 iconName: 'sort',

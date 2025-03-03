@@ -392,9 +392,9 @@ class DtbExportInputDialog extends RcdMaterialInputDialog {
 }
 
 function getTextualSpaceInfo(dirInfo) {
-    return 'Disk space<br/>'
-        + 'Used: \t\t' + getPrettifiedSize(dirInfo.total - dirInfo.usable) + '<br/>'
-        + 'Usable: \t\t' + getPrettifiedSize(dirInfo.usable) + '<br/>'
+    return 'Disk space\n'
+        + 'Used: \t\t' + getPrettifiedSize(dirInfo.total - dirInfo.usable) + '\n'
+        + 'Usable: \t\t' + getPrettifiedSize(dirInfo.usable) + '\n'
         + 'Capacity: \t' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%';
 }
 

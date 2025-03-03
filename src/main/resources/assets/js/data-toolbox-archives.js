@@ -85,10 +85,10 @@ class ArchivesRoute extends DtbRoute {
     }
 
     displayHelp() {
-        const definition = 'Enonic XP data is split into archives, silos where nodes can be stored.<br/>' +
+        const definition = 'Enonic XP data is split into archives, silos where nodes can be stored.\n' +
             'By default 2 archives are present: ' +
             '<b>system-repo</b>, the core archive, containing the IAM data, installed applications, archive settings, ...' +
-            'and <b>com.enonic.cms.default</b>, the CMS archive for the default archive.<br/>' +
+            'and <b>com.enonic.cms.default</b>, the CMS archive for the default archive.\n' +
             'See <a class="rcd-material-link" href="https://developer.enonic.com/docs/xp/stable/storage#archives">Archives</a> for more information.';
 
         const viewDefinition = 'This view lists in a table all the archives. Click on a row to display its branches.';
