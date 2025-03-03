@@ -291,7 +291,7 @@ public class RcdDumpScriptBean
             public void dumpingBranch( final RepositoryId repositoryId, final Branch branch, final long total )
             {
                 repository = repositoryId.toString();
-                action = "Repository: " + repository + "\n" + "Branch: " + branch.toString() + "</br>" + "Dumping nodes";
+                action = "Repository: " + repository + "\n" + "Branch: " + branch.toString() + "\n" + "Dumping nodes";
                 currentProgress = 0;
                 totalProgress = (int) total;
                 reportProgress( action, currentProgress, totalProgress );
@@ -341,7 +341,7 @@ public class RcdDumpScriptBean
             public void loadingBranch( final RepositoryId repositoryId, final Branch branch, final Long total )
             {
                 repository = repositoryId.toString();
-                action = "Repository: " + repository + "\n" + "Branch: " + branch.toString() + "</br>" + "Loading nodes";
+                action = "Repository: " + repository + "\n" + "Branch: " + branch.toString() + "\n" + "Loading nodes";
                 currentProgress = 0;
                 totalProgress = total.intValue();
                 reportProgress( action, currentProgress, totalProgress );
