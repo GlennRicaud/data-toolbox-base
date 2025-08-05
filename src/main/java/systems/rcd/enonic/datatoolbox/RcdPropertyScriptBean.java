@@ -45,7 +45,7 @@ public class RcdPropertyScriptBean
             final RcdJsonArray propertyJsonArray = result.createArray( "hits" );
 
             final Node node = createContext( RepositoryId.from( repositoryName ), Branch.from( branchName ) ).
-                callWith( () -> this.nodeServiceSupplier.get().getByPath( NodePath.create( path ).build() ) );
+                callWith( () -> this.nodeServiceSupplier.get().getByPath( new NodePath( path ) ) );
 
             result.put( "total", 0 );
             if ( node != null )
@@ -89,7 +89,7 @@ public class RcdPropertyScriptBean
                 editableNode.data.setProperty( propertyPath, value );
             };
             final UpdateNodeParams updateNodeParams = UpdateNodeParams.create().
-                path( NodePath.create( path ).build() ).
+                path( new NodePath( path ) ).
                 editor( nodeEditor ).
                 build();
             createContext( RepositoryId.from( repositoryName ), Branch.from( branchName ) ).
@@ -110,7 +110,7 @@ public class RcdPropertyScriptBean
                 parentPropertySet.addProperty( name, value );
             };
             final UpdateNodeParams updateNodeParams = UpdateNodeParams.create().
-                path( NodePath.create( path ).build() ).
+                path( new NodePath( path ) ).
                 editor( nodeEditor ).
                 build();
             createContext( RepositoryId.from( repositoryName ), Branch.from( branchName ) ).
@@ -135,7 +135,7 @@ public class RcdPropertyScriptBean
                 });
             };
             final UpdateNodeParams updateNodeParams = UpdateNodeParams.create().
-                path( NodePath.create( path ).build() ).
+                path( new NodePath( path ) ).
                 editor( nodeEditor ).
                 build();
             createContext( RepositoryId.from( repositoryName ), Branch.from( branchName ) ).
