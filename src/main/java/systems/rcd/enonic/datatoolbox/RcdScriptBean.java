@@ -1,17 +1,5 @@
 package systems.rcd.enonic.datatoolbox;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import systems.rcd.fwk.core.format.json.RcdJsonService;
-import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
-import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
-import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
-
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
@@ -21,6 +9,16 @@ import com.enonic.xp.lib.task.TaskProgressHandler;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import systems.rcd.fwk.core.format.json.RcdJsonService;
+import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
+import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class RcdScriptBean
     implements ScriptBean
@@ -107,7 +105,7 @@ public class RcdScriptBean
 
         result.put( "addedNodeCount", nodeImportResult.getAddedNodes().getSize() );
         result.put( "updatedNodeCount", nodeImportResult.getUpdateNodes().getSize() );
-        result.put( "importedBinaryCount", nodeImportResult.getExportedBinaries().size() );
+        result.put( "importedBinaryCount", nodeImportResult.getImportedBinaries().size() );
         result.put( "errorCount", nodeImportResult.getImportErrors().size() );
 
         final RcdJsonArray addedNodesResult = result.createArray( "addedNodes" );
@@ -117,7 +115,7 @@ public class RcdScriptBean
 
         limitedAddAll( nodeImportResult.getAddedNodes().stream(), addedNodesResult, nodePath -> nodePath.toString() );
         limitedAddAll( nodeImportResult.getUpdateNodes().stream(), updatedNodesResult, nodePath -> nodePath.toString() );
-        limitedAddAll( nodeImportResult.getExportedBinaries().stream(), importedBinariesResult, binary -> (String) binary );
+        limitedAddAll( nodeImportResult.getImportedBinaries().stream(), importedBinariesResult, binary -> (String) binary );
         limitedAddAll( nodeImportResult.getImportErrors().stream(), errorsResult,
                        error -> ( (NodeImportResult.ImportError) error ).getMessage() + " - " +
                            ( (NodeImportResult.ImportError) error ).getException().toString() );
