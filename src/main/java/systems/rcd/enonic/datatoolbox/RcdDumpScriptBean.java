@@ -1,5 +1,25 @@
 package systems.rcd.enonic.datatoolbox;
 
+import com.enonic.xp.branch.Branch;
+import com.enonic.xp.dump.*;
+import com.enonic.xp.export.ExportService;
+import com.enonic.xp.home.HomeDir;
+import com.enonic.xp.repository.RepositoryId;
+import com.enonic.xp.repository.RepositoryService;
+import com.enonic.xp.script.bean.BeanContext;
+import com.enonic.xp.upgrade.UpgradeListener;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import systems.rcd.fwk.core.exc.RcdException;
+import systems.rcd.fwk.core.format.json.RcdJsonService;
+import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
+import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
+import systems.rcd.fwk.core.io.file.RcdFileService;
+import systems.rcd.fwk.core.io.file.RcdTextFileService;
+import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -13,51 +33,6 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-
-import systems.rcd.fwk.core.exc.RcdException;
-import systems.rcd.fwk.core.format.json.RcdJsonService;
-import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
-import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
-import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
-import systems.rcd.fwk.core.format.properties.RcdPropertiesService;
-import systems.rcd.fwk.core.io.file.RcdFileService;
-import systems.rcd.fwk.core.io.file.RcdTextFileService;
-import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
-
-import com.enonic.xp.branch.Branch;
-import com.enonic.xp.dump.BranchDumpResult;
-import com.enonic.xp.dump.BranchLoadResult;
-import com.enonic.xp.dump.DumpError;
-import com.enonic.xp.dump.DumpService;
-import com.enonic.xp.dump.DumpUpgradeResult;
-import com.enonic.xp.dump.LoadError;
-import com.enonic.xp.dump.RepoDumpResult;
-import com.enonic.xp.dump.RepoLoadResult;
-import com.enonic.xp.dump.SystemDumpListener;
-import com.enonic.xp.dump.SystemDumpParams;
-import com.enonic.xp.dump.SystemDumpResult;
-import com.enonic.xp.dump.SystemDumpUpgradeParams;
-import com.enonic.xp.dump.SystemLoadListener;
-import com.enonic.xp.dump.SystemLoadParams;
-import com.enonic.xp.dump.SystemLoadResult;
-import com.enonic.xp.export.ExportService;
-import com.enonic.xp.export.ImportNodesParams;
-import com.enonic.xp.export.NodeImportResult;
-import com.enonic.xp.home.HomeDir;
-import com.enonic.xp.node.NodePath;
-import com.enonic.xp.repository.CreateRepositoryParams;
-import com.enonic.xp.repository.NodeRepositoryService;
-import com.enonic.xp.repository.Repository;
-import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.repository.RepositoryService;
-import com.enonic.xp.script.bean.BeanContext;
-import com.enonic.xp.security.SystemConstants;
-import com.enonic.xp.upgrade.UpgradeListener;
-import com.enonic.xp.vfs.VirtualFiles;
 
 public class RcdDumpScriptBean
     extends RcdDataScriptBean
@@ -139,11 +114,7 @@ public class RcdDumpScriptBean
     {
         try
         {
-            if ( isExportDump( dumpPath ) )
-            {
-                return "export";
-            }
-            else if ( isVersionedDump( dumpPath ) )
+            if ( isVersionedDump( dumpPath ) )
             {
                 return "versioned";
             }
@@ -205,11 +176,6 @@ public class RcdDumpScriptBean
                         modelVersion = getModelVersion( dumpJson, xpVersion );
                     }
                 }
-            }
-            else if ( isExportDump( dumpPath ) )
-            {
-                xpVersion = RcdPropertiesService.read( dumpPath.resolve( "export.properties" ) ).
-                    get( "xp.version" );
             }
             else if ( isVersionedDump( dumpPath ) )
             {
@@ -447,17 +413,8 @@ public class RcdDumpScriptBean
     public String load( final String dumpName )
     {
         return runSafelyNoDependency( () -> {
-            if ( isExportDump( dumpName ) )
-            {
-                final RcdJsonObject result = RcdJsonService.createJsonObject();
-                loadUsingExportService( dumpName, result );
-                return RcdJsonService.toString( createSuccessResult( result ) );
-            }
-            else
-            {
-                final SystemLoadResult systemLoadResult = loadUsingSystemDumpService( dumpName );
-                return convertSystemLoadResultToJson( systemLoadResult );
-            }
+            final SystemLoadResult systemLoadResult = loadUsingSystemDumpService( dumpName );
+            return convertSystemLoadResultToJson( systemLoadResult );
         }, "Error while loading dump" );
     }
 
@@ -481,21 +438,6 @@ public class RcdDumpScriptBean
         result.put( "initialVersion", upgradeResult.getInitialVersion().toString() );
         result.put( "upgradedVersion", upgradeResult.getUpgradedVersion().toString() );
         return result;
-    }
-
-    private boolean isExportDump( final String dumpName )
-    {
-        final Path dumpPath = getDirectoryPath().
-            resolve( dumpName );
-        return isExportDump( dumpPath );
-    }
-
-    private boolean isExportDump( final Path dumpPath )
-    {
-        return dumpPath.
-            resolve( "export.properties" ).
-            toFile().
-            exists();
     }
 
     private boolean isVersionedDump( final Path dumpPath )
@@ -529,23 +471,6 @@ public class RcdDumpScriptBean
         return false;
     }
 
-    private void loadUsingExportService( final String dumpName, final RcdJsonObject result )
-    {
-        final NodeImportResult systemRepoImportResult = importSystemRepo( dumpName );
-        result.createObject( "system" ).
-            put( "master", convertNodeImportResultToJson( systemRepoImportResult ) );
-
-        this.repositoryServiceSupplier.get().invalidateAll();
-        for ( Repository repository : this.repositoryServiceSupplier.get().list() )
-        {
-            initializeRepo( repository );
-            RcdJsonObject repositoryResult = SystemConstants.SYSTEM_REPO.equals( repository )
-                ? (RcdJsonObject) result.get( "system" )
-                : result.createObject( repository.getId().toString() );
-            importRepoBranches( repository, dumpName, repositoryResult );
-        }
-    }
-
     private SystemLoadResult loadUsingSystemDumpService( final String dumpName )
     {
         final Path dumpPath = getDirectoryPath().resolve( dumpName );
@@ -559,56 +484,6 @@ public class RcdDumpScriptBean
             listener( createSystemLoadListener() ).
             build();
         return dumpServiceSupplier.get().load( systemLoadParams );
-    }
-
-    private void initializeRepo( final Repository repository )
-    {
-        if ( !nodeRepositoryServiceSupplier.get().isInitialized( repository.getId() ) )
-        {
-            final CreateRepositoryParams createRepositoryParams = CreateRepositoryParams.create().
-                repositoryId( repository.getId() ).
-                repositorySettings( repository.getSettings() ).
-                build();
-            nodeRepositoryServiceSupplier.get().create( createRepositoryParams );
-        }
-    }
-
-    private NodeImportResult importSystemRepo( final String dumpName )
-    {
-        return importRepoBranch( SystemConstants.SYSTEM_REPO.getId(), SystemConstants.BRANCH_SYSTEM, dumpName );
-    }
-
-    private void importRepoBranches( final Repository repository, final String dumpName, final RcdJsonObject result )
-    {
-        for ( Branch branch : repository.getBranches() )
-        {
-            if ( !isSystemRepoMaster( repository, branch ) )
-            {
-                final NodeImportResult nodeImportResult = importRepoBranch( repository.getId(), branch, dumpName );
-                result.put( branch.getValue(), convertNodeImportResultToJson( nodeImportResult ) );
-            }
-        }
-    }
-
-    private boolean isSystemRepoMaster( final Repository repository, final Branch branch )
-    {
-        return SystemConstants.SYSTEM_REPO.equals( repository ) && SystemConstants.BRANCH_SYSTEM.equals( branch );
-    }
-
-    private NodeImportResult importRepoBranch( final RepositoryId repositoryId, final Branch branch, final String dumpName )
-    {
-        final Path sourcePath = getDirectoryPath().
-            resolve( dumpName ).
-            resolve( repositoryId.toString() ).
-            resolve( branch.getValue() );
-        final ImportNodesParams importNodesParams = ImportNodesParams.create().
-            source( VirtualFiles.from( sourcePath ) ).
-            targetNodePath( NodePath.ROOT ).
-            dryRun( false ).
-            includeNodeIds( true ).
-            includePermissions( true ).
-            build();
-        return createContext( repositoryId, branch ).callWith( () -> exportServiceSupplier.get().importNodes( importNodesParams ) );
     }
 
     private String convertSystemLoadResultToJson( final SystemLoadResult systemLoadResult )
