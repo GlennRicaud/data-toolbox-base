@@ -159,7 +159,7 @@ public class RcdExportScriptBean
                     results.put( exportName, result );
 
                 }
-                if ( SystemConstants.SYSTEM_REPO.getId().toString().equals( repositoryName ) &&
+                if ( SystemConstants.SYSTEM_REPO_ID.toString().equals( repositoryName ) &&
                     SystemConstants.BRANCH_SYSTEM.getValue().equals( branchName ) )
                 {
                     initializeStoredRepositories();
