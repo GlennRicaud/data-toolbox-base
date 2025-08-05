@@ -7,7 +7,10 @@ import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.export.*;
 import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.node.NodePath;
-import com.enonic.xp.repository.*;
+import com.enonic.xp.repository.CreateRepositoryParams;
+import com.enonic.xp.repository.Repository;
+import com.enonic.xp.repository.RepositoryId;
+import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.security.SystemConstants;
 import com.enonic.xp.vfs.VirtualFiles;
@@ -84,8 +87,7 @@ public class RcdExportScriptBean
             final NodeExportListener nodeExportListener = createNodeExportListener();
             final ExportNodesParams exportNodesParams = ExportNodesParams.create().
                 sourceNodePath( new NodePath(nodePath) ).
-                targetDirectory( getDirectoryPath().resolve( exportName ).toString() ).
-                dryRun( false ).
+                exportName( exportName).
                 includeNodeIds( true ).
                 nodeExportListener( nodeExportListener ).
                 build();
@@ -214,7 +216,6 @@ public class RcdExportScriptBean
         final ImportNodesParams importNodesParams = ImportNodesParams.create().
             targetNodePath( nodePath ).
             source( VirtualFiles.from( getDirectoryPath().resolve( exportName ) ) ).
-            dryRun( false ).
             includeNodeIds( true ).
             includePermissions( true ).
             nodeImportListener( nodeImportListener ).
