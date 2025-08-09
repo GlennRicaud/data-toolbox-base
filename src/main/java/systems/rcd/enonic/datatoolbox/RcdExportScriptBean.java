@@ -7,12 +7,8 @@ import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.export.*;
 import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.node.NodePath;
-import com.enonic.xp.repository.CreateRepositoryParams;
-import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.script.bean.BeanContext;
-import com.enonic.xp.security.SystemConstants;
 import com.enonic.xp.vfs.VirtualFiles;
 import systems.rcd.fwk.core.exc.RcdException;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
@@ -30,10 +26,6 @@ public class RcdExportScriptBean
     extends RcdDataScriptBean
 {
     private Supplier<ExportService> exportServiceSupplier;
-
-    private Supplier<RepositoryService> repositoryServiceSupplier;
-
-    private Supplier<NodeRepositoryService> nodeRepositoryServiceSupplier;
 
     private static final Path EXPORT_ARCHIVE_DIRECTORY_PATH;
 
@@ -54,8 +46,6 @@ public class RcdExportScriptBean
     public void initialize( final BeanContext context )
     {
         exportServiceSupplier = context.getService( ExportService.class );
-        repositoryServiceSupplier = context.getService( RepositoryService.class );
-        nodeRepositoryServiceSupplier = context.getService( NodeRepositoryService.class );
     }
 
     public String list()
@@ -159,11 +149,6 @@ public class RcdExportScriptBean
                     results.put( exportName, result );
 
                 }
-                if ( SystemConstants.SYSTEM_REPO_ID.toString().equals( repositoryName ) &&
-                    SystemConstants.BRANCH_SYSTEM.getValue().equals( branchName ) )
-                {
-                    initializeStoredRepositories();
-                }
             } );
 
             return createSuccessResult( results );
@@ -223,22 +208,6 @@ public class RcdExportScriptBean
 
         return exportServiceSupplier.get().
             importNodes( importNodesParams );
-    }
-
-    private void initializeStoredRepositories()
-    {
-        repositoryServiceSupplier.get().invalidateAll();
-        for ( Repository repository : repositoryServiceSupplier.get().list() )
-        {
-            if ( !nodeRepositoryServiceSupplier.get().isInitialized( repository.getId() ) )
-            {
-                final CreateRepositoryParams createRepositoryParams = CreateRepositoryParams.create().
-                    repositoryId( repository.getId() ).
-                    repositorySettings( repository.getSettings() ).
-                    build();
-                nodeRepositoryServiceSupplier.get().create( createRepositoryParams );
-            }
-        }
     }
 
     @Override
