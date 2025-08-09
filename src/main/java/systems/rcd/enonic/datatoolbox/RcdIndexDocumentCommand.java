@@ -1,15 +1,14 @@
 package systems.rcd.enonic.datatoolbox;
 
-import java.util.List;
-
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.node.Node;
-
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
 import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+
+import java.util.List;
 
 public class RcdIndexDocumentCommand
 {
@@ -62,7 +61,7 @@ public class RcdIndexDocumentCommand
             {
                 final RcdJsonArray field = source.createArray( sourceEntry.getKey() );
                 ( (List) fieldValues ).forEach( fieldValue -> {
-                    final String escapedValue = StringEscapeUtils.escapeHtml( fieldValue.toString() );
+                    final String escapedValue = StringEscapeUtils.escapeHtml4( fieldValue.toString() );
                     field.add( escapedValue );
                 } );
             }
