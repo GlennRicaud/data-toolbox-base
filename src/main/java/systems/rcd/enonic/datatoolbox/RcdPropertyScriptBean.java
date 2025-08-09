@@ -1,7 +1,10 @@
 package systems.rcd.enonic.datatoolbox;
 
 import com.enonic.xp.branch.Branch;
-import com.enonic.xp.data.*;
+import com.enonic.xp.data.Property;
+import com.enonic.xp.data.PropertySet;
+import com.enonic.xp.data.Value;
+import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.node.*;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.script.bean.BeanContext;
@@ -83,8 +86,12 @@ public class RcdPropertyScriptBean
                     editableNode.data.removeProperty( propertyPath );
                 }
 
-                final Value value = createValue( type, valueString, parent.getTree() );
-                editableNode.data.setProperty( propertyPath, value );
+                if ("PropertySet".equals( type ) ) {
+                    parent.addSet(property.getName());
+                } else {
+                    final Value value = createValue( type, valueString );
+                    editableNode.data.setProperty( propertyPath, value );
+                }
             };
             final UpdateNodeParams updateNodeParams = UpdateNodeParams.create().
                 path( new NodePath( path ) ).
@@ -104,8 +111,12 @@ public class RcdPropertyScriptBean
             NodeEditor nodeEditor = ( editableNode ) -> {
                 final PropertySet parentPropertySet =
                         parentPath != null ? editableNode.data.getPropertySet( parentPath ) : editableNode.data.getRoot();
-                final Value value = createValue( type, valueString, parentPropertySet.getTree() );
-                parentPropertySet.addProperty( name, value );
+                if ("PropertySet".equals( type ) ) {
+                    parentPropertySet.addSet(name);
+                } else {
+                    final Value value = createValue( type, valueString );
+                    parentPropertySet.addProperty( name, value );
+                }
             };
             final UpdateNodeParams updateNodeParams = UpdateNodeParams.create().
                 path( new NodePath( path ) ).
@@ -143,7 +154,7 @@ public class RcdPropertyScriptBean
         }, "Error while deleting properties" );
     }
 
-    private Value createValue(String type, String value, PropertyTree propertyTree)
+    private Value createValue(String type, String value)
     {
         switch ( type )
         {
@@ -167,8 +178,6 @@ public class RcdPropertyScriptBean
                 return ValueFactory.newLocalTime( LocalTime.parse( value ) );
             case "Long":
                 return ValueFactory.newLong( Long.parseLong( value ) );
-            case "PropertySet":
-                return ValueFactory.newPropertySet( new PropertySet(propertyTree, 0) );
             case "Reference":
                 return ValueFactory.newReference( Reference.from( value ) );
             case "String":
