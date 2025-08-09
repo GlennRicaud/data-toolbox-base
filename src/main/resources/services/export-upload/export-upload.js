@@ -8,9 +8,9 @@ exports.post = function (req) {
 
     const archivePath = bean.upload(fileName, uploadFileStream);
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Exports unarchiving',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Unarchiving exports...'});
             const listener = __.toScriptValue(
                 (count) => {

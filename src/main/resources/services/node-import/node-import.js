@@ -8,9 +8,9 @@ exports.post = function (req) {
     const nodePath = body.nodePath;
     const exportName = body.exportName;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Node import',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Importing nodes...'});
             taskLib.progress({info: bean.load([exportName], repositoryName, branchName, nodePath)});
         }

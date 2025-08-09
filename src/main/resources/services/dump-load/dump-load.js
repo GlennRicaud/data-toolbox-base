@@ -5,9 +5,9 @@ exports.post = function (req) {
     const body = JSON.parse(req.body);
     const dumpName = body.dumpName;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Dump load',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Loading dump...'});
             taskLib.progress({info: bean.load(dumpName)});
         }

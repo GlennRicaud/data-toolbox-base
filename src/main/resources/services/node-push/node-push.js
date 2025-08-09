@@ -11,9 +11,9 @@ exports.post = function (req) {
     const includeDependencies = body.includeDependencies;
     const includeChildren = body.includeChildren;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Node push',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Pushing nodes...'});
             const result = utilLib.runSafely(pushNodes, [repositoryName, branchName, nodeKey, target, includeDependencies, includeChildren], 'Error while pushing nodes')
             taskLib.progress({info: JSON.stringify(result)});

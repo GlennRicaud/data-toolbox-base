@@ -7,9 +7,9 @@ exports.post = function (req) {
     const type = body.type;
     const keys = body.keys;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Principal deletion',
-        task: function () {
+        func: function () {
             taskLib.progress({
                 info: 'Deleting ' + type + 's...',
                 current: 0,

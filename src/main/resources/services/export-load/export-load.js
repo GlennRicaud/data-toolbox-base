@@ -8,9 +8,9 @@ exports.post = function (req) {
     const contentPath = body.contentPath;
     const exportNames = body.exportNames;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Content import',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Importing contents...'});
             taskLib.progress({info: bean.load(exportNames, 'com.enonic.cms.' + cmsRepositoryShortName, branchName, '/content' + (contentPath == '/' ? '' : contentPath))});
         }

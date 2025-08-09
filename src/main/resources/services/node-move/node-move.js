@@ -9,9 +9,9 @@ exports.post = function (req) {
     const sources = body.sources;
     const target = body.target;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Node move',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Moving nodes...'});
             const result = utilLib.runSafely(moveNodes, [repositoryName, branchName, sources, target], 'Error while moving nodes')
             taskLib.progress({info: JSON.stringify(result)});

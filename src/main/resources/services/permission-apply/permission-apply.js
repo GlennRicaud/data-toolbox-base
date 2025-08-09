@@ -10,9 +10,9 @@ exports.post = function (req) {
     const overwriteChildPermissions = body.overwriteChildPermissions;
     const permissions = body.permissions;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Permissions application',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Applying permissions...'});
             taskLib.progress(
                 {info: bean.apply(repositoryName, branchName, nodeId, inheritPermissions, overwriteChildPermissions, permissions)});

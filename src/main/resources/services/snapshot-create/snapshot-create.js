@@ -5,9 +5,9 @@ exports.post = function (req) {
     const body = JSON.parse(req.body);
     const snapshotName = body.snapshotName;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Snapshot creation',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Creating snapshot...'});
             taskLib.progress({info: bean.create(snapshotName)});
         }

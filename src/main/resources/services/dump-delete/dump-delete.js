@@ -4,9 +4,9 @@ exports.post = function (req) {
     const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdDumpScriptBean');
     const dumpNames = JSON.parse(req.body).dumpNames;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Dump deletion',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Deleting dumps (0/' + dumpNames.length + ')...'});
             taskLib.progress({info: bean.delete(dumpNames)});
         }

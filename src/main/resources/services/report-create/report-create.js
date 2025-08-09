@@ -15,9 +15,9 @@ exports.post = function (req) {
     const format = body.format;
     const fields = body.fields;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Report generation',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Querying...'});
             const queryResult = executeQuery(repositoryName, branchName, query, parsedFilters, sort);
             taskLib.progress({

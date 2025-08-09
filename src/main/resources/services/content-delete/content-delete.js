@@ -9,9 +9,9 @@ exports.post = function (req) {
     const branchName = body.branchName || 'draft';
     const keys = body.keys;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Content deletion',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Deleting contents...', current: 0, total: keys.length});
             const result = utilLib.runSafely(deleteContents, [projectId, branchName, keys], 'Error while deleting contents')
             taskLib.progress({info: JSON.stringify(result)});

@@ -9,9 +9,9 @@ exports.post = function (req) {
     const maxVersions = body.maxVersions;
     const maxVersionsAge = body.maxVersionsAge;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Dump creation',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Creating dump...'});
             taskLib.progress({info: bean.create(dumpName, includeVersions, archive, maxVersions || null, maxVersionsAge || null)});
         }

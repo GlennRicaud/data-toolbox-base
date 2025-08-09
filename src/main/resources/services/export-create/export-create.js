@@ -8,9 +8,9 @@ exports.post = function (req) {
     const contentPath = body.contentPath;
     const exportName = body.exportName;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Content export',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Exporting contents...'});
             taskLib.progress({info: bean.create('com.enonic.cms.' + cmsRepositoryShortName, branchName, '/content' + contentPath, exportName)});
         }

@@ -4,9 +4,9 @@ exports.post = function (req) {
     const bean = __.newBean('systems.rcd.enonic.datatoolbox.RcdDumpScriptBean');
     const dumpNames = JSON.parse(req.body).dumpNames;
 
-    const taskId = taskLib.submit({
+    const taskId = taskLib.executeFunction({
         description: 'Dump archiving',
-        task: function () {
+        func: function () {
             taskLib.progress({info: 'Archiving dumps...'});
 
             const listener = __.toScriptValue(
