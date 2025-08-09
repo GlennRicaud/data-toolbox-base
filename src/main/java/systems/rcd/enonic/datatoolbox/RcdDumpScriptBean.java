@@ -2,10 +2,8 @@ package systems.rcd.enonic.datatoolbox;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.dump.*;
-import com.enonic.xp.export.ExportService;
 import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.upgrade.UpgradeListener;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,13 +38,7 @@ public class RcdDumpScriptBean
 
     public static final Pattern DUMP_JSON_ENTRY_NAME_PATTERN = Pattern.compile( "^[^/]+/dump.json$" );
 
-    private Supplier<ExportService> exportServiceSupplier;
-
     private Supplier<DumpService> dumpServiceSupplier;
-
-    private Supplier<RepositoryService> repositoryServiceSupplier;
-
-    private Supplier<NodeRepositoryService> nodeRepositoryServiceSupplier;
 
     private ObjectReader objectReader = new ObjectMapper().reader();
 
@@ -68,10 +60,7 @@ public class RcdDumpScriptBean
     @Override
     public void initialize( final BeanContext context )
     {
-        exportServiceSupplier = context.getService( ExportService.class );
         dumpServiceSupplier = context.getService( DumpService.class );
-        repositoryServiceSupplier = context.getService( RepositoryService.class );
-        nodeRepositoryServiceSupplier = context.getService( NodeRepositoryService.class );
     }
 
     public String list()
