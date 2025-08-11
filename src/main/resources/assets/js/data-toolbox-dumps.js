@@ -249,9 +249,9 @@ class DumpsRoute extends DtbRoute {
         } else {
             new RcdMaterialConfirmationDialog({
                 text: "Before proceeding with the load of a dump, please carefully consider the following points:\n\n" +
-                    "<li><ul>Loading the dump will delete all existing repositories.</ul>" +
-                    "<ul>We highly recommend running a snapshot before proceeding with the dump load. This ensures that you have a recent backup in case the loading does not produce the desired results.</ul>" +
-                    "<ul>After the loading process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.</ul></li>",
+                    "- Loading the dump will delete all existing repositories.\n" +
+                    "- We highly recommend running a snapshot before proceeding with the dump load. This ensures that you have a recent backup in case the loading does not produce the desired results.\n" +
+                    "- After the loading process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.",
                 confirmationLabel: 'LOAD',
                 callback: () => this.doLoadDump(dumpName, dumpType)
             }).init()
