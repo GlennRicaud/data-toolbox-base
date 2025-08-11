@@ -9,7 +9,7 @@ exports.get = () => {
     const body = mustacheLib.render(view, {
         servicesUrl: portalLib.serviceUrl({service: ""}),
         assetsUrl: portalLib.assetUrl({path: ""}),
-        wsUrl: portalLib.url({path: '/admin/event', type: 'absolute'}).replace(/^(http|https)/, 'ws'),
+        wsUrl: portalLib.url({path: '/admin/com.enonic.xp.app.applications/main/_/admin:event', type: 'absolute'}).replace(/^(http|https)/, 'ws'),
         xpVersion: xpVersion,
         appName : app.name
     });
