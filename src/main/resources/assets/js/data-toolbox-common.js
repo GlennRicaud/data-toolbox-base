@@ -399,6 +399,9 @@ function getTextualSpaceInfo(dirInfo) {
 }
 
 function getSpaceInfo(dirInfo) {
+    if (dirInfo.total === 0) {
+        return 'No disk space information available';
+    }
     return getPrettifiedSize(dirInfo.usable) +' / ' + getPrettifiedSize(dirInfo.total) + ' (' + (100 * dirInfo.usable / dirInfo.total).toFixed(1) + '%)';
 }
 
