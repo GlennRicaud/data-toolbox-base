@@ -1,29 +1,22 @@
 package systems.rcd.enonic.datatoolbox;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import systems.rcd.fwk.core.format.json.RcdJsonService;
-import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
-import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
-
-import com.enonic.xp.blob.NodeVersionKey;
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
 import com.enonic.xp.context.Context;
-import com.enonic.xp.node.GetActiveNodeVersionsParams;
-import com.enonic.xp.node.NodeId;
-import com.enonic.xp.node.NodeService;
-import com.enonic.xp.node.NodeVersionId;
-import com.enonic.xp.node.NodeVersionQuery;
-import com.enonic.xp.node.NodeVersionQueryResult;
+import com.enonic.xp.node.*;
 import com.enonic.xp.query.expr.FieldOrderExpr;
 import com.enonic.xp.query.expr.OrderExpr;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.script.bean.BeanContext;
+import systems.rcd.fwk.core.format.json.RcdJsonService;
+import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
+import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class RcdVersionScriptBean
     extends RcdScriptBean
@@ -74,7 +67,7 @@ public class RcdVersionScriptBean
             final RcdJsonArray branchJsonArray = result.createArray( "branches" );
             branches.forEach( branch -> branchJsonArray.add( branch.getValue() ) );
             final RcdJsonArray hits = result.createArray( "hits" );
-            versionQueryResult.getNodeVersionsMetadata().forEach( nodeVersionMetadata -> {
+            versionQueryResult.getNodeVersionMetadatas().forEach( nodeVersionMetadata -> {
                 final NodeVersionKey nodeVersionKey = nodeVersionMetadata.getNodeVersionKey();
                 final RcdJsonObject nodeVersion = hits.createObject().
                     put( "versionId", nodeVersionMetadata.getNodeVersionId().toString() ).
