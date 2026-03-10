@@ -57,7 +57,7 @@ public class RcdExportScriptBean
             if ( exportDirectoryPath.toFile().exists() )
             {
                 RcdFileService.listSubPaths( exportDirectoryPath, exportPath -> {
-                    if ( exportPath.toFile().isDirectory() )
+                    if ( isArchived(exportPath) )
                     {
                         final RcdJsonObject export = RcdJsonService.createJsonObject().
                             put( "name", exportPath.getFileName().toString() ).
