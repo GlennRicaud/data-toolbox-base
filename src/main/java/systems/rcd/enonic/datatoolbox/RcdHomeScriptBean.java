@@ -17,7 +17,7 @@ public class RcdHomeScriptBean
             addSpaceInfo(info, "home", null);
             addSpaceInfo(info, "config", "config");
             addSpaceInfo(info, "data", "data");
-            addSpaceInfo(info, "dump", "data/dumps");
+            addSpaceInfo(info, "dump", "data/dump");
             addSpaceInfo(info, "export", "data/export");
             addSpaceInfo(info, "deploy", "deploy");
             addSpaceInfo(info, "logs", "logs");
