@@ -538,7 +538,7 @@ public class RcdDumpScriptBean
         return HomeDir.get().
             toFile().
             toPath().
-            resolve( "data/dumps" );
+            resolve( "data/dump" );
     }
 
     @Override
