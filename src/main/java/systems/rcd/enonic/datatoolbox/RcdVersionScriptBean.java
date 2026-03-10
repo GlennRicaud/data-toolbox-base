@@ -67,7 +67,7 @@ public class RcdVersionScriptBean
             final RcdJsonArray branchJsonArray = result.createArray( "branches" );
             branches.forEach( branch -> branchJsonArray.add( branch.getValue() ) );
             final RcdJsonArray hits = result.createArray( "hits" );
-            versionQueryResult.getNodeVersionMetadatas().forEach( nodeVersionMetadata -> {
+            versionQueryResult.getNodeVersions().forEach( nodeVersionMetadata -> {
                 final NodeVersionKey nodeVersionKey = nodeVersionMetadata.getNodeVersionKey();
                 final RcdJsonObject nodeVersion = hits.createObject().
                     put( "versionId", nodeVersionMetadata.getNodeVersionId().toString() ).
