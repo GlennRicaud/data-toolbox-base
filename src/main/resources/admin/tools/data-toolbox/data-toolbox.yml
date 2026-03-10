@@ -1,0 +1,4 @@
+displayName: "Data toolbox"
+description: "Visualize and manage your data"
+allow:
+- "role:system.admin"

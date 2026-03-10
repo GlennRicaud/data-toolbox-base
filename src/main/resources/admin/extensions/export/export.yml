@@ -1,0 +1,6 @@
+displayName: "Data Toolbox - Exports"
+description: "Manage your content exports"
+allow:
+- "role:system.admin"
+interfaces:
+- "contentstudio.contextpanel"
