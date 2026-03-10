@@ -78,7 +78,6 @@ public class RcdExportScriptBean
             final ExportNodesParams exportNodesParams = ExportNodesParams.create().
                 sourceNodePath( new NodePath(nodePath) ).
                 exportName( exportName).
-                includeNodeIds( true ).
                 nodeExportListener( nodeExportListener ).
                 build();
 
@@ -100,14 +99,14 @@ public class RcdExportScriptBean
             private int totalProgress = 0;
 
             @Override
-            public void nodeExported( final long count )
+            public void nodeExported( final int count )
             {
                 currentProgress += count;
                 reportProgress( action, currentProgress, totalProgress );
             }
 
             @Override
-            public void nodeResolved( final long count )
+            public void nodeResolved( final int count )
             {
                 totalProgress = (int) count;
                 reportProgress( action, currentProgress, totalProgress );
@@ -166,17 +165,23 @@ public class RcdExportScriptBean
             private int totalProgress = 0;
 
             @Override
-            public void nodeImported( final long count )
+            public void nodeImported( final int count )
             {
                 currentProgress += count;
                 reportProgress( action, currentProgress, totalProgress );
             }
 
             @Override
-            public void nodeResolved( final long count )
+            public void nodeResolved( final int count )
             {
                 currentProgress = 0;
-                totalProgress = (int) count;
+                totalProgress = count;
+                reportProgress( action, currentProgress, totalProgress );
+            }
+
+            @Override
+            public void nodeSkipped( final int count) {
+                currentProgress += count;
                 reportProgress( action, currentProgress, totalProgress );
             }
         };
