@@ -100,17 +100,15 @@ class ExportsRoute extends DtbRoute {
 
     doUploadExports() {
         const progressIndicator = new RcdLinearProgressIndicator({width: 240, height: 8}).init();
-        const infoDialog = showLongInfoDialog("Uploading exports...").addClass('dt-progress-info-dialog').addItem(progressIndicator);
+        const infoDialog = showLongInfoDialog("Uploading export...").addClass('dt-progress-info-dialog').addItem(progressIndicator);
         const formData = new FormData(this.uploadForm.domElement);
-        requestPostXMLHttp(config.servicesUrl + '/export-upload', formData, {
+        requestPostXMLHttp(config.servicesUrl + '/export-directupload', formData, {
             uploadProgress: (event) => progressIndicator.setProgress(event.loaded / event.total),
-            callback: (result) => handleTaskCreation(result, {
-                taskId: result.taskId,
-                message: 'Uploading exports...',
-                doneCallback: () => displaySuccess('Export(s) uploaded'),
-                alwaysCallback: () => this.retrieveExports()
-            }),
-            onloadend: () => infoDialog.close(),
+            callback: () => displaySuccess('Export uploaded'),
+            onloadend: () => {
+                this.retrieveExports();
+                infoDialog.close();
+            },
         });
     }
 
