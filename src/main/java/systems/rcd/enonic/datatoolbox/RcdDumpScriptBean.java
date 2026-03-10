@@ -15,8 +15,6 @@ import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
 import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
 import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
 import systems.rcd.fwk.core.io.file.RcdFileService;
-import systems.rcd.fwk.core.io.file.RcdTextFileService;
-import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -72,9 +70,8 @@ public class RcdDumpScriptBean
             {
                 RcdFileService.listSubPaths( dumpDirectoryPath, dumpPath -> {
                     final File dumpFile = dumpPath.toFile();
-                    final boolean isDirectory = dumpFile.isDirectory();
                     final boolean isArchived = isArchivedDump( dumpFile );
-                    if ( isDirectory || isArchived )
+                    if ( isArchived )
                     {
                         final DumpInfo dumpInfo = getDumpInfo( dumpPath );
                         final String dumpType = getDumpType( dumpPath );
@@ -103,11 +100,7 @@ public class RcdDumpScriptBean
     {
         try
         {
-            if ( isVersionedDump( dumpPath ) )
-            {
-                return "versioned";
-            }
-            else if ( isArchivedDump( dumpPath ) )
+            if ( isArchivedDump( dumpPath ) )
             {
                 return "archived";
             }
@@ -166,18 +159,6 @@ public class RcdDumpScriptBean
                     }
                 }
             }
-            else if ( isVersionedDump( dumpPath ) )
-            {
-                final StringBuilder dumpJsonContent = new StringBuilder();
-                RcdTextFileService.read( RcdReadTextFileParams.newBuilder().
-                    path( dumpPath.resolve( "dump.json" ) ).
-                    contentConsumer( dumpJsonContent::append ).
-                    build() );
-
-                final JsonNode dumpJson = objectReader.readTree( dumpJsonContent.toString() );
-                xpVersion = dumpJson.get( "xpVersion" ).asText();
-                modelVersion = getModelVersion( dumpJson, xpVersion );
-            }
         }
         catch ( Exception e )
         {
@@ -211,7 +192,6 @@ public class RcdDumpScriptBean
                 dumpName( dumpName ).
                 includeBinaries( true ).
                 includeVersions( includeVersion ).
-                archive( archive ).
                 maxAge( maxVersionsAge ).
                 maxVersions( maxVersions ).
                 listener( createSystemDumpListener() ).
@@ -429,14 +409,6 @@ public class RcdDumpScriptBean
         return result;
     }
 
-    private boolean isVersionedDump( final Path dumpPath )
-    {
-        return dumpPath.
-            resolve( "dump.json" ).
-            toFile().
-            exists();
-    }
-
     private boolean isArchivedDump( final Path dumpPath )
     {
         return isArchivedDump( dumpPath.toFile() );
@@ -463,13 +435,12 @@ public class RcdDumpScriptBean
     private SystemLoadResult loadUsingSystemDumpService( final String dumpName )
     {
         final Path dumpPath = getDirectoryPath().resolve( dumpName );
-        final boolean archivedDump = isArchivedDump( dumpPath );
+        final boolean archivedDump = isArchivedDump( dumpPath ); //Should always be true starting from XP 8.0
         final String dumpNameRoot = archivedDump ? dumpName.substring( 0, dumpName.length() - ".zip".length() ) : dumpName;
 
         final SystemLoadParams systemLoadParams = SystemLoadParams.create().
             dumpName( dumpNameRoot ).
             includeVersions( true ).
-            archive( archivedDump ).
             listener( createSystemLoadListener() ).
             build();
         return dumpServiceSupplier.get().load( systemLoadParams );
