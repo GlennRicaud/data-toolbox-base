@@ -10,7 +10,6 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
                 params.callback({
                     name: value || params.defaultValue,
                     includeVersions: this.includeVersionsField.isSelected(),
-                    archive: this.archiveField.isSelected(),
                     maxVersions: this.includeVersionsField.isSelected() && this.maxVersionsField.getValue()
                                  ? Number(this.maxVersionsField.getValue()) : undefined,
                     maxVersionsAge: this.includeVersionsField.isSelected() && this.maxVersionsAgeField.getValue()
@@ -30,14 +29,6 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
             }
         }).init();
 
-        this.archiveField = new DtbCheckboxField({
-            label: 'Archive system dump',
-            callback: () => {
-                const archive = !this.archiveField.isSelected();
-                this.archiveField.select(archive);
-            }
-        }).init();
-
         this.maxVersionsField = new RcdMaterialTextField('', 'Max. number of versions (opt.)')
             .init()
             .setPattern('[0-9]*')
@@ -54,7 +45,6 @@ class DtbDumpInputDialog extends RcdMaterialInputDialog {
     init() {
         return super.init()
             .addItem(this.includeVersionsField)
-            .addItem(this.archiveField)
             .addItem(this.spaceField)
     }
 

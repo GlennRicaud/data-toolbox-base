@@ -184,7 +184,7 @@ public class RcdDumpScriptBean
         return null;
     }
 
-    public String create( final String dumpName, final boolean includeVersion, final boolean archive, final Integer maxVersions,
+    public String create( final String dumpName, final boolean includeVersion, final Integer maxVersions,
                           final Integer maxVersionsAge )
     {
         return runSafely( () -> {

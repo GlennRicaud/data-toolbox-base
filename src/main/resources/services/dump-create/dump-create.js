@@ -5,7 +5,6 @@ exports.post = function (req) {
     const body = JSON.parse(req.body);
     const dumpName = body.dumpName;
     const includeVersions = body.includeVersions;
-    const archive = body.archive;
     const maxVersions = body.maxVersions;
     const maxVersionsAge = body.maxVersionsAge;
 
@@ -13,7 +12,7 @@ exports.post = function (req) {
         description: 'Dump creation',
         func: function () {
             taskLib.progress({info: 'Creating dump...'});
-            taskLib.progress({info: bean.create(dumpName, includeVersions, archive, maxVersions || null, maxVersionsAge || null)});
+            taskLib.progress({info: bean.create(dumpName, includeVersions, maxVersions || null, maxVersionsAge || null)});
         }
     });
 
