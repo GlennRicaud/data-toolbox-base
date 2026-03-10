@@ -22,7 +22,7 @@ class ExportsRoute extends DtbRoute {
         this.tableCard = new RcdMaterialTableCard('Node exports').init().addColumn('Export name').addColumn('Timestamp',
             {classes: ['non-mobile-cell']}).addIconArea(new RcdGoogleMaterialIconArea('file_download',
             () => this.dowloadExports()).init().setTooltip('Archive and download selected node exports'),
-            {min: 1}).addIconArea(
+            {min: 1, max: 1}).addIconArea(
             new RcdGoogleMaterialIconArea('file_upload', () => this.uploadExports()).init().setTooltip('Upload and unarchive node exports',
                 RcdMaterialTooltipAlignment.RIGHT), {max: 0}).addIconArea(
             new RcdGoogleMaterialIconArea('delete', () => this.deleteExports()).init().setTooltip('Delete selected node exports',
@@ -65,29 +65,27 @@ class ExportsRoute extends DtbRoute {
     }
 
     dowloadExports() {
-        const exportNames = this.tableCard.getSelectedRows().map((row) => row.attributes['export']);
-        const infoDialog = showLongInfoDialog("Archiving exports...");
-        requestPostJson(config.servicesUrl + '/export-archive', {
-            data: {exportNames: exportNames}
-        })
-            .then((result) => handleTaskCreation(result, {
-                taskId: result.taskId,
-                message: 'Archiving exports...',
-                doneCallback: (success) => {
-                    const archiveNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
-                        'archiveName').setAttribute('value', success);
-                    const fileNameInput = new RcdInputElement().init().setAttribute('type', 'hidden').setAttribute('name',
-                        'fileName').setAttribute('value', (exportNames.length == 1 ? exportNames[0] : "export-download") + '.zip');
-                    const downloadForm = new RcdFormElement().init().setAttribute('action', config.servicesUrl +
-                                                                                            '/export-download').setAttribute('method',
-                        'post').addChild(archiveNameInput).addChild(fileNameInput);
-                    document.body.appendChild(downloadForm.domElement);
-                    downloadForm.submit();
-                    document.body.removeChild(downloadForm.domElement);
-                }
-            }))
-            .catch(handleRequestError)
-            .finally(() => infoDialog.close());
+        const exportName = this.tableCard.getSelectedRows().map((row) => row.attributes['export'])[0];
+        this.directDownloadExport(exportName)
+    }
+
+    directDownloadExport(exportName) {
+        const archiveNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'archiveName')
+            .setAttribute('value', exportName);
+        const fileNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'fileName')
+            .setAttribute('value', exportName);
+        const downloadForm = new RcdFormElement().init()
+            .setAttribute('action', config.servicesUrl + '/export-directdownload')
+            .setAttribute('method', 'post')
+            .addChild(archiveNameInput)
+            .addChild(fileNameInput);
+        document.body.appendChild(downloadForm.domElement);
+        downloadForm.submit();
+        document.body.removeChild(downloadForm.domElement);
     }
 
     uploadExports() {

@@ -291,7 +291,7 @@ class DumpsRoute extends DtbRoute {
         if (dumpInfo.type === 'archived') {
             this.directDownloadDump(dumpInfo);
         } else {
-            this.archiveAndDownloadDump(dumpInfo);
+            // this.archiveAndDownloadDump(dumpInfo); //Not supported anymore
         }
     }
 
