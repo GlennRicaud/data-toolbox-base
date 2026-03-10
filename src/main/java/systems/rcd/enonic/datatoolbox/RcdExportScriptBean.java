@@ -9,7 +9,6 @@ import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.script.bean.BeanContext;
-import com.enonic.xp.vfs.VirtualFiles;
 import systems.rcd.fwk.core.exc.RcdException;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
@@ -203,9 +202,11 @@ public class RcdExportScriptBean
 
     private NodeImportResult load( final NodePath nodePath, final String exportName, final NodeImportListener nodeImportListener )
     {
+        final String exportNameRoot = exportName.substring( 0, exportName.length() - ".zip".length() );
+
         final ImportNodesParams importNodesParams = ImportNodesParams.create().
             targetNodePath( nodePath ).
-            source( VirtualFiles.from( getDirectoryPath().resolve( exportName ) ) ).
+            exportName( exportNameRoot ).
             includeNodeIds( true ).
             includePermissions( true ).
             nodeImportListener( nodeImportListener ).
