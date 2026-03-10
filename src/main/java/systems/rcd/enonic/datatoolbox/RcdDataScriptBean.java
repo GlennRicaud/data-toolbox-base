@@ -1,5 +1,12 @@
 package systems.rcd.enonic.datatoolbox;
 
+import com.enonic.xp.script.ScriptValue;
+import com.google.common.io.ByteSource;
+import systems.rcd.fwk.core.exc.RcdException;
+import systems.rcd.fwk.core.format.json.RcdJsonService;
+import systems.rcd.fwk.core.format.json.data.RcdJsonString;
+import systems.rcd.fwk.core.util.zip.RcdZipService;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,14 +16,6 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
-
-import com.enonic.xp.script.ScriptValue;
-import com.google.common.io.ByteSource;
-
-import systems.rcd.fwk.core.exc.RcdException;
-import systems.rcd.fwk.core.format.json.RcdJsonService;
-import systems.rcd.fwk.core.format.json.data.RcdJsonString;
-import systems.rcd.fwk.core.util.zip.RcdZipService;
 
 public abstract class RcdDataScriptBean
     extends RcdScriptBean
@@ -138,5 +137,28 @@ public abstract class RcdDataScriptBean
     protected String getCamelType()
     {
         return Character.toUpperCase( getType().charAt( 0 ) ) + getType().substring( 1 );
+    }
+
+    protected boolean isArchived( final Path path )
+    {
+        return isArchived( path.toFile() );
+    }
+
+    protected boolean isArchived( final File file )
+    {
+        if ( file.isFile() )
+        {
+            final String dumpName = file.getName();
+            final int extensionIndex = dumpName.lastIndexOf( '.' );
+            if ( extensionIndex != -1 )
+            {
+                final String extension = dumpName.substring( extensionIndex + 1 );
+                if ( "zip".equalsIgnoreCase( extension ) )
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

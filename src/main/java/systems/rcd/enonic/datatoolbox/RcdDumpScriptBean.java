@@ -70,7 +70,7 @@ public class RcdDumpScriptBean
             {
                 RcdFileService.listSubPaths( dumpDirectoryPath, dumpPath -> {
                     final File dumpFile = dumpPath.toFile();
-                    final boolean isArchived = isArchivedDump( dumpFile );
+                    final boolean isArchived = isArchived( dumpFile );
                     if ( isArchived )
                     {
                         final DumpInfo dumpInfo = getDumpInfo( dumpPath );
@@ -100,7 +100,7 @@ public class RcdDumpScriptBean
     {
         try
         {
-            if ( isArchivedDump( dumpPath ) )
+            if ( isArchived( dumpPath ) )
             {
                 return "archived";
             }
@@ -119,7 +119,7 @@ public class RcdDumpScriptBean
         long size = -1;
         try
         {
-            if ( isArchivedDump( dumpPath ) )
+            if ( isArchived( dumpPath ) )
             {
                 final File dumpFile = dumpPath.toFile();
                 size = dumpFile.length();
@@ -409,33 +409,12 @@ public class RcdDumpScriptBean
         return result;
     }
 
-    private boolean isArchivedDump( final Path dumpPath )
-    {
-        return isArchivedDump( dumpPath.toFile() );
-    }
 
-    private boolean isArchivedDump( final File dumpFile )
-    {
-        if ( dumpFile.isFile() )
-        {
-            final String dumpName = dumpFile.getName();
-            final int extensionIndex = dumpName.lastIndexOf( '.' );
-            if ( extensionIndex != -1 )
-            {
-                final String extension = dumpName.substring( extensionIndex + 1 );
-                if ( "zip".equalsIgnoreCase( extension ) )
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     private SystemLoadResult loadUsingSystemDumpService( final String dumpName )
     {
         final Path dumpPath = getDirectoryPath().resolve( dumpName );
-        final boolean archivedDump = isArchivedDump( dumpPath ); //Should always be true starting from XP 8.0
+        final boolean archivedDump = isArchived( dumpPath ); //Should always be true starting from XP 8.0
         final String dumpNameRoot = archivedDump ? dumpName.substring( 0, dumpName.length() - ".zip".length() ) : dumpName;
 
         final SystemLoadParams systemLoadParams = SystemLoadParams.create().
