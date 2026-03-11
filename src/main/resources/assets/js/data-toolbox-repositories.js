@@ -146,6 +146,7 @@ class RepositoriesRoute extends DtbRoute {
 
         new HelpDialog('Repositories', [definition, viewDefinition]).init()
             .addActionDefinition({iconName: 'add_circle', definition: 'Create a repository with default settings'})
+            .addActionDefinition({iconSrc: config.assetsUrl + '/icons/dump.svg', definition: 'Dump the selected repository.'})
             .addActionDefinition({iconName: 'delete', definition: 'Delete the selected repositories.'})
             .open();
     }
