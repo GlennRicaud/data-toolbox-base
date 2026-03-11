@@ -4,6 +4,7 @@ import com.enonic.xp.branch.Branch;
 import com.enonic.xp.dump.*;
 import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.repository.RepositoryId;
+import com.enonic.xp.repository.RepositoryIds;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.upgrade.UpgradeListener;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -185,19 +186,21 @@ public class RcdDumpScriptBean
     }
 
     public String create( final String dumpName, final boolean includeVersion, final Integer maxVersions,
-                          final Integer maxVersionsAge )
+                          final Integer maxVersionsAge, final String repositoryId )
     {
         return runSafely( () -> {
-            final SystemDumpParams params = SystemDumpParams.create().
+            final SystemDumpParams.Builder params = SystemDumpParams.create().
                 dumpName( dumpName ).
                 includeBinaries( true ).
                 includeVersions( includeVersion ).
                 maxAge( maxVersionsAge ).
                 maxVersions( maxVersions ).
-                listener( createSystemDumpListener() ).
-                build();
+                listener( createSystemDumpListener() );
+            if (repositoryId != null) {
+                params.repositories( RepositoryIds.from( repositoryId ) );
+            }
 
-            final SystemDumpResult systemDumpResult = dumpServiceSupplier.get().dump( params );
+            final SystemDumpResult systemDumpResult = dumpServiceSupplier.get().dump( params.build() );
             final RcdJsonValue result = convertSystemDumpResultToJson( systemDumpResult );
             return createSuccessResult( result );
         }, "Error while creating dump" );

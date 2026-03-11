@@ -19,12 +19,19 @@ class RepositoriesRoute extends DtbRoute {
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Repositories').init().addColumn('Repository name').addIconArea(
-            new RcdGoogleMaterialIconArea('add_circle', () => this.createRepository()).setTooltip('Create a repository',
-                RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0}).addIconArea(
-            new RcdGoogleMaterialIconArea('delete', () => this.deleteRepositories()).init().setTooltip('Delete selected repositories',
-                RcdMaterialTooltipAlignment.RIGHT),
-            {min: 1});
+        this.tableCard = new RcdMaterialTableCard('Repositories')
+            .init()
+            .addColumn('Repository name')
+            .addIconArea(
+                new RcdGoogleMaterialIconArea('add_circle', () => this.createRepository()).setTooltip('Create a repository',
+                    RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
+            .addIconArea(
+                new RcdImageIconArea(config.assetsUrl + '/icons/dump.svg', () => this.dumpRepository()).init().setTooltip('Dump selected repository'),
+                {min: 1, max: 1})
+            .addIconArea(
+                new RcdGoogleMaterialIconArea('delete', () => this.deleteRepositories()).init().setTooltip('Delete selected repositories',
+                    RcdMaterialTooltipAlignment.RIGHT),
+                {min: 1});
         return new RcdMaterialLayout().init().addChild(this.tableCard);
     }
 
@@ -71,6 +78,45 @@ class RepositoriesRoute extends DtbRoute {
             });
     }
 
+    dumpRepository() {
+        const infoDialog = showShortInfoDialog('Retrieving home information...');
+        return requestJson(config.servicesUrl + '/home')
+            .then((result) => {
+                const repositoryName = this.tableCard.getSelectedRows().map((row) => row.attributes['repository'])[0];
+                const defaultDumpName = repositoryName + '-' + toLocalDateTimeFormat(new Date(), '-', '-');
+                new DtbDumpInputDialog({
+                    defaultValue: defaultDumpName,
+                    dirInfo: result.success.dump,
+                    callback: (value) => this.doDumpRepository(value, repositoryName)
+                }).init().open();
+
+            })
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+
+    doDumpRepository(params, repositoryName) {
+        const infoDialog = showLongInfoDialog('Creating dump...');
+        requestPostJson(config.servicesUrl + '/dump-create', {
+            data: {
+                dumpName: params.name || ('dump-' + toLocalDateTimeFormat(new Date(), '-', '-')),
+                includeVersions: params.includeVersions,
+                archive: params.archive,
+                maxVersions: params.maxVersions,
+                maxVersionsAge: params.maxVersionsAge,
+                repositoryName: repositoryName
+            }
+        })
+            .then((result) => handleTaskCreation(result, {
+                taskId: result.taskId,
+                message: 'Creating dump...',
+                doneCallback: (success) => new DumpResultDialog(success).init().open(),
+                alwaysCallback: () => this.retrieveDumps()
+            }))
+            .catch(handleRequestError)
+            .finally(() => infoDialog.close());
+    }
+
     deleteRepositories() {
         showConfirmationDialog("Delete selected repositories?", 'DELETE', () => this.doDeleteRepositories());
     }
@@ -91,10 +137,10 @@ class RepositoriesRoute extends DtbRoute {
 
     displayHelp() {
         const definition = 'Enonic XP data is split into repositories, silos where nodes can be stored.\n' +
-                           'By default 2 repositories are present: ' +
-                           'system-repo, the core repository, containing the IAM data, installed applications, repository settings, ...' +
-                           'and com.enonic.cms.default, the CMS repository for the default project.\n' +
-                           'See https://developer.enonic.com/docs/xp/stable/storage#repositories for more information.';
+            'By default 2 repositories are present: ' +
+            'system-repo, the core repository, containing the IAM data, installed applications, repository settings, ...' +
+            'and com.enonic.cms.default, the CMS repository for the default project.\n' +
+            'See https://developer.enonic.com/docs/xp/stable/storage#repositories for more information.';
 
         const viewDefinition = 'This view lists in a table all the repositories. Click on a row to display its branches.';
 

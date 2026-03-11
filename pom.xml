@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>4.0.0-B4</version>
+  <version>4.0.0-SNAP</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
