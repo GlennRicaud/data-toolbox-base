@@ -49,9 +49,9 @@ function createPresentationRoute() {
     }).init();
     const dumpsViewSummary = new ViewSummary({
         state: 'dumps',
-        name: 'System dumps',
+        name: 'Dumps',
         iconFileName: 'dumps.svg',
-        text: 'Generate and manage your system dumps.'
+        text: 'Generate and manage your system/repository dumps.'
     }).init();
     const searchViewSummary = new ViewSummary({
         state: 'search',
