@@ -89,7 +89,7 @@ class DumpsRoute extends DtbRoute {
     createLayout() {
         this.tableCard = new RcdMaterialTableCard('Dumps')
             .init()
-            .addColumn('Dump name')
+            .addColumn('Name\nType')
             .addColumn('Timestamp\nSize', {classes: ['non-mobile-cell']})
             .addColumn('Model Version\nCreator (XP Version)', {classes: ['non-mobile-cell', 'version-cell']})
             .addIconArea(new RcdGoogleMaterialIconArea('add_circle', () => this.createDump())
@@ -136,7 +136,7 @@ class DumpsRoute extends DtbRoute {
                 result.success.sort((dump1, dump2) => dump2.timestamp - dump1.timestamp)
                     .forEach((dump) => {
                         this.tableCard.createRow()
-                            .addCell(dump.name)
+                            .addCell(dump.name + '\n' + 'TODO')
                             .addCell(toLocalDateTimeFormat(new Date(dump.timestamp))
                                      + (dump.size >= 0 ? '\n' + toHumanReadableSize(dump.size) : ''),
                                 {classes: ['non-mobile-cell']})
