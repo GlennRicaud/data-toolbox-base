@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -197,7 +198,7 @@ public class RcdDumpScriptBean
                 maxVersions( maxVersions ).
                 listener( createSystemDumpListener() );
             if (repositoryId != null) {
-                params.repositories( RepositoryIds.from( repositoryId ) );
+                params.repositories( RepositoryIds.from(Collections.singleton(repositoryId) ) );
             }
 
             final SystemDumpResult systemDumpResult = dumpServiceSupplier.get().dump( params.build() );
