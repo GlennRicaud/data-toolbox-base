@@ -53,7 +53,7 @@
                     defaultValue: defaultExportName,
                     dirInfo: result.success.export,
                     callback: (value) => doCreateExport(value || defaultExportName)
-                }).init().open();
+                }).init().open(exportWidgetContainer);
 
             })
             .catch(handleRequestError)
@@ -73,7 +73,7 @@
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Exporting content...',
-                doneCallback: (success) => new ExportResultDialog(success, 'content').init().open(),
+                doneCallback: (success) => new ExportResultDialog(success, 'content').init().open(exportWidgetContainer),
                 alwaysCallback: () => retrieveExports()
             }))
             .catch(handleRequestError)
@@ -105,7 +105,7 @@
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,
                 message: 'Importing contents...',
-                doneCallback: (success) => new ImportResultDialog(exportNames, success, 'content').init().open(),
+                doneCallback: (success) => new ImportResultDialog(exportNames, success, 'content').init().open(exportWidgetContainer),
                 alwaysCallback: () => retrieveExports()
             }))
             .catch(handleRequestError)
@@ -201,7 +201,7 @@
                         '(at the root if no value is specified).'
         }).addActionDefinition(
             {iconName: 'file_download', definition: 'Zip the selected exports and download the archive'}).addActionDefinition(
-            {iconName: 'delete', definition: 'Delete the selected exports.'}).open();
+            {iconName: 'delete', definition: 'Delete the selected exports.'}).open(exportWidgetContainer);
     }
 
     function requestPostJson(url, params) {
@@ -254,7 +254,7 @@
     }
 
     function showLongInfoDialog(text) {
-        return new RcdMaterialInfoDialog({text: text, overlay: true}).init().open();
+        return new RcdMaterialInfoDialog({text: text, overlay: true}).init().open(exportWidgetContainer);
     }
 
     function showShortInfoDialog(text) {
@@ -262,19 +262,19 @@
     }
 
     function showConfirmationDialog(text, confirmationLabel, callback) {
-        return new RcdMaterialConfirmationDialog({text: text, confirmationLabel: confirmationLabel, callback: callback}).init().open();
+        return new RcdMaterialConfirmationDialog({text: text, confirmationLabel: confirmationLabel, callback: callback}).init().open(exportWidgetContainer);
     }
 
     function showInputDialog(params) {
-        return new RcdMaterialInputDialog(params).init().open();
+        return new RcdMaterialInputDialog(params).init().open(exportWidgetContainer);
     }
 
     function showSelectionDialog(params) {
-        return new RcdMaterialSelectionDialog(params).init().open();
+        return new RcdMaterialSelectionDialog(params).init().open(exportWidgetContainer);
     }
 
     function showDetailsDialog(title, text, callback) {
-        return new RcdMaterialDetailsDialog({title: title, text: text, callback: callback}).init().open();
+        return new RcdMaterialDetailsDialog({title: title, text: text, callback: callback}).init().open(exportWidgetContainer);
     }
 }());
 
