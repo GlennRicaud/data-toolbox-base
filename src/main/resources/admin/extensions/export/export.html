@@ -8,6 +8,16 @@
 
 <widget>
     <link rel="stylesheet" type="text/css" href="{{assetsUrl}}/style/main.css"/>
+    <style>
+        .rcd-material-overlay {
+            position: fixed;
+        }
+        @media screen and (min-width: 721px) {
+            .rcd-material-dialog {
+                max-width: calc(100% - 88px);
+            }
+        }
+    </style>
     <div class="rcd-body" id="exportWidgetContainer"></div>
     <script src="{{assetsUrl}}/js/export.js" type="text/javascript" data-config="{{config}}"></script>
 </widget>
