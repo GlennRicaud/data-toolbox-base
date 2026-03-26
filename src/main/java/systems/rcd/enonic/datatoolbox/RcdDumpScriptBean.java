@@ -125,7 +125,11 @@ public class RcdDumpScriptBean
                 final File dumpFile = dumpPath.toFile();
                 size = dumpFile.length();
                 final ZipFile archiveZipFile = new ZipFile( dumpFile );
-                ZipEntry dumpJsonZipEntry = archiveZipFile.getEntry( "/dump.json" );
+                ZipEntry dumpJsonZipEntry = archiveZipFile.getEntry( "dump.json" );
+                if ( dumpJsonZipEntry == null )
+                {
+                    dumpJsonZipEntry = archiveZipFile.getEntry( "/dump.json" );
+                }
                 if ( dumpJsonZipEntry == null )
                 {
                     final String dumpArchiveFileName = dumpPath.getFileName().toString();
