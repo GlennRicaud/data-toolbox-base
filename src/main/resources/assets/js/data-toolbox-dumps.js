@@ -102,9 +102,7 @@ class DumpsRoute extends DtbRoute {
                     .setTooltip('Upgrade selected system dump'),
                 {
                     min: 1, max: 1, predicate: () => {
-                        const dumpType = this.tableCard.getSelectedRows().map((row) => row.attributes['type'])[0];
-                        const canLoad = this.tableCard.getSelectedRows().map((row) => row.attributes['canLoad'])[0];
-                        return 'versioned' === dumpType && !canLoad;
+                        return this.tableCard.getSelectedRows().map((row) => row.attributes['canUpgrade'])[0];
                     }
                 })
             .addIconArea(new RcdImageIconArea(config.assetsUrl + '/icons/load.svg', () => this.loadDump())
@@ -112,8 +110,7 @@ class DumpsRoute extends DtbRoute {
                     .setTooltip('Load selected system dump'),
                 {
                     min: 1, max: 1, predicate: () => {
-                        const canLoad = this.tableCard.getSelectedRows().map((row) => row.attributes['canLoad'])[0];
-                        return canLoad;
+                        return this.tableCard.getSelectedRows().map((row) => row.attributes['canLoad'])[0];
                     }
                 })
             .addIconArea(new RcdGoogleMaterialIconArea('file_download', () => this.downloadDump())
@@ -145,7 +142,8 @@ class DumpsRoute extends DtbRoute {
                             .addCell(dump.modelVersion + '\n' + dump.xpVersion, {classes: ['non-mobile-cell', 'version-cell']})
                             .setAttribute('dump', dump.name)
                             .setAttribute('type', dump.type)
-                            .setAttribute('canLoad', dump.canLoad);
+                            .setAttribute('canLoad', dump.canLoad)
+                            .setAttribute('canUpgrade', dump.canUpgrade);
                     });
             })
             .catch(handleRequestError)
@@ -211,11 +209,8 @@ class DumpsRoute extends DtbRoute {
 
     upgradeDump() {
         const dumpName = this.tableCard.getSelectedRows().map((row) => row.attributes['dump'])[0];
-        const dumpType = this.tableCard.getSelectedRows().map((row) => row.attributes['type'])[0];
-        if ('versioned' === dumpType) {
-            showConfirmationDialog('Upgrading this dump will modify the existing dump and cannot be reverted', 'UPGRADE',
-                () => this.doUpgradeDump(dumpName));
-        }
+        showConfirmationDialog('Upgrading this dump will modify the existing dump and cannot be reverted', 'UPGRADE',
+            () => this.doUpgradeDump(dumpName));
     }
 
     doUpgradeDump(dumpName) {
@@ -235,24 +230,19 @@ class DumpsRoute extends DtbRoute {
 
     loadDump() {
         const dumpName = this.tableCard.getSelectedRows().map((row) => row.attributes['dump'])[0];
-        const dumpType = this.tableCard.getSelectedRows().map((row) => row.attributes['type'])[0];
-        if ('export' === dumpType) {
-            this.doLoadDump(dumpName, dumpType);
-        } else {
-            new RcdMaterialConfirmationDialog({
-                text: "Before proceeding with the load of a dump, please carefully consider the following points:\n\n" +
-                    "- Loading the dump will delete all existing repositories.\n" +
-                    "- We highly recommend running a snapshot before proceeding with the dump load. This ensures that you have a recent backup in case the loading does not produce the desired results.\n" +
-                    "- After the loading process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.",
-                confirmationLabel: 'LOAD',
-                callback: () => this.doLoadDump(dumpName, dumpType)
-            }).init()
-                .addClass('restore-warning')
-                .open();
-        }
+        new RcdMaterialConfirmationDialog({
+            text: "Before proceeding with the load of a dump, please carefully consider the following points:\n\n" +
+                "- Loading the dump will delete all existing repositories.\n" +
+                "- We highly recommend running a snapshot before proceeding with the dump load. This ensures that you have a recent backup in case the loading does not produce the desired results.\n" +
+                "- After the loading process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.",
+            confirmationLabel: 'LOAD',
+            callback: () => this.doLoadDump(dumpName)
+        }).init()
+            .addClass('restore-warning')
+            .open();
     }
 
-    doLoadDump(dumpName, dumpType) {
+    doLoadDump(dumpName) {
         const infoDialog = showLongInfoDialog("Loading dump...");
         requestPostJson(config.servicesUrl + '/dump-load', {
             data: {dumpName: dumpName}
@@ -261,11 +251,7 @@ class DumpsRoute extends DtbRoute {
                 taskId: result.taskId,
                 message: 'Loading dump...',
                 doneCallback: (success) => {
-                    if (dumpType === 'export') {
-                        new LoadExportDumpDialog(success).init().open();
-                    } else {
-                        new DumpResultDialog(success, true).init().open();
-                    }
+                    new DumpResultDialog(success, true).init().open();
                 }
             }))
             .catch(handleRequestError)
@@ -282,8 +268,6 @@ class DumpsRoute extends DtbRoute {
 
         if (dumpInfo.type === 'archived') {
             this.directDownloadDump(dumpInfo);
-        } else {
-            // this.archiveAndDownloadDump(dumpInfo); //Not supported anymore
         }
     }
 

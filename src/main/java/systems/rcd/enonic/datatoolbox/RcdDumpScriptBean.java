@@ -36,6 +36,7 @@ public class RcdDumpScriptBean
 {
 
     public static final Pattern DUMP_JSON_ENTRY_NAME_PATTERN = Pattern.compile( "^[^/]+/dump.json$" );
+    public static final String CURRENT_MODEL_VERSION = "8.0.1";
 
     private Supplier<DumpService> dumpServiceSupplier;
 
@@ -83,7 +84,8 @@ public class RcdDumpScriptBean
                             put( "xpVersion", dumpInfo.getXpVersion() ).
                             put( "modelVersion", dumpInfo.getModelVersion() ).
                             put( "size", dumpInfo.getSize() ).
-                            put( "canLoad", canLoad( dumpInfo, dumpType ) );
+                            put( "canLoad", canLoad( dumpInfo ) ).
+                            put( "canUpgrade", canUpgrade( dumpInfo ) );
                         dumpsJsonArray.add( dump );
                     }
                 } );
@@ -92,9 +94,14 @@ public class RcdDumpScriptBean
         }, "Error while listing dumps" );
     }
 
-    private boolean canLoad( final DumpInfo dumpInfo, final String dumpType )
+    private boolean canLoad( final DumpInfo dumpInfo )
     {
-        return ( "versioned".equals( dumpType ) || "archived".equals( dumpType ) ) && "8".equals( dumpInfo.getModelVersion() );
+        return CURRENT_MODEL_VERSION.equals( dumpInfo.getModelVersion() );
+    }
+
+    private boolean canUpgrade( final DumpInfo dumpInfo )
+    {
+        return "8".equals( dumpInfo.getModelVersion() );
     }
 
     private String getDumpType( final Path dumpPath )
