@@ -27,7 +27,10 @@ class RepositoriesRoute extends DtbRoute {
                     RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
             .addIconArea(
                 new RcdImageIconArea(config.assetsUrl + '/icons/dump.svg', () => this.dumpRepository()).init().setTooltip('Dump selected repository'),
-                {min: 1, max: 1})
+                {min: 1, max: 1, predicate: () => {
+                        const repositoryName = this.tableCard.getSelectedRows().map((row) => row.attributes['repository'])[0];
+                        return repositoryName !== 'system-repo' && !repositoryName.startsWith('system.');
+                    }})
             .addIconArea(
                 new RcdGoogleMaterialIconArea('delete', () => this.deleteRepositories()).init().setTooltip('Delete selected repositories',
                     RcdMaterialTooltipAlignment.RIGHT),
