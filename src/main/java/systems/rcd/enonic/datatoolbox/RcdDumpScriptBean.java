@@ -77,6 +77,12 @@ public class RcdDumpScriptBean
                     {
                         final DumpInfo dumpInfo = getDumpInfo( dumpPath );
                         final String dumpType = getDumpType( dumpPath );
+                        final List<String> repositoryIds = dumpInfo.getRepositoryIds();
+                        final String target = repositoryIds.isEmpty() ? "unknown" : repositoryIds.contains("system-repo") ? "system" : "partial";
+                        final RcdJsonArray repositoryIdArray = RcdJsonService.createJsonArray();
+                        repositoryIds.forEach(repositoryIdArray::add);
+
+
                         final RcdJsonObject dump = RcdJsonService.createJsonObject().
                             put( "name", dumpPath.getFileName().toString() ).
                             put( "timestamp", dumpFile.lastModified() ).
@@ -85,7 +91,9 @@ public class RcdDumpScriptBean
                             put( "modelVersion", dumpInfo.getModelVersion() ).
                             put( "size", dumpInfo.getSize() ).
                             put( "canLoad", canLoad( dumpInfo ) ).
-                            put( "canUpgrade", canUpgrade( dumpInfo ) );
+                            put( "canUpgrade", canUpgrade( dumpInfo )) .
+                            put( "target", target ).
+                            put("repositoryIds", repositoryIdArray);
                         dumpsJsonArray.add( dump );
                     }
                 } );
@@ -124,6 +132,7 @@ public class RcdDumpScriptBean
     {
         String xpVersion = null;
         String modelVersion = null;
+        List<String> repositoryIds = null;
         long size = -1;
         try
         {
@@ -168,6 +177,7 @@ public class RcdDumpScriptBean
                         final JsonNode dumpJson = objectReader.readTree( dumpJsonContent );
                         xpVersion = dumpJson.get( "xpVersion" ).asText();
                         modelVersion = getModelVersion( dumpJson, xpVersion );
+                        repositoryIds = getRepositoryIds( dumpJson );
                     }
                 }
             }
@@ -179,6 +189,7 @@ public class RcdDumpScriptBean
         return DumpInfo.create().
             xpVersion( xpVersion ).
             modelVersion( modelVersion ).
+            repositoryIds(repositoryIds).
             size( size ).
             build();
     }
@@ -194,6 +205,18 @@ public class RcdDumpScriptBean
             return "0";
         }
         return null;
+    }
+
+
+    private List<String> getRepositoryIds( final JsonNode dumpJson)
+    {
+        if ( !dumpJson.has( "result" ) )
+        {
+            return java.util.Collections.emptyList();
+        }
+        final List<String> repositoryIds = new java.util.ArrayList<>();
+        dumpJson.get( "result" ).fieldNames().forEachRemaining( repositoryIds::add );
+        return repositoryIds;
     }
 
     public String create( final String dumpName, final boolean includeVersion, final Integer maxVersions,
@@ -393,10 +416,10 @@ public class RcdDumpScriptBean
         return result;
     }
 
-    public String load( final String dumpName )
+    public String load( final String dumpName, final List<String> repositoryIds )
     {
         return runSafelyNoDependency( () -> {
-            final SystemLoadResult systemLoadResult = loadUsingSystemDumpService( dumpName );
+            final SystemLoadResult systemLoadResult = loadUsingSystemDumpService( dumpName, repositoryIds );
             return convertSystemLoadResultToJson( systemLoadResult );
         }, "Error while loading dump" );
     }
@@ -425,18 +448,20 @@ public class RcdDumpScriptBean
 
 
 
-    private SystemLoadResult loadUsingSystemDumpService( final String dumpName )
+    private SystemLoadResult loadUsingSystemDumpService(final String dumpName, List<String> repositoryIds)
     {
         final Path dumpPath = getDirectoryPath().resolve( dumpName );
         final boolean archivedDump = isArchived( dumpPath ); //Should always be true starting from XP 8.0
         final String dumpNameRoot = archivedDump ? dumpName.substring( 0, dumpName.length() - ".zip".length() ) : dumpName;
 
-        final SystemLoadParams systemLoadParams = SystemLoadParams.create().
+        final SystemLoadParams.Builder systemLoadParams = SystemLoadParams.create().
             dumpName( dumpNameRoot ).
             includeVersions( true ).
-            listener( createSystemLoadListener() ).
-            build();
-        return dumpServiceSupplier.get().load( systemLoadParams );
+            listener( createSystemLoadListener() );
+        if (repositoryIds != null && !repositoryIds.isEmpty()) {
+            systemLoadParams.repositories( RepositoryIds.from(repositoryIds.toArray(new String[0])) );
+        }
+        return dumpServiceSupplier.get().load( systemLoadParams.build() );
     }
 
     private String convertSystemLoadResultToJson( final SystemLoadResult systemLoadResult )

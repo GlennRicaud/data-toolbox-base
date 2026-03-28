@@ -135,7 +135,7 @@ class DumpsRoute extends DtbRoute {
                     .forEach((dump) => {
                         this.tableCard.createRow()
                             .addCell(dump.name)
-                            .addCell('TODO', {classes: ['non-mobile-cell', 'dump-type-cell']})
+                            .addCell(dump.target, {classes: ['non-mobile-cell', 'dump-type-cell']})
                             .addCell(toLocalDateTimeFormat(new Date(dump.timestamp))
                                      + (dump.size >= 0 ? '\n' + toHumanReadableSize(dump.size) : ''),
                                 {classes: ['non-mobile-cell']})
@@ -143,7 +143,8 @@ class DumpsRoute extends DtbRoute {
                             .setAttribute('dump', dump.name)
                             .setAttribute('type', dump.type)
                             .setAttribute('canLoad', dump.canLoad)
-                            .setAttribute('canUpgrade', dump.canUpgrade);
+                            .setAttribute('canUpgrade', dump.canUpgrade).
+                            setAttribute('repositoryIds', dump.repositoryIds);
                     });
             })
             .catch(handleRequestError)
@@ -230,22 +231,26 @@ class DumpsRoute extends DtbRoute {
 
     loadDump() {
         const dumpName = this.tableCard.getSelectedRows().map((row) => row.attributes['dump'])[0];
+        const repositoryIds = this.tableCard.getSelectedRows().map((row) => row.attributes['repositoryIds'])[0];
         new RcdMaterialConfirmationDialog({
             text: "Before proceeding with the load of a dump, please carefully consider the following points:\n\n" +
-                "- Loading the dump will delete all existing repositories.\n" +
+                "- Loading a system dump will delete all existing repositories.\n" +
                 "- We highly recommend running a snapshot before proceeding with the dump load. This ensures that you have a recent backup in case the loading does not produce the desired results.\n" +
                 "- After the loading process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.",
             confirmationLabel: 'LOAD',
-            callback: () => this.doLoadDump(dumpName)
+            callback: () => this.doLoadDump(dumpName, repositoryIds)
         }).init()
             .addClass('restore-warning')
             .open();
     }
 
-    doLoadDump(dumpName) {
+    doLoadDump(dumpName, repositoryIds) {
         const infoDialog = showLongInfoDialog("Loading dump...");
         requestPostJson(config.servicesUrl + '/dump-load', {
-            data: {dumpName: dumpName}
+            data: {
+                dumpName: dumpName,
+                repositoryIds: repositoryIds
+            }
         })
             .then((result) => handleTaskCreation(result, {
                 taskId: result.taskId,

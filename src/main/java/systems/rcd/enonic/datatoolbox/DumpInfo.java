@@ -1,10 +1,14 @@
 package systems.rcd.enonic.datatoolbox;
 
+import java.util.List;
+
 public class DumpInfo
 {
     private final String xpVersion;
 
     private final String modelVersion;
+
+    private final List<String> repositoryIds;
 
     private final long size;
 
@@ -12,6 +16,7 @@ public class DumpInfo
     {
         xpVersion = builder.xpVersion == null ? "" : builder.xpVersion;
         modelVersion = builder.modelVersion == null ? "" : builder.modelVersion;
+        repositoryIds = builder.repositoryIds == null ? List.of() : builder.repositoryIds;
         size = builder.size;
     }
 
@@ -23,6 +28,11 @@ public class DumpInfo
     public String getModelVersion()
     {
         return modelVersion;
+    }
+
+    public List<String> getRepositoryIds()
+    {
+        return repositoryIds;
     }
 
     public long getSize()
@@ -56,6 +66,8 @@ public class DumpInfo
 
         private String modelVersion;
 
+        private List<String> repositoryIds;
+
         private long size = -1;
 
         private Builder()
@@ -71,6 +83,12 @@ public class DumpInfo
         public Builder modelVersion( final String modelVersion )
         {
             this.modelVersion = modelVersion;
+            return this;
+        }
+
+        public Builder repositoryIds( final List<String> repositoryIds )
+        {
+            this.repositoryIds = repositoryIds;
             return this;
         }
 
