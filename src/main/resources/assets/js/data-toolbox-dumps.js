@@ -143,8 +143,9 @@ class DumpsRoute extends DtbRoute {
                             .setAttribute('dump', dump.name)
                             .setAttribute('type', dump.type)
                             .setAttribute('canLoad', dump.canLoad)
-                            .setAttribute('canUpgrade', dump.canUpgrade).
-                            setAttribute('repositoryIds', dump.repositoryIds);
+                            .setAttribute('canUpgrade', dump.canUpgrade)
+                            .setAttribute('target', dump.target)
+                            .setAttribute('repositoryIds', dump.repositoryIds);
                     });
             })
             .catch(handleRequestError)
@@ -231,6 +232,7 @@ class DumpsRoute extends DtbRoute {
 
     loadDump() {
         const dumpName = this.tableCard.getSelectedRows().map((row) => row.attributes['dump'])[0];
+        const target = this.tableCard.getSelectedRows().map((row) => row.attributes['target'])[0];
         const repositoryIds = this.tableCard.getSelectedRows().map((row) => row.attributes['repositoryIds'])[0];
         new RcdMaterialConfirmationDialog({
             text: "Before proceeding with the load of a dump, please carefully consider the following points:\n\n" +
@@ -238,7 +240,7 @@ class DumpsRoute extends DtbRoute {
                 "- We highly recommend running a snapshot before proceeding with the dump load. This ensures that you have a recent backup in case the loading does not produce the desired results.\n" +
                 "- After the loading process is completed, it is imperative to manually restart XP to ensure that all changes take effect and the system operates smoothly.",
             confirmationLabel: 'LOAD',
-            callback: () => this.doLoadDump(dumpName, repositoryIds)
+            callback: () => this.doLoadDump(dumpName, target === 'partial' ? repositoryIds : null)
         }).init()
             .addClass('restore-warning')
             .open();
