@@ -352,7 +352,7 @@ class DumpsRoute extends DtbRoute {
                            'This makes dumps well suited for migrating your data to another installation.\n' +
                            'See https://developer.enonic.com/docs/xp/stable/deployment/backup-restore#dump-load for more information.';
 
-        const repoDumpDefinition = 'A repository dump is a dump of a single repository. It can be used to transfer a specific repository to another installation or as a backup of a specific repository. ';
+        const repoDumpDefinition = 'A partial dump is a dump of some non-system repositories. It can be used to transfer a specific repository to another installation or as a backup of a specific repository. ';
 
         const viewDefinition = 'The view lists in a table all the dumps located in $XP_HOME/data/dump. ' +
                                'You can delete, load or archive (ZIP) and download existing dumps. ' +
