@@ -26,10 +26,12 @@ class RepositoriesRoute extends DtbRoute {
                 new RcdGoogleMaterialIconArea('add_circle', () => this.createRepository()).setTooltip('Create a repository',
                     RcdMaterialTooltipAlignment.RIGHT).init(), {max: 0})
             .addIconArea(
-                new RcdImageIconArea(config.assetsUrl + '/icons/dump.svg', () => this.dumpRepository()).init().setTooltip('Dump selected repository'),
-                {min: 1, max: 1, predicate: () => {
-                        const repositoryName = this.tableCard.getSelectedRows().map((row) => row.attributes['repository'])[0];
-                        return repositoryName !== 'system-repo' && !repositoryName.startsWith('system.');
+                new RcdImageIconArea(config.assetsUrl + '/icons/dump.svg', () => this.dumpRepositories()).init().setTooltip('Dump selected repositories'),
+                {min: 1, predicate: () => {
+                        return this.tableCard.getSelectedRows().every((row) => {
+                            const repositoryName = row.attributes['repository'];
+                            return repositoryName !== 'system-repo' && !repositoryName.startsWith('system.');
+                        });
                     }})
             .addIconArea(
                 new RcdGoogleMaterialIconArea('delete', () => this.deleteRepositories()).init().setTooltip('Delete selected repositories',
@@ -81,24 +83,28 @@ class RepositoriesRoute extends DtbRoute {
             });
     }
 
-    dumpRepository() {
+    dumpRepositories() {
         const infoDialog = showShortInfoDialog('Retrieving home information...');
         return requestJson(config.servicesUrl + '/home')
             .then((result) => {
-                const repositoryName = this.tableCard.getSelectedRows().map((row) => row.attributes['repository'])[0];
-                const defaultDumpName = repositoryName + '-' + toLocalDateTimeFormat(new Date(), '-', '-');
+                const repositoryNames = this.tableCard.getSelectedRows().map((row) => row.attributes['repository']);
+                const commonPrefix = repositoryNames.reduce((prefix, name) => {
+                    let i = 0;
+                    while (i < prefix.length && i < name.length && prefix[i] === name[i]) i++;
+                    return prefix.slice(0, i);
+                });
+                const defaultDumpName = (commonPrefix || 'dump') + '-' + toLocalDateTimeFormat(new Date(), '-', '-');
                 new DtbDumpInputDialog({
                     defaultValue: defaultDumpName,
                     dirInfo: result.success.dump,
-                    callback: (value) => this.doDumpRepository(value, repositoryName)
+                    callback: (value) => this.doDumpRepositories(value, repositoryNames)
                 }).init().open();
-
             })
             .catch(handleRequestError)
             .finally(() => infoDialog.close());
     }
 
-    doDumpRepository(params, repositoryName) {
+    doDumpRepositories(params, repositoryNames) {
         const infoDialog = showLongInfoDialog('Creating dump...');
         requestPostJson(config.servicesUrl + '/dump-create', {
             data: {
@@ -107,7 +113,7 @@ class RepositoriesRoute extends DtbRoute {
                 archive: params.archive,
                 maxVersions: params.maxVersions,
                 maxVersionsAge: params.maxVersionsAge,
-                repositoryName: repositoryName
+                repositoryNames: repositoryNames
             }
         })
             .then((result) => handleTaskCreation(result, {
@@ -149,7 +155,7 @@ class RepositoriesRoute extends DtbRoute {
 
         new HelpDialog('Repositories', [definition, viewDefinition]).init()
             .addActionDefinition({iconName: 'add_circle', definition: 'Create a repository with default settings'})
-            .addActionDefinition({iconSrc: config.assetsUrl + '/icons/dump.svg', definition: 'Dump the selected repository.'})
+            .addActionDefinition({iconSrc: config.assetsUrl + '/icons/dump.svg', definition: 'Dump the selected repositories.'})
             .addActionDefinition({iconName: 'delete', definition: 'Delete the selected repositories.'})
             .open();
     }

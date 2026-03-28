@@ -7,13 +7,13 @@ exports.post = function (req) {
     const includeVersions = body.includeVersions;
     const maxVersions = body.maxVersions;
     const maxVersionsAge = body.maxVersionsAge;
-    const repositoryName = body.repositoryName;
+    const repositoryNames = body.repositoryNames;
 
     const taskId = taskLib.executeFunction({
         description: 'Dump creation',
         func: function () {
             taskLib.progress({info: 'Creating dump...'});
-            taskLib.progress({info: bean.create(dumpName, includeVersions, maxVersions || null, maxVersionsAge || null, repositoryName || null)});
+            taskLib.progress({info: bean.create(dumpName, includeVersions, maxVersions || null, maxVersionsAge || null, repositoryNames || null)});
         }
     });
 

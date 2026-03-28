@@ -220,7 +220,7 @@ public class RcdDumpScriptBean
     }
 
     public String create( final String dumpName, final boolean includeVersion, final Integer maxVersions,
-                          final Integer maxVersionsAge, final String repositoryId )
+                          final Integer maxVersionsAge, final List<String> repositoryIds )
     {
         return runSafely( () -> {
             final SystemDumpParams.Builder params = SystemDumpParams.create().
@@ -230,8 +230,8 @@ public class RcdDumpScriptBean
                 maxAge( maxVersionsAge ).
                 maxVersions( maxVersions ).
                 listener( createSystemDumpListener() );
-            if (repositoryId != null) {
-                params.repositories( RepositoryIds.from(repositoryId));
+            if (repositoryIds != null && !repositoryIds.isEmpty()) {
+                params.repositories(RepositoryIds.from(repositoryIds.toArray(new String[0]) ));
             }
 
             final SystemDumpResult systemDumpResult = dumpServiceSupplier.get().dump( params.build() );
