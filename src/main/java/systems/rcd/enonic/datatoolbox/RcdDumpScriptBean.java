@@ -36,7 +36,7 @@ public class RcdDumpScriptBean
 {
 
     public static final Pattern DUMP_JSON_ENTRY_NAME_PATTERN = Pattern.compile( "^[^/]+/dump.json$" );
-    public static final String CURRENT_MODEL_VERSION = "8.0.1";
+    public static final String CURRENT_MODEL_VERSION = "9";
 
     private Supplier<DumpService> dumpServiceSupplier;
 
@@ -427,8 +427,11 @@ public class RcdDumpScriptBean
     public String upgrade( final String dumpName )
     {
         return runSafely( () -> {
+            final Path dumpPath = getDirectoryPath().resolve( dumpName );
+            final boolean archivedDump = isArchived( dumpPath );
+            final String dumpNameRoot = archivedDump ? dumpName.substring( 0, dumpName.length() - ".zip".length() ) : dumpName;
             final SystemDumpUpgradeParams params = SystemDumpUpgradeParams.create().
-                dumpName( dumpName ).
+                dumpName( dumpNameRoot ).
                 upgradeListener( createUpgraderListener() ).
                 build();
             final DumpUpgradeResult upgradeResult = dumpServiceSupplier.get().
