@@ -3,6 +3,7 @@ package systems.rcd.enonic.datatoolbox;
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
 import com.enonic.xp.context.Context;
+import com.enonic.xp.index.IndexPath;
 import com.enonic.xp.node.*;
 import com.enonic.xp.query.expr.FieldOrderExpr;
 import com.enonic.xp.query.expr.OrderExpr;
@@ -44,7 +45,7 @@ public class RcdVersionScriptBean
                 nodeId( nodeId ).
                 from( from ).
                 size( size ).
-                addOrderBy( FieldOrderExpr.create( "timestamp", OrderExpr.Direction.DESC ) ).
+                addOrderBy( FieldOrderExpr.create( IndexPath.from( "timestamp"), OrderExpr.Direction.DESC ) ).
                 build();
             final NodeVersionQueryResult versionQueryResult = context.callWith( () -> nodeServiceSupplier.get().
                 findVersions( nodeVersionQuery ) );

@@ -1,24 +1,12 @@
 package systems.rcd.enonic.datatoolbox;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import systems.rcd.fwk.core.format.json.RcdJsonService;
-import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
-import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
-import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
-
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.ValueFactory;
-import com.enonic.xp.node.FindNodesByQueryResult;
-import com.enonic.xp.node.Node;
-import com.enonic.xp.node.NodeIndexPath;
-import com.enonic.xp.node.NodeQuery;
-import com.enonic.xp.node.NodeService;
+import com.enonic.xp.index.IndexPath;
+import com.enonic.xp.node.*;
 import com.enonic.xp.query.expr.FieldOrderExpr;
 import com.enonic.xp.query.expr.OrderExpr;
 import com.enonic.xp.query.filter.ValueFilter;
@@ -27,6 +15,14 @@ import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.SecurityService;
 import com.enonic.xp.security.User;
+import systems.rcd.fwk.core.format.json.RcdJsonService;
+import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
+import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class RcdAuditScriptBean
     extends RcdScriptBean
@@ -49,7 +45,7 @@ public class RcdAuditScriptBean
         final NodeQuery nodeQuery = NodeQuery.create().addQueryFilter(
             ValueFilter.create().fieldName( NodeIndexPath.NODE_TYPE.toString() ).addValue(
                 ValueFactory.newString( "auditlog" ) ).build() ).addOrderBy(
-            FieldOrderExpr.create( "time", OrderExpr.Direction.DESC ) ).from( start ).size( count ).build();
+            FieldOrderExpr.create( IndexPath.from( "time"), OrderExpr.Direction.DESC ) ).from( start ).size( count ).build();
         final FindNodesByQueryResult findNodesByQueryResult = nodeServiceSupplier.get().findByQuery( nodeQuery );
         result.put( "total", findNodesByQueryResult.getTotalHits() );
 
