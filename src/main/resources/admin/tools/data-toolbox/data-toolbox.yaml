@@ -1,3 +1,4 @@
+kind: "AdminTool"
 displayName: "Data toolbox"
 description: "Visualize and manage your data"
 allow:
