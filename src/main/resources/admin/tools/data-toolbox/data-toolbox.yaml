@@ -1,5 +1,5 @@
 kind: "AdminTool"
-displayName: "Data toolbox"
+title: "Data toolbox"
 description: "Visualize and manage your data"
 allow:
 - "role:system.admin"

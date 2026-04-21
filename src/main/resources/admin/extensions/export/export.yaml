@@ -1,5 +1,5 @@
 kind: "AdminExtension"
-displayName: "Data Toolbox - Exports"
+title: "Data Toolbox - Exports"
 description: "Manage your content exports"
 allow:
 - "role:system.admin"
