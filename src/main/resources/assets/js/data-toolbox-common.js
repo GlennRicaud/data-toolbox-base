@@ -556,7 +556,8 @@ class DtbRoute extends RcdMaterialRoute {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 nodePath: nodePath,
-                exportName: exportName
+                exportName: exportName,
+                archive: false
             }
         })
             .then((result) => handleTaskCreation(result, {

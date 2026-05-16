@@ -67,7 +67,8 @@
                 cmsRepositoryShortName: config.cmsRepositoryShortName,
                 branchName: config.branchName,
                 contentPath: config.contentPath,
-                exportName: exportName
+                exportName: exportName,
+                archive: false
             }
         })
             .then((result) => handleTaskCreation(result, {

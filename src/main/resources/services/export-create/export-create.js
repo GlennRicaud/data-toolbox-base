@@ -7,12 +7,13 @@ exports.post = function (req) {
     const branchName = body.branchName;
     const contentPath = body.contentPath;
     const exportName = body.exportName;
+    const archive = body.archive;
 
     const taskId = taskLib.submit({
         description: 'Content export',
         task: function () {
             taskLib.progress({info: 'Exporting contents...'});
-            taskLib.progress({info: bean.create('com.enonic.cms.' + cmsRepositoryShortName, branchName, '/content' + contentPath, exportName)});
+            taskLib.progress({info: bean.create('com.enonic.cms.' + cmsRepositoryShortName, branchName, '/content' + contentPath, exportName, archive)});
         }
     });
 

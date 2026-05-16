@@ -1,10 +1,16 @@
 package systems.rcd.enonic.datatoolbox;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.Supplier;
-
+import com.enonic.xp.branch.Branch;
+import com.enonic.xp.context.Context;
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.context.ContextBuilder;
+import com.enonic.xp.export.*;
+import com.enonic.xp.home.HomeDir;
+import com.enonic.xp.node.NodePath;
+import com.enonic.xp.repository.*;
+import com.enonic.xp.script.bean.BeanContext;
+import com.enonic.xp.security.SystemConstants;
+import com.enonic.xp.vfs.VirtualFiles;
 import systems.rcd.fwk.core.exc.RcdException;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
@@ -12,27 +18,10 @@ import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
 import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
 import systems.rcd.fwk.core.io.file.RcdFileService;
 
-import com.enonic.xp.branch.Branch;
-import com.enonic.xp.context.Context;
-import com.enonic.xp.context.ContextAccessor;
-import com.enonic.xp.context.ContextBuilder;
-import com.enonic.xp.export.ExportNodesParams;
-import com.enonic.xp.export.ExportService;
-import com.enonic.xp.export.ImportNodesParams;
-import com.enonic.xp.export.NodeExportListener;
-import com.enonic.xp.export.NodeExportResult;
-import com.enonic.xp.export.NodeImportListener;
-import com.enonic.xp.export.NodeImportResult;
-import com.enonic.xp.home.HomeDir;
-import com.enonic.xp.node.NodePath;
-import com.enonic.xp.repository.CreateRepositoryParams;
-import com.enonic.xp.repository.NodeRepositoryService;
-import com.enonic.xp.repository.Repository;
-import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.repository.RepositoryService;
-import com.enonic.xp.script.bean.BeanContext;
-import com.enonic.xp.security.SystemConstants;
-import com.enonic.xp.vfs.VirtualFiles;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public class RcdExportScriptBean
     extends RcdDataScriptBean
@@ -89,7 +78,7 @@ public class RcdExportScriptBean
         }, "Error while listing exports" );
     }
 
-    public String create( final String repositoryName, final String branchName, final String nodePath, final String exportName )
+    public String create( final String repositoryName, final String branchName, final String nodePath, final String exportName, final boolean archive)
     {
         return runSafely( () -> {
             final NodeExportListener nodeExportListener = createNodeExportListener();
@@ -98,6 +87,7 @@ public class RcdExportScriptBean
                 targetDirectory( getDirectoryPath().resolve( exportName ).toString() ).
                 dryRun( false ).
                 includeNodeIds( true ).
+                archive( archive ).
                 nodeExportListener( nodeExportListener ).
                 build();
 

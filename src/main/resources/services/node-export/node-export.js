@@ -7,12 +7,13 @@ exports.post = function (req) {
     const branchName = body.branchName;
     const nodePath = body.nodePath;
     const exportName = body.exportName;
+    const archive = body.archive;
 
     const taskId = taskLib.submit({
         description: 'Node export',
         task: function () {
             taskLib.progress({info: 'Exporting nodes...'});
-            taskLib.progress({info: bean.create(repositoryName, branchName, nodePath, exportName)});
+            taskLib.progress({info: bean.create(repositoryName, branchName, nodePath, exportName, archive)});
         }
     });
 
