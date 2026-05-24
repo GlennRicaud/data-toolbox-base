@@ -18,6 +18,7 @@ import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
 import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
 import systems.rcd.fwk.core.io.file.RcdFileService;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,7 +65,10 @@ public class RcdExportScriptBean
             if ( exportDirectoryPath.toFile().exists() )
             {
                 RcdFileService.listSubPaths( exportDirectoryPath, exportPath -> {
-                    if ( exportPath.toFile().isDirectory() )
+                    final File exportFile = exportPath.toFile();
+                    final boolean isDirectory = exportFile.isDirectory();
+                    final boolean isArchived = isArchivedFile( exportFile );
+                    if ( isDirectory || isArchived  )
                     {
                         final RcdJsonObject export = RcdJsonService.createJsonObject().
                             put( "name", exportPath.getFileName().toString() ).
