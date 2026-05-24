@@ -290,7 +290,7 @@ class NodesRoute extends DtbRoute {
                     type: 'node',
                     defaultValue: defaultExportName,
                     dirInfo: result.success.export,
-                    callback: (value) => this.doExportNode(nodePath, value || defaultExportName)
+                    callback: (value, archive) => this.doExportNode(nodePath, value || defaultExportName, archive)
                 }).init().open();
 
             })
