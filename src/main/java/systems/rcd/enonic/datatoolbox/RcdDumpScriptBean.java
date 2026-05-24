@@ -1,5 +1,30 @@
 package systems.rcd.enonic.datatoolbox;
 
+import com.enonic.xp.branch.Branch;
+import com.enonic.xp.dump.*;
+import com.enonic.xp.export.ExportService;
+import com.enonic.xp.export.ImportNodesParams;
+import com.enonic.xp.export.NodeImportResult;
+import com.enonic.xp.home.HomeDir;
+import com.enonic.xp.node.NodePath;
+import com.enonic.xp.repository.*;
+import com.enonic.xp.script.bean.BeanContext;
+import com.enonic.xp.security.SystemConstants;
+import com.enonic.xp.upgrade.UpgradeListener;
+import com.enonic.xp.vfs.VirtualFiles;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import systems.rcd.fwk.core.exc.RcdException;
+import systems.rcd.fwk.core.format.json.RcdJsonService;
+import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
+import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
+import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
+import systems.rcd.fwk.core.format.properties.RcdPropertiesService;
+import systems.rcd.fwk.core.io.file.RcdFileService;
+import systems.rcd.fwk.core.io.file.RcdTextFileService;
+import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -13,51 +38,6 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-
-import systems.rcd.fwk.core.exc.RcdException;
-import systems.rcd.fwk.core.format.json.RcdJsonService;
-import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
-import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
-import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
-import systems.rcd.fwk.core.format.properties.RcdPropertiesService;
-import systems.rcd.fwk.core.io.file.RcdFileService;
-import systems.rcd.fwk.core.io.file.RcdTextFileService;
-import systems.rcd.fwk.core.io.file.params.RcdReadTextFileParams;
-
-import com.enonic.xp.branch.Branch;
-import com.enonic.xp.dump.BranchDumpResult;
-import com.enonic.xp.dump.BranchLoadResult;
-import com.enonic.xp.dump.DumpError;
-import com.enonic.xp.dump.DumpService;
-import com.enonic.xp.dump.DumpUpgradeResult;
-import com.enonic.xp.dump.LoadError;
-import com.enonic.xp.dump.RepoDumpResult;
-import com.enonic.xp.dump.RepoLoadResult;
-import com.enonic.xp.dump.SystemDumpListener;
-import com.enonic.xp.dump.SystemDumpParams;
-import com.enonic.xp.dump.SystemDumpResult;
-import com.enonic.xp.dump.SystemDumpUpgradeParams;
-import com.enonic.xp.dump.SystemLoadListener;
-import com.enonic.xp.dump.SystemLoadParams;
-import com.enonic.xp.dump.SystemLoadResult;
-import com.enonic.xp.export.ExportService;
-import com.enonic.xp.export.ImportNodesParams;
-import com.enonic.xp.export.NodeImportResult;
-import com.enonic.xp.home.HomeDir;
-import com.enonic.xp.node.NodePath;
-import com.enonic.xp.repository.CreateRepositoryParams;
-import com.enonic.xp.repository.NodeRepositoryService;
-import com.enonic.xp.repository.Repository;
-import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.repository.RepositoryService;
-import com.enonic.xp.script.bean.BeanContext;
-import com.enonic.xp.security.SystemConstants;
-import com.enonic.xp.upgrade.UpgradeListener;
-import com.enonic.xp.vfs.VirtualFiles;
 
 public class RcdDumpScriptBean
     extends RcdDataScriptBean
@@ -109,7 +89,7 @@ public class RcdDumpScriptBean
                 RcdFileService.listSubPaths( dumpDirectoryPath, dumpPath -> {
                     final File dumpFile = dumpPath.toFile();
                     final boolean isDirectory = dumpFile.isDirectory();
-                    final boolean isArchived = isArchivedDump( dumpFile );
+                    final boolean isArchived = isArchivedFile( dumpFile );
                     if ( isDirectory || isArchived )
                     {
                         final DumpInfo dumpInfo = getDumpInfo( dumpPath );
@@ -508,25 +488,7 @@ public class RcdDumpScriptBean
 
     private boolean isArchivedDump( final Path dumpPath )
     {
-        return isArchivedDump( dumpPath.toFile() );
-    }
-
-    private boolean isArchivedDump( final File dumpFile )
-    {
-        if ( dumpFile.isFile() )
-        {
-            final String dumpName = dumpFile.getName();
-            final int extensionIndex = dumpName.lastIndexOf( '.' );
-            if ( extensionIndex != -1 )
-            {
-                final String extension = dumpName.substring( extensionIndex + 1 );
-                if ( "zip".equalsIgnoreCase( extension ) )
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return isArchivedFile( dumpPath.toFile() );
     }
 
     private void loadUsingExportService( final String dumpName, final RcdJsonObject result )

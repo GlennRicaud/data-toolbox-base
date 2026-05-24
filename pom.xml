@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>systems.rcd.enonic</groupId>
   <artifactId>datatoolbox-base</artifactId>
-  <version>3.1.13</version>
+  <version>3.2.0</version>
   <name>Data Toolbox Base</name>
   <description>Data Toolbox Base</description>
   <properties>
-    <xpVersion>7.8.5</xpVersion>
+    <xpVersion>7.16.3</xpVersion>
   </properties>
   <dependencies>
     <dependency>

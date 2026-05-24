@@ -52,7 +52,7 @@
                     type: 'content',
                     defaultValue: defaultExportName,
                     dirInfo: result.success.export,
-                    callback: (value) => doCreateExport(value || defaultExportName)
+                    callback: (value, archive) => doCreateExport(value || defaultExportName, archive)
                 }).init().open();
 
             })
@@ -60,14 +60,15 @@
             .finally(() => infoDialog.close());
     }
 
-    function doCreateExport(exportName) {
+    function doCreateExport(exportName, archive) {
         const infoDialog = showLongInfoDialog("Exporting content...");
         return requestPostJson(config.servicesUrl + '/export-create', {
             data: {
                 cmsRepositoryShortName: config.cmsRepositoryShortName,
                 branchName: config.branchName,
                 contentPath: config.contentPath,
-                exportName: exportName
+                exportName: exportName,
+                archive: archive
             }
         })
             .then((result) => handleTaskCreation(result, {

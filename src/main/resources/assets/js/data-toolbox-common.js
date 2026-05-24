@@ -379,15 +379,23 @@ class DtbExportInputDialog extends RcdMaterialInputDialog {
             value: params.defaultValue,
             confirmationLabel: 'EXPORT',
             callback: (value) => {
-                params.callback(value || params.defaultValue);
+                params.callback(value || params.defaultValue, this.archiveField.isSelected());
             }
         });
+        this.archiveField = new DtbCheckboxField({
+            label: 'Archive export',
+            callback: () => {
+                const archive = !this.archiveField.isSelected();
+                this.archiveField.select(archive);
+            }
+        }).init();
         this.spaceField = new RcdTextDivElement(getTextualSpaceInfo(params.dirInfo)).init().addClass('dtb-details-text');
     }
 
     init() {
         return super.init()
-            .addItem(this.spaceField)
+            .addItem(this.archiveField)
+            .addItem(this.spaceField);
     }
 }
 
@@ -549,14 +557,15 @@ class DtbRoute extends RcdMaterialRoute {
         }
     }
 
-    doExportNode(nodePath, exportName) {
+    doExportNode(nodePath, exportName, archive) {
         const infoDialog = showLongInfoDialog("Exporting nodes...");
         return requestPostJson(config.servicesUrl + '/node-export', {
             data: {
                 repositoryName: getRepoParameter(),
                 branchName: getBranchParameter(),
                 nodePath: nodePath,
-                exportName: exportName
+                exportName: exportName,
+                archive: archive
             }
         })
             .then((result) => handleTaskCreation(result, {
