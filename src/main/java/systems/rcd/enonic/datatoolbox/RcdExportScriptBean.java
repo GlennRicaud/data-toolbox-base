@@ -10,7 +10,6 @@ import com.enonic.xp.node.NodePath;
 import com.enonic.xp.repository.*;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.security.SystemConstants;
-import com.enonic.xp.vfs.VirtualFiles;
 import systems.rcd.fwk.core.exc.RcdException;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
@@ -216,9 +215,14 @@ public class RcdExportScriptBean
 
     private NodeImportResult load( final NodePath nodePath, final String exportName, final NodeImportListener nodeImportListener )
     {
+        final Path exportPath = getDirectoryPath().resolve( exportName );
+        final boolean archivedDump = isArchivedFile( exportPath.toFile() );
+        final String exportNameRoot = archivedDump ? exportName.substring( 0, exportName.length() - ".zip".length() ) : exportName;
+
         final ImportNodesParams importNodesParams = ImportNodesParams.create().
             targetNodePath( nodePath ).
-            source( VirtualFiles.from( getDirectoryPath().resolve( exportName ) ) ).
+            exportName( exportNameRoot ).
+            archive(archivedDump).
             dryRun( false ).
             includeNodeIds( true ).
             includePermissions( true ).
