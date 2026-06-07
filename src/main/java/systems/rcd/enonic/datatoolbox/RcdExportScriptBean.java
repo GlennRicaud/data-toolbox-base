@@ -10,18 +10,26 @@ import com.enonic.xp.node.NodePath;
 import com.enonic.xp.repository.*;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.security.SystemConstants;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import systems.rcd.fwk.core.exc.RcdException;
 import systems.rcd.fwk.core.format.json.RcdJsonService;
 import systems.rcd.fwk.core.format.json.data.RcdJsonArray;
 import systems.rcd.fwk.core.format.json.data.RcdJsonObject;
 import systems.rcd.fwk.core.format.json.data.RcdJsonValue;
+import systems.rcd.fwk.core.format.properties.RcdPropertiesService;
 import systems.rcd.fwk.core.io.file.RcdFileService;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class RcdExportScriptBean
     extends RcdDataScriptBean
@@ -31,6 +39,8 @@ public class RcdExportScriptBean
     private Supplier<RepositoryService> repositoryServiceSupplier;
 
     private Supplier<NodeRepositoryService> nodeRepositoryServiceSupplier;
+
+    private ObjectReader objectReader = new ObjectMapper().reader();
 
     private static final Path EXPORT_ARCHIVE_DIRECTORY_PATH;
 
@@ -69,16 +79,86 @@ public class RcdExportScriptBean
                     final boolean isArchived = isArchivedFile( exportFile );
                     if ( isDirectory || isArchived  )
                     {
+                        final String exportType = getExportType( exportPath );
+                        final ExportInfo exportInfo = getExportInfo( exportPath );
                         final RcdJsonObject export = RcdJsonService.createJsonObject().
                             put( "name", exportPath.getFileName().toString() ).
-                            put( "timestamp", exportPath.toFile().lastModified() );
-                        //put( "size", RcdFileService.getSize( exportPath ) );
+                            put( "timestamp", exportPath.toFile().lastModified() ).
+                            put( "type", exportType ).
+                            put( "xpVersion", exportInfo.getXpVersion() ).
+                            put( "size", exportInfo.getSize() );
                         exportJsonArray.add( export );
                     }
                 } );
             }
             return createSuccessResult( exportJsonArray );
         }, "Error while listing exports" );
+    }
+
+    private String getExportType( final Path path )
+    {
+        if (isArchivedExport(path)) {
+            return "archived";
+        } else if (isDirectoryExport(path)) {
+            return "directory";
+        } else {
+            return "";
+        }
+    }
+
+    private ExportInfo getExportInfo( final Path path )
+    {
+        String xpVersion = null;
+        long size = -1;
+        try
+        {
+            if ( isArchivedExport( path ) )
+            {
+                final File file = path.toFile();
+                size = file.length();
+                final ZipFile archiveZipFile = new ZipFile( file );
+                ZipEntry jsonZipEntry = archiveZipFile.getEntry( "/export.json" );
+                if ( jsonZipEntry != null )
+                {
+                    final InputStream jsonInputStream = archiveZipFile.getInputStream( jsonZipEntry );
+                    final BufferedInputStream jsonBufferedInputStream = new BufferedInputStream( jsonInputStream );
+
+                    try (jsonBufferedInputStream)
+                    {
+                        final byte[] bytes = jsonBufferedInputStream.readAllBytes();
+                        final String jsonContent = new String( bytes );
+                        final JsonNode jsonNode = objectReader.readTree( jsonContent );
+                        xpVersion = jsonNode.get( "xpVersion" ).asText();
+                    }
+                }
+            }
+            else if ( isDirectoryExport( path ) )
+            {
+                xpVersion = RcdPropertiesService.read( path.resolve( "export.properties" ) ).
+                        get( "xp.version" );
+            }
+        }
+        catch ( Exception e )
+        {
+            LOGGER.error( "Error while reading export info", e );
+        }
+        return ExportInfo.create().
+                xpVersion( xpVersion ).
+                size( size ).
+                build();
+    }
+
+    private boolean isDirectoryExport( final Path path )
+    {
+        return path.
+                resolve( "export.properties" ).
+                toFile().
+                exists();
+    }
+
+    private boolean isArchivedExport( final Path path )
+    {
+        return isArchivedFile( path.toFile() );
     }
 
     public String create( final String repositoryName, final String branchName, final String nodePath, final String exportName, final boolean archive)
