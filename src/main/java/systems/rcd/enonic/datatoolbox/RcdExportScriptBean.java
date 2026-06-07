@@ -339,23 +339,29 @@ public class RcdExportScriptBean
 
     @Override
     protected boolean shouldSkipUnarchive(Path archivePath) {
-        final ZipFile archiveZipFile;
-        try {
-            archiveZipFile = new ZipFile( archivePath.toFile() );
+        try (final ZipFile archiveZipFile = new ZipFile( archivePath.toFile() )) {
+            boolean hasExportProperties = false;
+            String singleRoot = null;
+            final Enumeration<? extends ZipEntry> entries = archiveZipFile.entries();
+            while ( entries.hasMoreElements() )
+            {
+                final ZipEntry zipEntry = entries.nextElement();
+                final String name = zipEntry.getName();
+                final String root = name.contains( "/" ) ? name.substring( 0, name.indexOf( "/" ) ) : name;
+                if ( singleRoot == null ) {
+                    singleRoot = root;
+                } else if ( !singleRoot.equals( root ) ) {
+                    return false;
+                }
+                if ( EXPORT_PROPERTIES_ENTRY_NAME_PATTERN.matcher( name ).matches() )
+                {
+                    hasExportProperties = true;
+                }
+            }
+            return hasExportProperties;
         } catch (IOException e) {
             return false;
         }
-
-        final Enumeration<? extends ZipEntry> entries = archiveZipFile.entries();
-        while ( entries.hasMoreElements() )
-        {
-            final ZipEntry zipEntry = entries.nextElement();
-            if ( EXPORT_PROPERTIES_ENTRY_NAME_PATTERN.matcher( zipEntry.getName() ).matches() )
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -387,4 +393,3 @@ public class RcdExportScriptBean
             build();
     }
 }
-
