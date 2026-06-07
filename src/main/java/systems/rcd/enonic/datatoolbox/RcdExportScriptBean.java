@@ -10,7 +10,6 @@ import com.enonic.xp.node.NodePath;
 import com.enonic.xp.repository.*;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.security.SystemConstants;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import systems.rcd.fwk.core.exc.RcdException;
@@ -117,7 +116,13 @@ public class RcdExportScriptBean
                 final File file = path.toFile();
                 size = file.length();
                 final ZipFile archiveZipFile = new ZipFile( file );
-                ZipEntry jsonZipEntry = archiveZipFile.getEntry( "/export.json" );
+                ZipEntry jsonZipEntry = archiveZipFile.getEntry( "/export.properties" );
+                if ( jsonZipEntry == null )
+                {
+                    final String dumpArchiveFileName = path.getFileName().toString();
+                    jsonZipEntry =
+                            archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/export.properties" );
+                }
                 if ( jsonZipEntry != null )
                 {
                     final InputStream jsonInputStream = archiveZipFile.getInputStream( jsonZipEntry );
@@ -126,9 +131,8 @@ public class RcdExportScriptBean
                     try (jsonBufferedInputStream)
                     {
                         final byte[] bytes = jsonBufferedInputStream.readAllBytes();
-                        final String jsonContent = new String( bytes );
-                        final JsonNode jsonNode = objectReader.readTree( jsonContent );
-                        xpVersion = jsonNode.get( "xpVersion" ).asText();
+                        final String content = new String( bytes );
+                        xpVersion = new SimplePropertiesReader().instRead(content).get( "xp.version" );
                     }
                 }
             }
@@ -358,3 +362,4 @@ public class RcdExportScriptBean
             build();
     }
 }
+
