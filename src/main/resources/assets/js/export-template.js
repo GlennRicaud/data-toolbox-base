@@ -36,7 +36,7 @@
         return requestJson(config.servicesUrl + '/export-list')
             .then(function (result) {
                 result.success.sort((export1, export2) => export2.timestamp - export1.timestamp).forEach((anExport) => {
-                    tableCard.createRow().addCell(anExport.name).setAttribute('export', anExport.name);
+                    tableCard.createRow().addCell(anExport.name).setAttribute('export', anExport.name).setAttribute('type', anExport.type);
                 });
             })
             .catch(handleRequestError)
