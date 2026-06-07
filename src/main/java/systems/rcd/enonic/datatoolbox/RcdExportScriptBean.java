@@ -334,6 +334,19 @@ public class RcdExportScriptBean
     }
 
     @Override
+    protected boolean shouldSkipUnarchive(Path archivePath) {
+        final ZipFile archiveZipFile;
+        try {
+            archiveZipFile = new ZipFile( archivePath.toFile() );
+        } catch (IOException e) {
+            return false;
+        }
+        final String dumpArchiveFileName = archivePath.getFileName().toString();
+        ZipEntry jsonZipEntry = archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/export.properties" );
+        return jsonZipEntry != null;
+    }
+
+    @Override
     protected Path getArchiveDirectoryPath()
     {
         return EXPORT_ARCHIVE_DIRECTORY_PATH;
