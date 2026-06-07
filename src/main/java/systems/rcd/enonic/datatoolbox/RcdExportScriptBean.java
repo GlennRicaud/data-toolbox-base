@@ -127,6 +127,19 @@ public class RcdExportScriptBean
                     jsonZipEntry =
                             archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/export.properties" );
                 }
+                if ( jsonZipEntry == null )
+                {
+                    final Enumeration<? extends ZipEntry> entries = archiveZipFile.entries();
+                    while ( entries.hasMoreElements() )
+                    {
+                        final ZipEntry zipEntry = entries.nextElement();
+                        if ( EXPORT_PROPERTIES_ENTRY_NAME_PATTERN.matcher( zipEntry.getName() ).matches() )
+                        {
+                            jsonZipEntry = zipEntry;
+                            break;
+                        }
+                    }
+                }
                 if ( jsonZipEntry != null )
                 {
                     final InputStream jsonInputStream = archiveZipFile.getInputStream( jsonZipEntry );
