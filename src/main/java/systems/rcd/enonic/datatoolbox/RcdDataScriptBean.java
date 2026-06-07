@@ -73,15 +73,16 @@ public abstract class RcdDataScriptBean
         return archivePath.getFileName().toString();
     }
 
-    public String unarchive( final String archiveName, final ScriptValue listener)
+    public String unarchive( final String archiveName, final String fileName, final ScriptValue listener)
         throws IOException
     {
         final File archiveFile = new File( getArchiveDirectoryPath().toFile(), archiveName );
         return runSafely( () -> {
             if (shouldSkipUnarchive( getArchiveDirectoryPath().resolve( archiveName ) ) ) {
-                LOGGER.debug( "Moving [" + archiveFile.getAbsolutePath() + "] into [" + getDirectoryPath() + "]..." );
+                final Path targetPath = getDirectoryPath().resolve(fileName);
+                LOGGER.debug( "Moving [" + archiveFile.getAbsolutePath() + "] into [" + targetPath + "]..." );
                 try {
-                    Files.move( archiveFile.toPath(), getDirectoryPath());
+                    Files.move( archiveFile.toPath(), targetPath);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

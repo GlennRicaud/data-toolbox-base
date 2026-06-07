@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -42,6 +44,8 @@ public class RcdExportScriptBean
     private ObjectReader objectReader = new ObjectMapper().reader();
 
     private static final Path EXPORT_ARCHIVE_DIRECTORY_PATH;
+
+    public static final Pattern EXPORT_PROPERTIES_ENTRY_NAME_PATTERN = Pattern.compile( "^[^/]+/export.properties$" );
 
     static
     {
@@ -341,9 +345,17 @@ public class RcdExportScriptBean
         } catch (IOException e) {
             return false;
         }
-        final String dumpArchiveFileName = archivePath.getFileName().toString();
-        ZipEntry jsonZipEntry = archiveZipFile.getEntry( dumpArchiveFileName.substring( 0, dumpArchiveFileName.length() - 4 ) + "/export.properties" );
-        return jsonZipEntry != null;
+
+        final Enumeration<? extends ZipEntry> entries = archiveZipFile.entries();
+        while ( entries.hasMoreElements() )
+        {
+            final ZipEntry zipEntry = entries.nextElement();
+            if ( EXPORT_PROPERTIES_ENTRY_NAME_PATTERN.matcher( zipEntry.getName() ).matches() )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
