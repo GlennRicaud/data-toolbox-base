@@ -73,7 +73,40 @@ class ExportsRoute extends DtbRoute {
     }
 
     dowloadExports() {
-        const exportNames = this.tableCard.getSelectedRows().map((row) => row.attributes['export']);
+        const exportInfos = this.tableCard.getSelectedRows().map((row) => {
+            return {
+                name: row.attributes['export'],
+                type: row.attributes['type']
+            }
+        });
+
+        if (exportInfos.length === 1 && exportInfos[0].type === 'archived') {
+            this.directDownloadExport(exportInfos[0].name);
+        } else {
+            this.archiveAndDownloadExports(exportInfos.map((exportInfo) => exportInfo.name));
+        }
+    }
+
+    directDownloadExport(exportName) {
+        const archiveNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'archiveName')
+            .setAttribute('value', exportName);
+        const fileNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'fileName')
+            .setAttribute('value', exportName);
+        const downloadForm = new RcdFormElement().init()
+            .setAttribute('action', config.servicesUrl + '/export-directdownload')
+            .setAttribute('method', 'post')
+            .addChild(archiveNameInput)
+            .addChild(fileNameInput);
+        document.body.appendChild(downloadForm.domElement);
+        downloadForm.submit();
+        document.body.removeChild(downloadForm.domElement);
+    }
+
+    archiveAndDownloadExports(exportNames) {
         const infoDialog = showLongInfoDialog("Archiving exports...");
         requestPostJson(config.servicesUrl + '/export-archive', {
             data: {exportNames: exportNames}
