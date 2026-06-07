@@ -134,7 +134,40 @@
     }
 
     function dowloadExports() {
-        const exportNames = tableCard.getSelectedRows().map((row) => row.attributes['export']);
+        const exportInfos = tableCard.getSelectedRows().map((row) => {
+            return {
+                name: row.attributes['export'],
+                type: row.attributes['type']
+            }
+        });
+
+        if (exportInfos.length === 1 && exportInfos[0].type === 'archived') {
+            directDownloadExport(exportInfos[0].name);
+        } else {
+            archiveAndDownloadExports(exportInfos.map((exportInfo) => exportInfo.name));
+        }
+    }
+
+    function directDownloadExport(exportName) {
+        const archiveNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'archiveName')
+            .setAttribute('value', exportName);
+        const fileNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'fileName')
+            .setAttribute('value', exportName);
+        const downloadForm = new RcdFormElement().init()
+            .setAttribute('action', config.servicesUrl + '/export-directdownload')
+            .setAttribute('method', 'post')
+            .addChild(archiveNameInput)
+            .addChild(fileNameInput);
+        document.body.appendChild(downloadForm.domElement);
+        downloadForm.submit();
+        document.body.removeChild(downloadForm.domElement);
+    }
+
+    function archiveAndDownloadExports(exportNames) {
         const infoDialog = showLongInfoDialog("Archiving exports...");
         requestPostJson(config.servicesUrl + '/export-archive', {
             data: {exportNames: exportNames}
