@@ -19,10 +19,12 @@ class ExportsRoute extends DtbRoute {
     }
 
     createLayout() {
-        this.tableCard = new RcdMaterialTableCard('Node exports').init().addColumn('Export name').addColumn('Timestamp',
-            {classes: ['non-mobile-cell']}).addIconArea(new RcdGoogleMaterialIconArea('file_download',
-            () => this.dowloadExports()).init().setTooltip('Archive and download selected node exports'),
-            {min: 1}).addIconArea(
+        this.tableCard = new RcdMaterialTableCard('Node exports').init()
+            .addColumn('Export name')
+            .addColumn('Timestamp\nSize', {classes: ['non-mobile-cell']})
+            .addColumn('Creator (XP Version)', {classes: ['non-mobile-cell', 'version-cell']})
+            .addIconArea(new RcdGoogleMaterialIconArea('file_download',() => this.dowloadExports()).init().setTooltip('Archive and download selected node exports'), {min: 1})
+            .addIconArea(
             new RcdGoogleMaterialIconArea('file_upload', () => this.uploadExports()).init().setTooltip('Upload and unarchive node exports',
                 RcdMaterialTooltipAlignment.RIGHT), {max: 0}).addIconArea(
             new RcdGoogleMaterialIconArea('delete', () => this.deleteExports()).init().setTooltip('Delete selected node exports',
@@ -36,8 +38,14 @@ class ExportsRoute extends DtbRoute {
         return requestJson(config.servicesUrl + '/export-list')
             .then((result) => {
                 result.success.sort((export1, export2) => export2.timestamp - export1.timestamp).forEach((anExport) => {
-                    this.tableCard.createRow().addCell(anExport.name).addCell(toLocalDateTimeFormat(new Date(anExport.timestamp)),
-                        {classes: ['non-mobile-cell']}).setAttribute('export', anExport.name);
+                    this.tableCard.createRow()
+                        .addCell(anExport.name)
+                        .addCell(toLocalDateTimeFormat(new Date(anExport.timestamp))
+                            + (anExport.size >= 0 ? '\n' + toHumanReadableSize(anExport.size) : ''),
+                            {classes: ['non-mobile-cell']})
+                        .addCell(anExport.xpVersion, {classes: ['non-mobile-cell', 'version-cell']})
+                        .setAttribute('export', anExport.name)
+                        .setAttribute('type', anExport.type);
                 });
             })
             .catch(handleRequestError)
@@ -65,7 +73,40 @@ class ExportsRoute extends DtbRoute {
     }
 
     dowloadExports() {
-        const exportNames = this.tableCard.getSelectedRows().map((row) => row.attributes['export']);
+        const exportInfos = this.tableCard.getSelectedRows().map((row) => {
+            return {
+                name: row.attributes['export'],
+                type: row.attributes['type']
+            }
+        });
+
+        if (exportInfos.length === 1 && exportInfos[0].type === 'archived') {
+            this.directDownloadExport(exportInfos[0].name);
+        } else {
+            this.archiveAndDownloadExports(exportInfos.map((exportInfo) => exportInfo.name));
+        }
+    }
+
+    directDownloadExport(exportName) {
+        const archiveNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'archiveName')
+            .setAttribute('value', exportName);
+        const fileNameInput = new RcdInputElement().init()
+            .setAttribute('type', 'hidden')
+            .setAttribute('name', 'fileName')
+            .setAttribute('value', exportName);
+        const downloadForm = new RcdFormElement().init()
+            .setAttribute('action', config.servicesUrl + '/export-directdownload')
+            .setAttribute('method', 'post')
+            .addChild(archiveNameInput)
+            .addChild(fileNameInput);
+        document.body.appendChild(downloadForm.domElement);
+        downloadForm.submit();
+        document.body.removeChild(downloadForm.domElement);
+    }
+
+    archiveAndDownloadExports(exportNames) {
         const infoDialog = showLongInfoDialog("Archiving exports...");
         requestPostJson(config.servicesUrl + '/export-archive', {
             data: {exportNames: exportNames}

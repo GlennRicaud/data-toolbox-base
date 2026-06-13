@@ -654,6 +654,11 @@ public class RcdDumpScriptBean
     }
 
     @Override
+    protected boolean shouldSkipUnarchive(Path archivePath) {
+        return false;
+    }
+
+    @Override
     protected Path getArchiveDirectoryPath()
     {
         return DUMP_ARCHIVE_DIRECTORY_PATH;

@@ -73,22 +73,34 @@ public abstract class RcdDataScriptBean
         return archivePath.getFileName().toString();
     }
 
-    public String unarchive( final String archiveName, final ScriptValue listener)
+    public String unarchive( final String archiveName, final String fileName, final ScriptValue listener)
         throws IOException
     {
         final File archiveFile = new File( getArchiveDirectoryPath().toFile(), archiveName );
         return runSafely( () -> {
-            LOGGER.debug( "Unarchiving [" + archiveFile.getAbsolutePath() + "] into [" + getDirectoryPath() + "]..." );
-            Predicate<ZipEntry> filter = zipEntry -> !zipEntry.getName().startsWith( "__MACOSX/" );
-            AtomicInteger count = new AtomicInteger();
-            RcdZipService.unzip( archiveFile.toPath(), getDirectoryPath(), filter, (filePath) -> {
-                if ((count.get() % 1_000) == 0) {
-                    listener.call(count.get());
+            if (shouldSkipUnarchive( getArchiveDirectoryPath().resolve( archiveName ) ) ) {
+                final Path targetPath = getDirectoryPath().resolve(fileName);
+                LOGGER.debug( "Moving [" + archiveFile.getAbsolutePath() + "] into [" + targetPath + "]..." );
+                try {
+                    Files.move( archiveFile.toPath(), targetPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                count.getAndIncrement();
-            });
-            LOGGER.debug( getCamelType() + "s unarchived!" );
-            return createSuccessResult();
+                LOGGER.debug( getCamelType() + "s moved!" );
+                return createSuccessResult();
+            } else {
+                LOGGER.debug( "Unarchiving [" + archiveFile.getAbsolutePath() + "] into [" + getDirectoryPath() + "]..." );
+                Predicate<ZipEntry> filter = zipEntry -> !zipEntry.getName().startsWith( "__MACOSX/" );
+                AtomicInteger count = new AtomicInteger();
+                RcdZipService.unzip( archiveFile.toPath(), getDirectoryPath(), filter, (filePath) -> {
+                    if ((count.get() % 1_000) == 0) {
+                        listener.call(count.get());
+                    }
+                    count.getAndIncrement();
+                });
+                LOGGER.debug( getCamelType() + "s unarchived!" );
+                return createSuccessResult();
+            }
         }, "Error while unarchiving " + getType() + "s", () -> {
             if ( archiveFile.exists() )
             {
@@ -127,6 +139,8 @@ public abstract class RcdDataScriptBean
         }, "Error while uploading dump" );
 
     }
+
+    protected abstract boolean shouldSkipUnarchive( Path archivePath);
 
     protected abstract Path getArchiveDirectoryPath();
 

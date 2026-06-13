@@ -18,7 +18,7 @@ exports.post = function (req) {
                         taskLib.progress({info: 'Unarchiving exports... (' + count + ' files unarchived)'});
                     }
                 });
-            taskLib.progress({info: bean.unarchive(archivePath, listener)});
+            taskLib.progress({info: bean.unarchive(archivePath, fileName, listener)});
         }
     });
 
