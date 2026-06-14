@@ -16,7 +16,8 @@ exports.post = function (req) {
 
 function restoreContent(projectId, id) {
     contextLib.run({
-        repository: 'com.enonic.cms.' + projectId
+        repository: 'com.enonic.cms.' + projectId,
+        branch: 'draft',
     }, function () {
         contentLib.restore({
             content: id,
