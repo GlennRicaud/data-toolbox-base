@@ -122,7 +122,6 @@ public abstract class RcdDataScriptBean
         return runSafely( () -> {
             final java.nio.file.Path archivePath = getEnforcedDirectoryPath().resolve( filename );
             final File archiveFile = archivePath.toFile();
-            archiveFile.getParentFile().mkdirs();
             if ( archiveFile.exists() )
             {
                 return createErrorResult( "Dump [" + filename + "] already exists" );
