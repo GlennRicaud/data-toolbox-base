@@ -79,7 +79,7 @@ public abstract class RcdDataScriptBean
         final File archiveFile = new File( getArchiveDirectoryPath().toFile(), archiveName );
         return runSafely( () -> {
             if (shouldSkipUnarchive( getArchiveDirectoryPath().resolve( archiveName ) ) ) {
-                final Path targetPath = getDirectoryPath().resolve(fileName);
+                final Path targetPath = getEnforcedDirectoryPath().resolve(fileName);
                 LOGGER.debug( "Moving [" + archiveFile.getAbsolutePath() + "] into [" + targetPath + "]..." );
                 try {
                     Files.move( archiveFile.toPath(), targetPath);
@@ -92,7 +92,7 @@ public abstract class RcdDataScriptBean
                 LOGGER.debug( "Unarchiving [" + archiveFile.getAbsolutePath() + "] into [" + getDirectoryPath() + "]..." );
                 Predicate<ZipEntry> filter = zipEntry -> !zipEntry.getName().startsWith( "__MACOSX/" );
                 AtomicInteger count = new AtomicInteger();
-                RcdZipService.unzip( archiveFile.toPath(), getDirectoryPath(), filter, (filePath) -> {
+                RcdZipService.unzip( archiveFile.toPath(), getEnforcedDirectoryPath(), filter, (filePath) -> {
                     if ((count.get() % 1_000) == 0) {
                         listener.call(count.get());
                     }
@@ -120,7 +120,7 @@ public abstract class RcdDataScriptBean
         throws IOException
     {
         return runSafely( () -> {
-            final java.nio.file.Path archivePath = getDirectoryPath().resolve( filename );
+            final java.nio.file.Path archivePath = getEnforcedDirectoryPath().resolve( filename );
             final File archiveFile = archivePath.toFile();
             archiveFile.getParentFile().mkdirs();
             if ( archiveFile.exists() )
@@ -145,6 +145,21 @@ public abstract class RcdDataScriptBean
     protected abstract Path getArchiveDirectoryPath();
 
     protected abstract Path getDirectoryPath();
+
+    protected Path getEnforcedDirectoryPath()
+    {
+        try {
+            final Path path = getDirectoryPath();
+            if ( !path.toFile().exists() ) {
+                path.toFile().mkdirs();
+            }
+            return path;
+        }
+        catch ( Exception e )
+        {
+            throw new RcdException( "Error while creating data folder", e );
+        }
+    }
 
     protected abstract String getType();
 
